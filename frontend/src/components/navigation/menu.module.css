@@ -1,0 +1,8 @@
+nav a,
+nav button {
+    text-transform: uppercase;
+}
+
+li>ul {
+    left: -100% !important;
+}

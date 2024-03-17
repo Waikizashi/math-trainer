@@ -1,0 +1,15 @@
+header {
+    height: 0;
+    color: whitesmoke;
+    text-transform: uppercase;
+    transform: translateY(var(--header-heigth));
+}
+
+.homepage {
+    width: inherit;
+    height: inherit;
+    background: url(../../assets/bck1.jpg);
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
