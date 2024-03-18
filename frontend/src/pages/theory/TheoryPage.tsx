@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import s from './theoryPage.module.css';
 import cn from 'classnames';
 import MainMenu from '../../components/navigation/Menu';
+import GraphCanvas from '../../components/graphs/GraphCanvas';
 
 interface MyComponentProps {
     title: string;
@@ -80,7 +81,7 @@ const TheoryPage: React.FC<any> = () => {
                         Visualization
                     </div>
                     <div className={visualArea}>
-
+                        <GraphCanvas></GraphCanvas>
                     </div>
                 </div>
             </div>
