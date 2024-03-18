@@ -1,19 +1,28 @@
 import React, { useEffect, useRef } from 'react';
-import * as d3 from 'd3';
+import * as d3 from 'd3'
+
+interface Node extends d3.SimulationNodeDatum {
+
+}
+
+interface Link extends d3.SimulationLinkDatum<Node> {
+    source: string | Node;
+    target: string | Node;
+}
 
 const Graph = () => {
     const svgRef = useRef(null);
 
     useEffect(() => {
-        const nodes = [
-            { id: 'node1' },
-            { id: 'node2' },
-            { id: 'node3' }
+        const nodes: Node[] = [
+            { index: 0 },
+            { index: 1 },
+            { index: 2 }
         ];
 
-        const links = [
-            { source: 'node1', target: 'node2' },
-            { source: 'node2', target: 'node3' }
+        const links: Link[] = [
+            { source: nodes[0], target: nodes[1] },
+            { source: nodes[1], target: nodes[2] }
         ];
 
         const svg = d3.select(svgRef.current)
@@ -34,7 +43,7 @@ const Graph = () => {
             .style('fill', 'steelblue');
 
         const simulation = d3.forceSimulation(nodes)
-            .force('link', d3.forceLink(links).id(d => d.id))
+            .force('link', d3.forceLink(links).id((d: Node) => d.index))
             .force('charge', d3.forceManyBody())
             .force('center', d3.forceCenter(150, 150))
             .on('tick', () => {
