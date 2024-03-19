@@ -1,8 +1,11 @@
 import React, { useEffect, useRef } from 'react';
 import s from './theoryPage.module.css';
 import cn from 'classnames';
-import MainMenu from '../../components/navigation/Menu';
-import GraphCanvas from '../../components/graphs/GraphCanvas';
+import Fab from '@mui/material/Fab';
+import GraphCanvas from '../../graphs/GraphCanvas';
+import MainMenu from '../../navigation/Menu';
+
+import { mainContainer, subContainer, section, visualArea } from '../../../utils/styles/global-styles';
 
 interface MyComponentProps {
     title: string;
@@ -15,33 +18,7 @@ const TheoryPage: React.FC<any> = () => {
         if (parentRef) {
         }
     }, []);
-    const mainContainer = cn(
-        'main-container',
-        'd-flex',
-        'flex-column',
-        'justify-content-center',
-        'align-items-center',
-        'w-100',
-        'h-100'
-    )
-    const subContainer = cn(
-        'd-flex',
-        'justify-content-center',
-        'align-items-center',
-        'w-100',
-        'my-2',
-        'h-100'
-    )
-    const section = cn(
-        "card",
-        "text-center",
-        "mx-2",
-        'h-100',
-        'w-50'
-    )
-    const visualArea = cn(
-        'card-body'
-    )
+    
     return (
         <div className={mainContainer}>
             <MainMenu />

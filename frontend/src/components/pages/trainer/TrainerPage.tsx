@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import s from './trainerPage.module.css';
 import cn from 'classnames';
-import MainMenu from '../../components/navigation/Menu';
+import MainMenu from '../../navigation/Menu';
 
 const TrainerPage = () => {
     const parentRef = useRef(null);

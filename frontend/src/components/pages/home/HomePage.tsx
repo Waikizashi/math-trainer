@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import MainMenu from '../../components/navigation/Menu';
+import MainMenu from '../../navigation/Menu';
 import s from './home.module.css';
 import cn from 'classnames';
 

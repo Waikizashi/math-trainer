@@ -1,37 +1,15 @@
 import React, { useEffect, useRef } from 'react';
-import s from './theoryPage.module.css';
+import s from './login.module.css';
 import cn from 'classnames';
-import MainMenu from '../../components/navigation/Menu';
+import MainMenu from '../../navigation/Menu';
+import { mainContainer, subContainer, section, visualArea } from '../../../utils/styles/global-styles';
 
-const Login = () => {
+const LoginPage = () => {
     const parentRef = useRef(null);
     useEffect(() => {
         if (parentRef) {
         }
     }, []);
-    const mainContainer = cn(
-        'main-container',
-        'd-flex',
-        'flex-column',
-        'justify-content-center',
-        'align-items-center',
-        'w-100',
-        'h-100',
-    )
-    const subContainer = cn(
-        'd-flex',
-        'justify-content-center',
-        'align-items-center',
-        'w-100',
-        'h-100',
-        'my-2'
-    )
-    const section = cn(
-        "card",
-        "text-center",
-        "m-auto",
-        'w-25'
-    )
     return (
         <div className={mainContainer}>
             <MainMenu />
@@ -61,4 +39,4 @@ const Login = () => {
     );
 }
 
-export default Login;
+export default LoginPage;

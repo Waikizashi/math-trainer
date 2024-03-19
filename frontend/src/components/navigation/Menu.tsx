@@ -7,7 +7,7 @@ import QuizIcon from '@mui/icons-material/Quiz';
 import AccountBoxIcon from '@mui/icons-material/AccountBox';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
-import InsightsIcon from '@mui/icons-material/Insights';
+import HubIcon from '@mui/icons-material/Hub';
 
 interface MenuProps {
     description?: string;
@@ -113,7 +113,7 @@ const MainMenu: React.FC<MenuProps> = (description) => {
                 <div className="col-12 text-center m-1">
                     <Link to="/constructor">
                         <Fab color="primary">
-                            <InsightsIcon></InsightsIcon>
+                            <HubIcon></HubIcon>
                         </Fab>
                     </Link>
                 </div>

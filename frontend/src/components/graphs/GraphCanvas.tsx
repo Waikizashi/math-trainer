@@ -1,5 +1,7 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import cn from 'classnames'
 import * as d3 from 'd3'
+import s from 'graph-canvas.module.css'
 
 interface Node extends d3.SimulationNodeDatum {
     id: number | string,
@@ -12,10 +14,54 @@ interface Link extends d3.SimulationLinkDatum<Node> {
     target: string | number | Node;
 }
 
+interface GraphParams {
+
+}
+
 const GraphCanvas = () => {
 
-    const svgRef = useRef(null);
+    const svgRef = useRef<any>(null);
+    const [viewBox, setViewBox] = useState('0 0 0 0'); // Начальное значение
+
+  const updateViewBox = () => {
+    if (svgRef.current) {
+      const { width, height } = svgRef.current.parentNode.getBoundingClientRect();
+      setViewBox(`0 0 ${width} ${height}`);
+    }
+  };
+    const view = { x: 0, y: 0 };
+
+    
     useEffect(() => {
+        window.addEventListener('resize', updateViewBox);
+        updateViewBox();
+
+        const svg = d3.select(svgRef.current)
+            .attr('width', '100%')
+            .attr('height', '100%');
+
+            if (svg) {    
+                const dragHandler = d3.drag<SVGSVGElement, unknown>()
+                    .on('start', function (event) {
+                        view.x = event.x;
+                        view.y = event.y;
+                    })
+                    .on('drag', function (event) {
+                        const dx = event.x - view.x;
+                        const dy = event.y - view.y;
+                        view.x = event.x;
+                        view.y = event.y;
+    
+                        // Типы для 'viewBox' должны быть числами
+                        const viewBox = svg.attr('viewBox').split(' ').map(Number);
+                        viewBox[0] -= dx;
+                        viewBox[1] -= dy;
+                        svg.attr('viewBox', viewBox.join(' '));
+                    });
+    
+                dragHandler(svg);
+            }
+        
         const nodes: Node[] = [
             { id: 0, group: 1 },
             { id: 1, group: 2 },
@@ -34,9 +80,6 @@ const GraphCanvas = () => {
             { source: 4, target: 0 },
         ];
 
-        const svg = d3.select(svgRef.current)
-            .attr('width', '100%')
-            .attr('height', '100%');
 
         const linkElements = svg.append('g')
             .selectAll('line')
@@ -82,20 +125,21 @@ const GraphCanvas = () => {
                     .attr('y', (d: any) => d.y);
             });
 
-        svg.on('click', function (event) {
-            const coords = d3.pointer(event, this); // Получаем координаты клика относительно SVG
+        // svg.on('click', function (event) {
+        //     console.log(event)
+        //     const coords = d3.pointer(event, this); // Получаем координаты клика относительно SVG
 
-            // Создаем новый узел в месте клика
-            const newNode: Node = { id: nodes.length, x: coords[0], y: coords[1] };
-            nodes.push(newNode); // Добавляем новый узел в массив узлов
+        //     // // Создаем новый узел в месте клика
+        //     const newNode: Node = { id: nodes.length, x: coords[0], y: coords[1] };
+        //     nodes.push(newNode); // Добавляем новый узел в массив узлов
 
-            // Перезапускаем симуляцию с новыми узлами
-            simulation.nodes(nodes);
-            simulation.force('link').links(links);
-            simulation.alpha(1).restart();
+        //     // // Перезапускаем симуляцию с новыми узлами
+        //     // simulation.nodes(nodes);
+        //     // (simulation.force('link') as d3.ForceLink<any, any>).links(links);
+        //     // simulation.alpha(1).restart();
 
-            updateGraph(); // Функция для обновления графа
-        });
+        //     updateGraph(); // Функция для обновления графа
+        // });
         const addVertex = () => {
 
         }
@@ -122,7 +166,7 @@ const GraphCanvas = () => {
 
         function updateGraph() {
             // Обновляем узлы
-            const nodeSelection = svg.selectAll('circle')
+            const nodeSelection = svg.selectAll<SVGCircleElement, Node>('circle')
                 .data(nodes, (d: any) => d.id);
 
             nodeSelection.enter()
@@ -136,8 +180,8 @@ const GraphCanvas = () => {
             nodeSelection.exit().remove();
 
             // Обновляем связи
-            const linkSelection = svg.selectAll('line')
-                .data(links);
+            const linkSelection =  svg.selectAll<SVGLineElement, Link>('line.link')
+            .data(links);
 
             linkSelection.enter()
                 .append('line')
@@ -151,11 +195,16 @@ const GraphCanvas = () => {
             linkSelection.exit().remove();
 
             // Перезапускаем симуляцию, если это необходимо
-            simulation.nodes(nodes).alpha(1).restart();
+            // simulation.nodes(nodes).alpha(1).restart();
         }
     }, []);
 
-    return <svg ref={svgRef}></svg>;
+    const canvasStyles = cn(
+        'graph-canvas',
+        'bg-light'
+    )
+
+    return <svg className={canvasStyles} ref={svgRef} viewBox={viewBox}></svg>;
 };
 
 export default GraphCanvas;
