@@ -8,7 +8,7 @@ import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-route
 import { useEffect } from 'react';
 import MainMenu from './components/navigation/Menu';
 import TrainerPage from './components/pages/trainer/TrainerPage';
-import Constructor from './components/pages/constructor/Constructor';
+import ConstructorPage from './components/pages/constructor/ConstructorPage';
 import LoginPage from './components/pages/login/LoginPage';
 import Profile from './components/pages/profile/Profile';
 
@@ -30,7 +30,7 @@ function App() {
           <Route path="/" element={<RedirectToHome />} />
           <Route path="/theory" element={<TheoryPage></TheoryPage>} />
           <Route path="/exercices" element={<TrainerPage></TrainerPage>} />
-          <Route path="/constructor" element={<Constructor></Constructor>} />
+          <Route path="/constructor" element={<ConstructorPage></ConstructorPage>} />
           <Route path="/login" element={<LoginPage></LoginPage>} />
           <Route path="/profile" element={<Profile></Profile>} />
         </Routes>

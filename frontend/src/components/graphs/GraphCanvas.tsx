@@ -2,6 +2,18 @@ import React, { useEffect, useRef, useState } from 'react';
 import cn from 'classnames'
 import * as d3 from 'd3'
 import s from 'graph-canvas.module.css'
+import { useLocation } from 'react-router-dom';
+import { visualArea } from '../../utils/styles/global-styles';
+
+import Fab from '@mui/material/Fab';
+import ColorLensIcon from '@mui/icons-material/ColorLens';
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
+import TimelineIcon from '@mui/icons-material/Timeline';
+import AutoFixOffIcon from '@mui/icons-material/AutoFixOff';
+import SwipeVerticalIcon from '@mui/icons-material/SwipeVertical';
+import ZoomInIcon from '@mui/icons-material/ZoomIn';
+import ZoomOutIcon from '@mui/icons-material/ZoomOut';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 
 interface Node extends d3.SimulationNodeDatum {
     id: number | string,
@@ -19,9 +31,12 @@ interface GraphParams {
 }
 
 const GraphCanvas = () => {
-    const centerForceStrength = 0.005;
+    const location = useLocation();
+    const isConstructorPage = location.pathname === '/constructor';
 
     const svgRef = useRef<any>(null);
+    const canvasRef = useRef<any>(null);
+    const simulationRef = useRef<any>(null);
     const [nodes, setNodes] = useState<Node[]>([
         { id: 0, group: 1 },
         { id: 1, group: 2 },
@@ -39,11 +54,92 @@ const GraphCanvas = () => {
         { source: 4, target: 0 },
     ]);
     const [viewBox, setViewBox] = useState('0 0 0 0');
-    const [svg, setSvg] = useState();
-    const [dragHandler, setDragHandler] = useState();
-    const [simulation, setSimulation] = useState();
-    const [viewBox, setViewBox] = useState();
-    const [viewBox, setViewBox] = useState();
+
+    const [addBtn, setAddBtn] = useState(false)
+    const [colorsBtn, setColorsBtn] = useState(false)
+    const [linesBtn, setLinesBtn] = useState(false)
+    const [swipeBtn, setSwipeBtn] = useState(false)
+    const [scale, setScale] = useState(1);
+
+    const view = { x: 0, y: 0 };
+    const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
+
+    const updateSimulation = () => {
+        canvasRef.current.selectAll('g>*').remove();
+        simulationRef.current.nodes(nodes);
+        console.log(canvasRef.current)
+        // const linkForce = simulationRef.current.force("link", d3.forceLink(links).id((d: any) => d.id));
+
+        const link = canvasRef.current.append('g')
+            .selectAll('line')
+            .data(links, (d: any) => `${d.source.id}-${d.target.id}`);
+        link.enter()
+            .append('line')
+            .style('stroke', '#aaa')
+            .merge(link);
+        link.exit().remove();
+
+        const node = canvasRef.current.append('g')
+            .selectAll('circle')
+            .data(nodes, (d: any) => d.id);
+        node.enter()
+            .append('circle')
+            .attr('r', 10)
+            .style('fill', (d: any) => colorScale(d.group))
+            .merge(node);
+        node.exit().remove();
+
+        const text = canvasRef.current.append('g')
+            .selectAll('text')
+            .data(nodes, (d: any) => d.id);
+        text.enter()
+            .append('text')
+            .attr('dx', 12)
+            .attr('dy', '.35em')
+            .text((d: any) => d.id)
+            .style('font-size', '12px')
+            .merge(text);
+        text.exit().remove();
+
+    };
+    const zoomIn = () => {
+        setScale(scale * 1.1);
+    }
+    const zoomOut = () => {
+        setScale(scale / 1.1);
+    }
+    const addVertex = () => {
+
+    }
+
+    const clean = () => {
+
+    }
+
+    const cleanAll = () => {
+
+    }
+
+    const showDegree = () => {
+
+    }
+
+    const showDegreeIndex = () => {
+
+    }
+
+    const setAdding = () => {
+        setAddBtn(!addBtn)
+    }
+    const setColoring = () => {
+        setColorsBtn(!colorsBtn)
+    }
+    const setLining = () => {
+        setLinesBtn(!linesBtn)
+    }
+    const setSwiping = () => {
+        setSwipeBtn(!swipeBtn)
+    }
 
     const updateViewBox = () => {
         if (svgRef.current) {
@@ -51,19 +147,53 @@ const GraphCanvas = () => {
             setViewBox(`0 0 ${width} ${height}`);
         }
     };
-    const view = { x: 0, y: 0 };
+    useEffect(() => {
+        if (!svgRef.current) return;
+
+        const svgElement = d3.select(svgRef.current);
+        const { width, height } = svgElement.node().getBoundingClientRect();
+        const newViewBox = [
+            (width / 2) - (width / 2 / scale),
+            (height / 2) - (height / 2 / scale),
+            width / scale,
+            height / scale,
+        ].join(' ');
+
+        svgElement.attr('viewBox', newViewBox);
+        canvasRef.current = svgElement
+    }, [scale]);
 
     useEffect(() => {
-        const w = svgRef.current.parentNode.getBoundingClientRect().width;
-        const h = svgRef.current.parentNode.getBoundingClientRect().height;
-        window.addEventListener('resize', updateViewBox);
-        updateViewBox();
+        if (canvasRef.current) {
+            if (addBtn) {
+                canvasRef.current.on('click', (event: any) => {
+                    const coords = d3.pointer(event);
+                    const newNode: Node = {
+                        id: nodes.length,
+                        group: Math.floor(Math.random() * 10),
+                        x: coords[0],
+                        y: coords[1],
+                    };
+                    setNodes(prevNodes => [...prevNodes, newNode]);
+                    updateSimulation()
+                });
+            } else {
+                canvasRef.current.on('click', null)
+            }
+        }
+    }, [addBtn])
+    useEffect(() => {
+        if (canvasRef.current) {
 
-        const svg = d3.select(svgRef.current)
-            .attr('width', '100%')
-            .attr('height', '100%');
+        }
+    }, [colorsBtn])
+    useEffect(() => {
+        if (canvasRef.current) {
 
-        if (svg) {
+        }
+    }, [linesBtn])
+    useEffect(() => {
+        if (canvasRef.current) {
             const dragHandler = d3.drag<SVGSVGElement, unknown>()
                 .on('start', function (event) {
                     view.x = event.x;
@@ -75,45 +205,51 @@ const GraphCanvas = () => {
                     view.x = event.x;
                     view.y = event.y;
 
-                    const viewBox = svg.attr('viewBox').split(' ').map(Number);
+                    const viewBox = canvasRef.current.attr('viewBox').split(' ').map(Number);
                     viewBox[0] -= dx;
                     viewBox[1] -= dy;
-                    svg.attr('viewBox', viewBox.join(' '));
+                    canvasRef.current.attr('viewBox', viewBox.join(' '));
                 });
-
-            dragHandler(svg);
+            if (swipeBtn) {
+                dragHandler(canvasRef.current);
+            } else {
+                canvasRef.current.on('.drag', null);
+            }
         }
+    }, [swipeBtn])
 
-        // const nodes: Node[] = ;
+    useEffect(() => {
+        const w = svgRef.current.parentNode.getBoundingClientRect().width;
+        const h = svgRef.current.parentNode.getBoundingClientRect().height;
+        window.addEventListener('resize', updateViewBox);
+        updateViewBox();
+        canvasRef.current = d3.select(svgRef.current)
+            .attr('width', '100%')
+            .attr('height', '100%');
 
-        // const links: Link[] = ;
-
-
-        const linkElements = svg.append('g')
+        const linkElements = canvasRef.current.append('g')
             .selectAll('line')
             .data(links)
             .enter().append('line')
             .style('stroke', '#aaa');
 
-        const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
-
-        const nodeElements = svg.append('g')
+        const nodeElements = canvasRef.current.append('g')
             .selectAll('circle')
             .data(nodes)
             .enter().append('circle')
             .attr('r', 10)
             .style('fill', (d: any) => colorScale(d.group));
 
-        const textElements = svg.append('g')
+        const textElements = canvasRef.current.append('g')
             .selectAll('text')
             .data(nodes)
             .enter().append('text')
             .attr('dx', 12)
             .attr('dy', '.35em')
-            .text(d => d.id)
+            .text((d: any) => d.id)
             .style('font-size', '12px');
 
-        const simulation = d3.forceSimulation(nodes)
+        simulationRef.current = d3.forceSimulation(nodes)
             .force('link', d3.forceLink(links).id((d: any) => d.id).distance(100))
             .force("charge", d3.forceManyBody()
                 .strength(-50)
@@ -138,89 +274,75 @@ const GraphCanvas = () => {
                     .attr('y', (d: any) => d.y);
             });
 
-        svg.on('click', (event) => {
-            // Преобразуем координаты клика в координаты SVG с учетом текущего viewBox
-            const coords = d3.pointer(event);
-            const newNode: Node = {
-                id: nodes.length,
-                group: Math.floor(Math.random() * 10), // Пример группы для нового узла
-                x: coords[0],
-                y: coords[1],
-            };
-            setNodes(prevNodes => [...prevNodes, newNode]);
-            console.log(nodes)
-            updateSimulation();
-        });
-        const updateSimulation = () => {
-            svg.selectAll('g > *').remove();
-            simulation.nodes(nodes);
-            // const linkForce = simulation.force("link", d3.forceLink(links).id((d: any) => d.id));
+    }, [nodes, links]);
 
-            const link = svg.select<SVGAElement>('g')
-                .selectAll<SVGLineElement, Link>('line')
-                .data(links, (d: any) => `${d.source.id}-${d.target.id}`);
-            link.enter()
-                .append('line')
-                .style('stroke', '#aaa')
-                .merge(link);
-            link.exit().remove();
+    const constructorArea = cn(
+        "card",
+        "text-center",
+        'h-100',
+        'w-100',
+        !isConstructorPage ? 'border-0' : 'mx-2',
+    )
 
-            const node = svg.select('g')
-                .selectAll<SVGCircleElement, Node>('circle')
-                .data(nodes, (d: any) => d.id);
-            node.enter()
-                .append('circle')
-                .attr('r', 10)
-                .style('fill', (d: any) => colorScale(d.group))
-                .merge(node);
-            node.exit().remove();
+    const tools = cn(
 
-            const text = svg.select('g')
-                .selectAll<SVGTextElement, Node>('text')
-                .data(nodes, (d: any) => d.id);
-            text.enter()
-                .append('text')
-                .attr('dx', 12)
-                .attr('dy', '.35em')
-                .text(d => d.id)
-                .style('font-size', '12px')
-                .merge(text);
-            text.exit().remove();
-
-            simulation.alpha(0.3).restart();
-        };
-    }, [nodes]);
-
-    const addVertex = () => {
-
-    }
-
-    const deleteVertex = () => {
-
-    }
-
-    const cleanAll = () => {
-
-    }
-
-    const showDegree = () => {
-
-    }
-
-    const showDegreeIndex = () => {
-
-    }
-
-    const setColors = () => {
-
-    }
-
+    )
+    const tool = cn(
+        "mx-2",
+    )
     const canvasStyles = cn(
         'graph-canvas',
         'bg-light'
     )
 
-    return <svg className={canvasStyles} ref={svgRef} viewBox={viewBox}></svg>;
+    return (
+        <div className={constructorArea}>
+            <div className="card-header d-flex justify-content-between">
+                <strong className='my-auto'>{'canvas'.toUpperCase()}</strong>
+                <div className={tools}>
+                    <Fab onClick={zoomIn} className={tool} size='small'>
+                        <ZoomInIcon></ZoomInIcon>
+                    </Fab>
+                    <Fab onClick={zoomOut} className={tool} size='small'>
+                        <ZoomOutIcon></ZoomOutIcon>
+                    </Fab>
+                    <Fab color={addBtn === true ? 'primary' : 'default'}
+                        onClick={setAdding}
+                        className={tool} size='small'>
+                        <AddCircleOutlineIcon></AddCircleOutlineIcon>
+                    </Fab>
+                    <Fab color={colorsBtn === true ? 'primary' : 'default'}
+                        onClick={setColoring}
+                        className={tool} size='small'>
+                        <ColorLensIcon></ColorLensIcon>
+                    </Fab>
+                    <Fab className={tool} size='small'>
+                        <DeleteForeverIcon></DeleteForeverIcon>
+                    </Fab>
+                    <Fab color={linesBtn === true ? 'primary' : 'default'}
+                        onClick={() => setLining()}
+                        className={tool} size='small'>
+                        <TimelineIcon></TimelineIcon>
+                    </Fab>
+                    <Fab className={tool} size='small'>
+                        <AutoFixOffIcon></AutoFixOffIcon>
+                    </Fab>
+                    <Fab color={swipeBtn === true ? 'primary' : 'default'}
+                        onClick={() => setSwiping()}
+                        className={tool} size='small'>
+                        <SwipeVerticalIcon></SwipeVerticalIcon>
+                    </Fab>
+                </div>
+            </div>
+            <div className={visualArea}>
+                <svg className={canvasStyles} ref={svgRef} viewBox={viewBox}></svg>
+            </div>
+            <div className="card-footer text-body-secondary">
+            </div>
+        </div>
+    )
+
+
 };
 
 export default GraphCanvas;

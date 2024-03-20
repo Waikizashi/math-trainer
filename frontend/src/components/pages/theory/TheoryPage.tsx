@@ -18,7 +18,7 @@ const TheoryPage: React.FC<any> = () => {
         if (parentRef) {
         }
     }, []);
-    
+
     return (
         <div className={mainContainer}>
             <MainMenu />
@@ -57,9 +57,7 @@ const TheoryPage: React.FC<any> = () => {
                     <div className="card-header">
                         Visualization
                     </div>
-                    <div className={visualArea}>
-                        <GraphCanvas></GraphCanvas>
-                    </div>
+                    <GraphCanvas></GraphCanvas>
                 </div>
             </div>
         </div>

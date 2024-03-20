@@ -28,5 +28,5 @@ export const section = cn(
 export const visualArea = cn(
     'visual-area',
     'card-body',
-    'p-0'
+    'p-0',
 )
