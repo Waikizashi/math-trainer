@@ -91,7 +91,10 @@ const TheoryPage: React.FC<any> = () => {
     }, [currentGraph]);
 
     const changeVisualization = (prevNext: number) => {
-        setCurrentGraph(prevVis => prevVis + prevNext)
+        setCurrentGraph(prevTopic => {
+            const currentTopic: number = prevTopic + prevNext
+            return (currentTopic >= graphs.length || currentTopic < 0) ? 0 : currentTopic 
+        })
     }
 
     return (

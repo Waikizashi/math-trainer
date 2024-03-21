@@ -32,10 +32,9 @@ export interface GraphDataProps {
 }
 
 const GraphCanvas: React.FC<{ graphData?: GraphDataProps }> = ({ graphData = { nodes: [], links: [] } }) => {
-    const currentVisualization = graphData
     const location = useLocation();
     const isConstructorPage = location.pathname === '/constructor';
-
+    
     const svgRef = useRef<any>(null);
     const canvasRef = useRef<any>(null);
     const simulationRef = useRef<any>(null);
@@ -108,6 +107,9 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps }> = ({ graphData = { n
         canvasRef.current.selectAll('g>*').remove();
         setNodes([])
         setLinks([])
+    }
+    const cleanCanvas = () => {
+        canvasRef.current.selectAll('g>*').remove();
     }
 
     const showDegree = () => {
@@ -207,6 +209,10 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps }> = ({ graphData = { n
             }
         }
     }, [swipeBtn])
+
+    useEffect(() => {
+        
+    }, [graphData])
 
     useEffect(() => {
         const w = svgRef.current.parentNode.getBoundingClientRect().width;
