@@ -26,33 +26,21 @@ interface Link extends d3.SimulationLinkDatum<Node> {
     target: string | number | Node;
 }
 
-interface GraphParams {
-
+export interface GraphDataProps {
+    nodes: Node[];
+    links: Link[];
 }
 
-const GraphCanvas = () => {
+const GraphCanvas: React.FC<{ graphData?: GraphDataProps }> = ({ graphData = { nodes: [], links: [] } }) => {
+    const currentVisualization = graphData
     const location = useLocation();
     const isConstructorPage = location.pathname === '/constructor';
 
     const svgRef = useRef<any>(null);
     const canvasRef = useRef<any>(null);
     const simulationRef = useRef<any>(null);
-    const [nodes, setNodes] = useState<Node[]>([
-        { id: 0, group: 1 },
-        { id: 1, group: 2 },
-        { id: 2, group: 3 },
-        { id: 3, group: 4 },
-        { id: 4, group: 5 },
-        { id: 5, group: 6 },
-        { id: 6, group: 7 },
-    ]);
-    const [links, setLinks] = useState<Link[]>([
-        { source: 0, target: 1 },
-        { source: 1, target: 2 },
-        { source: 2, target: 3 },
-        { source: 3, target: 4 },
-        { source: 4, target: 0 },
-    ]);
+    const [nodes, setNodes] = useState<Node[]>(graphData.nodes);
+    const [links, setLinks] = useState<Link[]>(graphData.links);
     const [viewBox, setViewBox] = useState('0 0 0 0');
 
     const [addBtn, setAddBtn] = useState(false)
@@ -117,7 +105,9 @@ const GraphCanvas = () => {
     }
 
     const cleanAll = () => {
-
+        canvasRef.current.selectAll('g>*').remove();
+        setNodes([])
+        setLinks([])
     }
 
     const showDegree = () => {
@@ -316,7 +306,7 @@ const GraphCanvas = () => {
                         className={tool} size='small'>
                         <ColorLensIcon></ColorLensIcon>
                     </Fab>
-                    <Fab className={tool} size='small'>
+                    <Fab onClick={cleanAll} className={tool} size='small'>
                         <DeleteForeverIcon></DeleteForeverIcon>
                     </Fab>
                     <Fab color={linesBtn === true ? 'primary' : 'default'}
