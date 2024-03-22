@@ -64,7 +64,7 @@ const MainMenu: React.FC<MenuProps> = (description) => {
                                     ME
                                 </button>
                             </a>
-                            <ul className="dropdown-menu">
+                            <ul className="dropdown-menu" style={{ zIndex: 1100 }}>
                                 <li><Link className="dropdown-item" to="/profile">Profile</Link></li>
                                 <li><Link className="dropdown-item" to="/login">Login</Link></li>
                             </ul>

@@ -31,15 +31,15 @@ export interface GraphDataProps {
     links: Link[];
 }
 
-const GraphCanvas: React.FC<{ graphData?: GraphDataProps }> = ({ graphData = { nodes: [], links: [] } }) => {
+const GraphCanvas: React.FC<{ graphData?: GraphDataProps }> = ({ graphData }) => {
     const location = useLocation();
     const isConstructorPage = location.pathname === '/constructor';
-    
+
     const svgRef = useRef<any>(null);
     const canvasRef = useRef<any>(null);
     const simulationRef = useRef<any>(null);
-    const [nodes, setNodes] = useState<Node[]>(graphData.nodes);
-    const [links, setLinks] = useState<Link[]>(graphData.links);
+    const [nodes, setNodes] = useState<Node[]>(graphData ? graphData.nodes : []);
+    const [links, setLinks] = useState<Link[]>(graphData ? graphData.links : []);
     const [viewBox, setViewBox] = useState('0 0 0 0');
 
     const [addBtn, setAddBtn] = useState(false)
@@ -211,7 +211,9 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps }> = ({ graphData = { n
     }, [swipeBtn])
 
     useEffect(() => {
-        
+        cleanAll()
+        setNodes(graphData ? graphData.nodes : [])
+        setLinks(graphData ? graphData.links : [])
     }, [graphData])
 
     useEffect(() => {

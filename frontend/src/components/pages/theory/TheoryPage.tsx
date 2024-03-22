@@ -79,7 +79,7 @@ const graphs: GraphDataProps[] = [
             { source: "0", target: "3", },
             { source: "0", target: "4", }
         ]
-    }
+    },
 ]
 
 const TheoryPage: React.FC<any> = () => {
@@ -93,7 +93,7 @@ const TheoryPage: React.FC<any> = () => {
     const changeVisualization = (prevNext: number) => {
         setCurrentGraph(prevTopic => {
             const currentTopic: number = prevTopic + prevNext
-            return (currentTopic >= graphs.length || currentTopic < 0) ? 0 : currentTopic 
+            return (currentTopic >= graphs.length || currentTopic < 0) ? 0 : currentTopic
         })
     }
 

@@ -24,7 +24,6 @@ export const section = cn(
     'h-100',
     'w-50'
 )
-
 export const visualArea = cn(
     'visual-area',
     'card-body',

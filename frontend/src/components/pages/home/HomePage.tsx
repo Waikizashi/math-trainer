@@ -10,11 +10,7 @@ interface MyComponentProps {
 }
 
 const HomePage: React.FC<MyComponentProps> = ({ title, description }) => {
-    const parentRef = useRef(null);
-    useEffect(() => {
-        if (parentRef) {
-        }
-    }, []);
+
     const homePageClasses = cn(
         s.homepage,
         'd-flex',
@@ -32,7 +28,7 @@ const HomePage: React.FC<MyComponentProps> = ({ title, description }) => {
                     <h1 className={titleClasses}>{title}</h1>
                 </div>
             </header>
-            <div ref={parentRef} className={homePageClasses}>
+            <div className={homePageClasses}>
                 <div className={s.container}>
                     <MainMenu />
                 </div>

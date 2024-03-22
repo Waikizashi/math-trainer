@@ -1,0 +1,14 @@
+.imgResponsive {
+    max-width: 100%;
+    height: auto;
+}
+
+.taskBox {
+    transition: .1s;
+    user-select: none;
+    cursor: pointer;
+}
+
+.taskBox:hover {
+    transform: scale(1.1);
+}

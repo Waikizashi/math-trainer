@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import s from './login.module.css';
 import cn from 'classnames';
 import MainMenu from '../../navigation/Menu';
-import { mainContainer, subContainer, section, visualArea } from '../../../utils/styles/global-styles';
+import { mainContainer, subContainer, visualArea } from '../../../utils/styles/global-styles';
 
 const LoginPage = () => {
     const parentRef = useRef(null);
@@ -10,11 +10,18 @@ const LoginPage = () => {
         if (parentRef) {
         }
     }, []);
+    const loginSection = cn(
+        "card",
+        "text-center",
+        "mx-2",
+        'mh-50',
+        'mw-25'
+    )
     return (
         <div className={mainContainer}>
             <MainMenu />
             <div className={subContainer}>
-                <div className={section}>
+                <div className={loginSection}>
                     <h5 className="card-header">Sign In</h5>
                     <div className="card-body h-100">
                         <form className='h-100 d-flex flex-column justify-content-evenly'>
