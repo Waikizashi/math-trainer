@@ -54,7 +54,7 @@ const Profile = () => {
                             <div className='col-9'>
                                 <div className="card mb-3">
                                     <h2 className='card-header'>Theory Topics</h2>
-                                    <div className="card-body row">
+                                    <div className={cn("card-body row", s.boxesContainer)}>
                                         {topics.map((_, index) => (
                                             <div key={index} className="col-md-2 mb-3">
                                                 <div className={cn("card", s.taskBox)}>
@@ -70,7 +70,7 @@ const Profile = () => {
 
                                 <div className="card mb-3">
                                     <h2 className='card-header'>Exercises</h2>
-                                    <div className="card-body row">
+                                    <div className={cn("card-body row", s.boxesContainer)}>
                                         {exercises.map((_, index) => (
                                             <div key={index} className="col-md-2 mb-3">
                                                 <div className={cn("card", s.taskBox)}>

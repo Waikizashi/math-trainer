@@ -12,3 +12,8 @@
 .taskBox:hover {
     transform: scale(1.1);
 }
+
+.boxesContainer{
+    max-height: 35vh;
+    overflow: auto;
+}
