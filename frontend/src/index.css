@@ -35,3 +35,19 @@ body {
 a {
   text-decoration: none;
 }
+
+.progress-stacked {
+  display: flex;
+  min-height: 1.1rem;
+  border: 1px solid #cdcdcd;
+}
+
+.progress {
+  min-width: 50px;
+  background-color: #cdcdcd;
+}
+
+.progress-bar {
+  display: block;
+  min-height: 1.1rem;
+}

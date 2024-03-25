@@ -40,7 +40,8 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps }> = ({ graphData }) =>
     const simulationRef = useRef<any>(null);
     const [nodes, setNodes] = useState<Node[]>(graphData ? graphData.nodes : []);
     const [links, setLinks] = useState<Link[]>(graphData ? graphData.links : []);
-    const [viewBox, setViewBox] = useState('0 0 0 0');
+
+    const [viewBox, setViewBox] = useState(`0 0 {0} 0`);
 
     const [addBtn, setAddBtn] = useState(false)
     const [colorsBtn, setColorsBtn] = useState(false)
@@ -220,7 +221,7 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps }> = ({ graphData }) =>
         const w = svgRef.current.parentNode.getBoundingClientRect().width;
         const h = svgRef.current.parentNode.getBoundingClientRect().height;
         window.addEventListener('resize', updateViewBox);
-        updateViewBox();
+        // updateViewBox();
         canvasRef.current = d3.select(svgRef.current)
             .attr('width', '100%')
             .attr('height', '100%');

@@ -5,11 +5,12 @@ import MainMenu from '../../navigation/Menu';
 import GraphCanvas from '../../graphs/GraphCanvas';
 
 const TrainerPage = () => {
-    const parentRef = useRef(null);
-    useEffect(() => {
-        if (parentRef) {
-        }
-    }, []);
+
+    const segments = [
+        { id: 1, value: 20, label: 'Segment one', className: 'progress-bar bg-info' },
+        { id: 2, value: 20, label: 'Segment two', className: 'progress-bar bg-info' },
+        { id: 3, value: 20, label: 'Segment three', className: 'progress-bar bg-info' },
+    ];
     const mainContainer = cn(
         'main-container',
         'd-flex',
@@ -43,9 +44,7 @@ const TrainerPage = () => {
                         Theory
                     </div>
                     <div className="card-body">
-                        <h5 className="card-title">Special title treatment</h5>
-                        <p className="card-text">With supporting text below as a natural lead-in to additional content.</p>
-                        <a href="#" className="btn btn-primary">Go somewhere</a>
+                        <h5 className="card-title">Graphs beggining</h5>
                     </div>
                     <div className="card-footer text-body-secondary">
                         <nav aria-label="Page navigation example">
@@ -74,6 +73,22 @@ const TrainerPage = () => {
                     </div>
                     <GraphCanvas></GraphCanvas>
                 </div>
+            </div>
+            <div className="progress-stacked w-75 p-0 my-2">
+                {segments.map(segment => (
+                    <div
+                        key={segment.id}
+                        className="progress"
+                        role="progressbar"
+                        aria-label={segment.label}
+                        aria-valuenow={segment.value} // Убедитесь, что здесь число
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                        style={{ width: `${segment.value}%` }}
+                    >
+                        <div className={segment.className}></div>
+                    </div>
+                ))}
             </div>
         </div>
     );

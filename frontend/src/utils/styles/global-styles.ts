@@ -22,7 +22,7 @@ export const section = cn(
     "text-center",
     "mx-2",
     'h-100',
-    'w-50'
+    'w-50',
 )
 export const visualArea = cn(
     'visual-area',
