@@ -1,3 +1,9 @@
 .border-off {
     border: none !important;
 }
+
+.matrixCell {
+    width: 3ch;
+    height: 3ch;
+    text-align: center;
+}
