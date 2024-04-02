@@ -15,6 +15,8 @@ import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import ZoomOutIcon from '@mui/icons-material/ZoomOut';
 import AppsIcon from '@mui/icons-material/Apps';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import MaximizeIcon from '@mui/icons-material/Maximize';
+import StraightenIcon from '@mui/icons-material/Straighten';
 
 interface Node extends d3.SimulationNodeDatum {
     id: string,
@@ -127,6 +129,26 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
             // setViewBox(`0 0 ${width} ${height}`);
         }
     };
+    function createLoopPath(d: any, loopRadius = 75*scale, offsetX = 0, offsetY = 0) {
+        const loopPath = d3.path();
+        loopPath.moveTo(d.x + offsetX, d.y + offsetY); // Стартовая точка на вершине
+      
+        // Контрольные точки и конечная точка для кривой Безье
+        const cp1x = d.x + offsetX + loopRadius; // Контрольная точка 1 по оси X
+        const cp1y = d.y + offsetY - loopRadius; // Контрольная точка 1 по оси Y
+        const cp2x = d.x + offsetX - loopRadius; // Контрольная точка 2 по оси X
+        const cp2y = d.y + offsetY - loopRadius; // Контрольная точка 2 по оси Y
+        const endX = d.x + offsetX; // Конечная точка по оси X (вернуться к исходной вершине)
+        const endY = d.y + offsetY; // Конечная точка по оси Y (вернуться к исходной вершине)
+      
+        // Рисуем кривую Безье для создания петли
+        loopPath.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, endX, endY);
+      
+        return loopPath.toString();
+      }
+      
+      
+      
     useEffect(() => {
         if (!svgRef.current) return;
 
@@ -286,10 +308,11 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
         const h = svgRef.current.parentNode.getBoundingClientRect().height;
 
         const linkElements = canvasRef.current.append('g')
-            .selectAll('line')
+            .selectAll('path')
             .data(links)
             .enter()
-            .append('line')
+            .append('path')
+            .attr('fill', 'none') 
             .attr('class', 'link')
             .attr('stroke', '#aaa')
             .attr('stroke-width', 4*scale)
@@ -333,10 +356,19 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
             )
             .on('tick', () => {
                 linkElements
-                    .attr('x1', (d: any) => d.source.x)
-                    .attr('y1', (d: any) => d.source.y)
-                    .attr('x2', (d: any) => d.target.x)
-                    .attr('y2', (d: any) => d.target.y)
+                    .attr('d', (d: any)=> {
+                    if (d.source.id === d.target.id) {
+                        const loopPath = createLoopPath(d.source);
+                        return loopPath;
+                    } else {
+                        return `M${d.source.x},${d.source.y} L${d.target.x},${d.target.y}`;
+                    }
+                    });
+                // linkElements
+                //     .attr('x1', (d: any) => d.source.x)
+                //     .attr('y1', (d: any) => d.source.y)
+                //     .attr('x2', (d: any) => d.target.x)
+                //     .attr('y2', (d: any) => d.target.y)
 
                 nodeElements
                     .attr('cx', (d: any) => d.x)
@@ -376,6 +408,12 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
             <div className="card-header d-flex justify-content-between">
                 <strong className='my-auto'>{'canvas'.toUpperCase()}</strong>
                 <div className={tools}>
+                    <Fab className={tool} size='small'>
+                        <div>
+                        <MaximizeIcon viewBox='0 -5 24 1'></MaximizeIcon>
+                        <StraightenIcon></StraightenIcon>
+                        </div>
+                    </Fab>
                     <Fab onClick={zoomIn} className={tool} size='small'>
                         <ZoomInIcon></ZoomInIcon>
                     </Fab>

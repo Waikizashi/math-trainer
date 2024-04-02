@@ -67,10 +67,11 @@ a {
 } */
 
 .node {
+  cursor: pointer;
   z-index: 999;
 }
 
-.node {
+.line {
   z-index: 998;
 }
 

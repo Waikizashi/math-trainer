@@ -66,7 +66,7 @@ const ConstructorPage = () => {
         matrix.forEach((row, rowIndex) => {
             row.forEach((value, columnIndex) => {
                 const weight = parseInt(value, 10);
-                if (weight !== 0 && rowIndex < columnIndex) {
+                if (weight !== 0) {
                     links.push({
                         source: `${rowIndex}`,
                         target: `${columnIndex}`,
@@ -122,14 +122,14 @@ const ConstructorPage = () => {
                                 <tr className={cn(s.borderOff)}>
                                     <th></th>
                                     {matrix[0] && matrix[0].map((_, cellIndex) => (
-                                        <th key={cellIndex} className={cn('pb-1 pt-0 px-1', s.colHead)}>{cellIndex + 1}</th>
+                                        <th key={cellIndex} className={cn('pb-1 pt-0 px-1', s.colHead)}>{cellIndex}</th>
                                     ))}
                                 </tr>
                             </thead>
                             <tbody>
                                 {matrix.map((row, rowIndex) => (
                                     <tr className={cn(s.borderOff)} key={rowIndex}>
-                                        <th className={cn('pb-1 pt-0 px-1', s.rowHead)}>{rowIndex + 1}</th>
+                                        <th className={cn('pb-1 pt-0 px-1', s.rowHead)}>{rowIndex}</th>
                                         {row.map((cell, cellIndex) => (
                                             <td className='pb-0 pt-1 px-1' key={cellIndex}>
                                                 <input
