@@ -1,9 +1,17 @@
-.border-off {
-    border: none !important;
+.borderOff {
+    border-color: rgba(255, 255, 255, 0);
 }
 
 .matrixCell {
     width: 3ch;
     height: 3ch;
     text-align: center;
+}
+
+.colHead {
+    border-bottom: 1px solid grey;
+}
+
+.rowHead{
+    border-right: 1px solid grey;
 }

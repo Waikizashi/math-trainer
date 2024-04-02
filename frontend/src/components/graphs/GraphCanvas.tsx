@@ -67,7 +67,7 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
     const updateSimulation = () => {
         canvasRef.current.selectAll('g>*').remove();
         // simulationRef.current.nodes(nodes);
-        console.log(canvasRef.current)
+        // console.log(canvasRef.current)
         setUpdateEvent(true)
         // simulationRef.current.force("link", d3.forceLink(links).id((d: any) => d.id));
 
@@ -141,7 +141,7 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
 
         svgElement.attr('viewBox', newViewBox);
         canvasRef.current = svgElement
-    }, [scale]);
+    }, [window.screen.height, window.screen.width]);
 
     useEffect(() => {
         if (canvasRef.current) {
@@ -151,7 +151,7 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
                     const coords = d3.pointer(event);
                     const newNode: Node = {
                         id: nodes.length.toString(),
-                        group: Math.floor(Math.random() * 10).toString(),
+                        group: (0).toString(),
                         x: coords[0],
                         y: coords[1],
                     };
@@ -165,16 +165,16 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
     }, [addBtn, nodes])
 
     useEffect(() => {
-        // console.log('state source: ', nodeSource)
+        // // console.log('state source: ', nodeSource)
     }, [nodeSource])
     useEffect(() => {
-        // console.log('state target: ', nodeTarget)
-        console.log('new node source', nodeSource)
-        console.log('new node target', nodeTarget)
+        // // console.log('state target: ', nodeTarget)
+        // console.log('new node source', nodeSource)
+        // console.log('new node target', nodeTarget)
         if (nodeSource?.id && nodeTarget?.id) {
 
             const newLink: Link = { source: nodeSource.id, target: nodeTarget.id }
-            console.log('new node target', newLink)
+            // console.log('new node target', newLink)
             updateSimulation()
             setLinks(prevLinks => [...prevLinks, newLink]);
         }
@@ -183,7 +183,7 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
         if (!linesBtn) return;
         setAddBtn(false)
         const startTempLine = (event: any) => {
-            console.log('mousedown')
+            // console.log('mousedown')
             const targetElement = d3.select(event.target);
 
             const sourceNode: any = targetElement.datum();
@@ -221,10 +221,8 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
             }
 
             if (tempLinkRef.current) tempLinkRef.current.remove();
-            console.log('mouseup')
+            // console.log('mouseup')
             setIsDragging(false);
-            // setNodeSource(null);
-            // setNodeTarget(null);
         };
 
         canvasRef.current.on('mousedown', startTempLine);
@@ -286,11 +284,6 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
         cleanCanvas()
         const w = svgRef.current.parentNode.getBoundingClientRect().width;
         const h = svgRef.current.parentNode.getBoundingClientRect().height;
-        window.addEventListener('resize', updateViewBox);
-        // updateViewBox();
-        // canvasRef.current = d3.select(svgRef.current)
-        //     .attr('width', '100%')
-        //     .attr('height', '100%');
 
         const linkElements = canvasRef.current.append('g')
             .selectAll('line')
@@ -299,7 +292,7 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
             .append('line')
             .attr('class', 'link')
             .attr('stroke', '#aaa')
-            .attr('stroke-width', 4)
+            .attr('stroke-width', 4*scale)
             .attr('stroke-linecap', 'round');
 
         const nodeElements = canvasRef.current.append('g')
@@ -307,7 +300,7 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
             .data(nodes, (d: any) => d.id)
             .enter()
             .append('circle')
-            .attr('r', 15)
+            .attr('r', 15*scale)
             .attr('class', 'node')
             .style('fill', (d: any) => colorScale(d.group))
 
@@ -318,7 +311,7 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
             .attr('dy', '.15em')
             .attr('class', 'node-number')
             .text((d: any) => d.id)
-            .style('font-size', '12px')
+            .style('font-size', `${12*scale}px`)
             .style('pointer-events', 'none')
             .style('fill', 'white')
             .style('font-weight', 'bold')
@@ -326,10 +319,10 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
             .attr('dominant-baseline', 'middle');
 
         simulationRef.current = d3.forceSimulation(nodes)
-            .force('link', d3.forceLink(links).id((d: any) => d.id).distance(100))
+            .force('link', d3.forceLink(links).id((d: any) => d.id).distance(100*scale))
             .force("charge", d3.forceManyBody()
-                .strength(-50)
-                .distanceMax(50))
+                .strength(-50*scale)
+                .distanceMax(50*scale))
             .force('center', !updateEvent ? d3.forceCenter(
                 w / 2,
                 h / 2
@@ -354,11 +347,10 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
                     .attr('y', (d: any) => d.y);
             });
         return () => {
-            // Остановка симуляции при размонтировании компонента
             simulationRef.current.stop();
         };
 
-    }, [nodes, links, viewBox]);
+    }, [nodes, links, viewBox, scale]);
 
     const constructorArea = cn(
         "card",
@@ -384,12 +376,12 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
             <div className="card-header d-flex justify-content-between">
                 <strong className='my-auto'>{'canvas'.toUpperCase()}</strong>
                 <div className={tools}>
-                    {/* <Fab onClick={zoomIn} className={tool} size='small'>
+                    <Fab onClick={zoomIn} className={tool} size='small'>
                         <ZoomInIcon></ZoomInIcon>
                     </Fab>
                     <Fab onClick={zoomOut} className={tool} size='small'>
                         <ZoomOutIcon></ZoomOutIcon>
-                    </Fab> */}
+                    </Fab>
                     <Fab color={addBtn === true ? 'primary' : 'default'}
                         onClick={setAdding}
                         className={tool} size='small'>

@@ -13,15 +13,15 @@ const LoginPage = () => {
     const loginSection = cn(
         "card",
         "text-center",
+        "my-auto",
         "mx-2",
-        'mh-50',
         'mw-25'
     )
     return (
         <div className={mainContainer}>
             <MainMenu />
             <div className={subContainer}>
-                <div className={loginSection}>
+                <div className={loginSection} style={{height: "fit-content"}}>
                     <h5 className="card-header">Sign In</h5>
                     <div className="card-body h-100">
                         <form className='h-100 d-flex flex-column justify-content-evenly'>

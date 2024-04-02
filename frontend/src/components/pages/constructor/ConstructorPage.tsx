@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import s from './constructor.module.css';
 import cn from 'classnames';
 import MainMenu from '../../navigation/Menu';
+import AddIcon from '@mui/icons-material/Add';
+import RemoveIcon from '@mui/icons-material/Remove';
 
 import { mainContainer, subContainer } from '../../../utils/styles/global-styles';
 import GraphCanvas, { GraphDataProps } from '../../graphs/GraphCanvas';
@@ -88,27 +90,48 @@ const ConstructorPage = () => {
         }
     }, [matrixControlState]);
 
+    const actionsStyle = cn(
+        "d-flex",
+        "justify-content-start",
+        "border-bottom",
+        "border-secondary",
+        "pb-2" 
+    )
+    const actionBtnStyle = cn(
+        "mx-1",
+        "p-1"
+    )
     return (
         <div className={mainContainer}>
             <MainMenu />
             <div className={subContainer}>
                 <div hidden={!matrixControlState} className="card position-absolute" style={{ top: 65, left: 15, width: 'auto', zIndex: 99 }}>
                     <div className="card-body">
+
+
+                    <div className={actionsStyle}>
+                            <button className={cn("btn btn-primary", actionBtnStyle)} style={{ height: 'fit-content' }} onClick={increaseMatrix}>
+                            <AddIcon></AddIcon>
+                            </button>
+                            <button className={cn("btn btn-secondary", actionBtnStyle)} style={{ height: 'fit-content' }} onClick={decreaseMatrix}>
+                            <RemoveIcon></RemoveIcon>                                
+                            </button>
+                        </div>
                         <table className="table">
                             <thead>
-                                <tr>
+                                <tr className={cn(s.borderOff)}>
                                     <th></th>
                                     {matrix[0] && matrix[0].map((_, cellIndex) => (
-                                        <th key={cellIndex} className='pb-1 pt-0 px-1'>{cellIndex + 1}</th>
+                                        <th key={cellIndex} className={cn('pb-1 pt-0 px-1', s.colHead)}>{cellIndex + 1}</th>
                                     ))}
                                 </tr>
                             </thead>
                             <tbody>
                                 {matrix.map((row, rowIndex) => (
-                                    <tr key={rowIndex}>
-                                        <th className='pb-1 pt-0 px-1'>{rowIndex + 1}</th>
+                                    <tr className={cn(s.borderOff)} key={rowIndex}>
+                                        <th className={cn('pb-1 pt-0 px-1', s.rowHead)}>{rowIndex + 1}</th>
                                         {row.map((cell, cellIndex) => (
-                                            <td className='pb-1 pt-0 px-1' key={cellIndex}>
+                                            <td className='pb-0 pt-1 px-1' key={cellIndex}>
                                                 <input
                                                     type="text"
                                                     className={s.matrixCell}
@@ -121,15 +144,6 @@ const ConstructorPage = () => {
                                 ))}
                             </tbody>
                         </table>
-
-                        <div className="d-flex justify-content-between">
-                            <button className="btn btn-primary" style={{ height: 'fit-content' }} onClick={increaseMatrix}>
-                                <p className='p-0 m-0'>+</p>
-                            </button>
-                            <button className="btn btn-secondary" style={{ height: 'fit-content' }} onClick={decreaseMatrix}>
-                                <p className='p-0 m-0'>-</p>
-                            </button>
-                        </div>
                     </div>
                 </div>
                 <GraphCanvas
