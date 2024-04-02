@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import Latex from 'react-latex-next';
 import s from './theoryPage.module.css';
 import cn from 'classnames';
 import Fab from '@mui/material/Fab';
