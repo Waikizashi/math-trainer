@@ -4,15 +4,19 @@ export const mainContainer = cn(
     'main-container',
     'd-flex',
     'flex-column',
-    'justify-content-center',
+    'justify-content-start',
     'align-items-center',
     'w-100',
     'h-100'
 )
 export const subContainer = cn(
+    'position-relative',
+    'sub-container',
     'd-flex',
     'justify-content-center',
-    'align-items-center',
+    // 'align-items-center',
+    'flex-row',
+    'align-items-stretch',
     'w-100',
     'h-100',
     'my-2',

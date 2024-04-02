@@ -13,25 +13,31 @@ import AutoFixOffIcon from '@mui/icons-material/AutoFixOff';
 import SwipeVerticalIcon from '@mui/icons-material/SwipeVertical';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import ZoomOutIcon from '@mui/icons-material/ZoomOut';
+import AppsIcon from '@mui/icons-material/Apps';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 
 interface Node extends d3.SimulationNodeDatum {
-    id: number | string,
-    group?: number
+    id: string,
+    group?: string
     degree?: number
 }
 
 interface Link extends d3.SimulationLinkDatum<Node> {
-    source: string | number | Node;
-    target: string | number | Node;
+    source: string | Node;
+    target: string | Node;
 }
 
 export interface GraphDataProps {
     nodes: Node[];
     links: Link[];
+
+}
+interface CanvasProps {
+    parent?: string,
+    matrixControl?: (matrixControlState: boolean) => void;
 }
 
-const GraphCanvas: React.FC<{ graphData?: GraphDataProps }> = ({ graphData }) => {
+const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: CanvasProps }> = ({ graphData, canvasPreferencies }) => {
     const location = useLocation();
     const isConstructorPage = location.pathname === '/constructor';
 
@@ -41,53 +47,30 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps }> = ({ graphData }) =>
     const [nodes, setNodes] = useState<Node[]>(graphData ? graphData.nodes : []);
     const [links, setLinks] = useState<Link[]>(graphData ? graphData.links : []);
 
-    const [viewBox, setViewBox] = useState(`0 0 {0} 0`);
+    const [viewBox, setViewBox] = useState(`0 0 0 0`);
 
     const [addBtn, setAddBtn] = useState(false)
+    const [matrixBtn, setMatrixBtn] = useState(false)
     const [colorsBtn, setColorsBtn] = useState(false)
     const [linesBtn, setLinesBtn] = useState(false)
     const [swipeBtn, setSwipeBtn] = useState(false)
     const [scale, setScale] = useState(1);
+    const [isDragging, setIsDragging] = useState(false);
+    const [updateEvent, setUpdateEvent] = useState(false);
+    const [nodeSource, setNodeSource] = useState<Node | null>(null);
+    const [nodeTarget, setNodeTarget] = useState<Node | null>(null);
+    const tempLinkRef = useRef<null | d3.Selection<SVGLineElement, unknown, null, undefined>>(null);
 
     const view = { x: 0, y: 0 };
     const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
 
     const updateSimulation = () => {
         canvasRef.current.selectAll('g>*').remove();
-        simulationRef.current.nodes(nodes);
+        // simulationRef.current.nodes(nodes);
         console.log(canvasRef.current)
-        // const linkForce = simulationRef.current.force("link", d3.forceLink(links).id((d: any) => d.id));
+        setUpdateEvent(true)
+        // simulationRef.current.force("link", d3.forceLink(links).id((d: any) => d.id));
 
-        const link = canvasRef.current.append('g')
-            .selectAll('line')
-            .data(links, (d: any) => `${d.source.id}-${d.target.id}`);
-        link.enter()
-            .append('line')
-            .style('stroke', '#aaa')
-            .merge(link);
-        link.exit().remove();
-
-        const node = canvasRef.current.append('g')
-            .selectAll('circle')
-            .data(nodes, (d: any) => d.id);
-        node.enter()
-            .append('circle')
-            .attr('r', 10)
-            .style('fill', (d: any) => colorScale(d.group))
-            .merge(node);
-        node.exit().remove();
-
-        const text = canvasRef.current.append('g')
-            .selectAll('text')
-            .data(nodes, (d: any) => d.id);
-        text.enter()
-            .append('text')
-            .attr('dx', 12)
-            .attr('dy', '.35em')
-            .text((d: any) => d.id)
-            .style('font-size', '12px')
-            .merge(text);
-        text.exit().remove();
 
     };
     const zoomIn = () => {
@@ -124,6 +107,9 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps }> = ({ graphData }) =>
     const setAdding = () => {
         setAddBtn(!addBtn)
     }
+    const setMatrix = () => {
+        setMatrixBtn(!matrixBtn)
+    }
     const setColoring = () => {
         setColorsBtn(!colorsBtn)
     }
@@ -137,7 +123,8 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps }> = ({ graphData }) =>
     const updateViewBox = () => {
         if (svgRef.current) {
             const { width, height } = svgRef.current.parentNode.getBoundingClientRect();
-            setViewBox(`0 0 ${width} ${height}`);
+            // setViewBox(`0 0 ${width} ${height}`);
+            // setViewBox(`0 0 ${width} ${height}`);
         }
     };
     useEffect(() => {
@@ -159,11 +146,12 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps }> = ({ graphData }) =>
     useEffect(() => {
         if (canvasRef.current) {
             if (addBtn) {
+                setLinesBtn(false)
                 canvasRef.current.on('click', (event: any) => {
                     const coords = d3.pointer(event);
                     const newNode: Node = {
-                        id: nodes.length,
-                        group: Math.floor(Math.random() * 10),
+                        id: nodes.length.toString(),
+                        group: Math.floor(Math.random() * 10).toString(),
                         x: coords[0],
                         y: coords[1],
                     };
@@ -174,12 +162,89 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps }> = ({ graphData }) =>
                 canvasRef.current.on('click', null)
             }
         }
-    }, [addBtn])
+    }, [addBtn, nodes])
+
+    useEffect(() => {
+        // console.log('state source: ', nodeSource)
+    }, [nodeSource])
+    useEffect(() => {
+        // console.log('state target: ', nodeTarget)
+        console.log('new node source', nodeSource)
+        console.log('new node target', nodeTarget)
+        if (nodeSource?.id && nodeTarget?.id) {
+
+            const newLink: Link = { source: nodeSource.id, target: nodeTarget.id }
+            console.log('new node target', newLink)
+            updateSimulation()
+            setLinks(prevLinks => [...prevLinks, newLink]);
+        }
+    }, [nodeTarget])
+    useEffect(() => {
+        if (!linesBtn) return;
+        setAddBtn(false)
+        const startTempLine = (event: any) => {
+            console.log('mousedown')
+            const targetElement = d3.select(event.target);
+
+            const sourceNode: any = targetElement.datum();
+            if (sourceNode === undefined) return;
+            setNodeSource(sourceNode)
+            tempLinkRef.current = canvasRef.current.append('line')
+                .attr('class', 'temp-line')
+                .attr('x1', sourceNode.x)
+                .attr('y1', sourceNode.y)
+                .attr('x2', sourceNode.x)
+                .attr('y2', sourceNode.y)
+                .attr('stroke', 'grey')
+                .attr('stroke-width', 3)
+                .style('pointer-events', 'none')
+                .attr('stroke-linecap', 'round');
+            setIsDragging(true);
+        };
+
+        const moveTempLine = (e: any) => {
+            if (!isDragging || !tempLinkRef.current) return;
+
+            const coords = d3.pointer(e);
+            tempLinkRef.current
+                .attr('x2', coords[0])
+                .attr('y2', coords[1]);
+        };
+
+        const endTempLine = (event: any) => {
+            if (!isDragging) return;
+
+            const targetElement = d3.select(event.target);
+            const targetNode: any = targetElement.datum();
+            if (targetElement.datum() && targetElement.classed('node')) {
+                setNodeTarget(targetNode)
+            }
+
+            if (tempLinkRef.current) tempLinkRef.current.remove();
+            console.log('mouseup')
+            setIsDragging(false);
+            // setNodeSource(null);
+            // setNodeTarget(null);
+        };
+
+        canvasRef.current.on('mousedown', startTempLine);
+        canvasRef.current.on('mousemove', moveTempLine);
+        canvasRef.current.on('mouseup', endTempLine);
+        return () => {
+            canvasRef.current.on('mousedown', null);
+            canvasRef.current.on('mousemove', null);
+            canvasRef.current.on('mouseup', null);
+        };
+    }, [linesBtn, isDragging])
+
     useEffect(() => {
         if (canvasRef.current) {
 
         }
     }, [colorsBtn])
+    useEffect(() => {
+        canvasPreferencies?.matrixControl && canvasPreferencies.matrixControl(matrixBtn)
+    }, [matrixBtn])
     useEffect(() => {
         if (canvasRef.current) {
 
@@ -218,45 +283,61 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps }> = ({ graphData }) =>
     }, [graphData])
 
     useEffect(() => {
+        cleanCanvas()
         const w = svgRef.current.parentNode.getBoundingClientRect().width;
         const h = svgRef.current.parentNode.getBoundingClientRect().height;
         window.addEventListener('resize', updateViewBox);
         // updateViewBox();
-        canvasRef.current = d3.select(svgRef.current)
-            .attr('width', '100%')
-            .attr('height', '100%');
+        // canvasRef.current = d3.select(svgRef.current)
+        //     .attr('width', '100%')
+        //     .attr('height', '100%');
 
         const linkElements = canvasRef.current.append('g')
             .selectAll('line')
             .data(links)
-            .enter().append('line')
-            .style('stroke', '#aaa');
+            .enter()
+            .append('line')
+            .attr('class', 'link')
+            .attr('stroke', '#aaa')
+            .attr('stroke-width', 4)
+            .attr('stroke-linecap', 'round');
 
         const nodeElements = canvasRef.current.append('g')
             .selectAll('circle')
-            .data(nodes)
-            .enter().append('circle')
-            .attr('r', 10)
-            .style('fill', (d: any) => colorScale(d.group));
+            .data(nodes, (d: any) => d.id)
+            .enter()
+            .append('circle')
+            .attr('r', 15)
+            .attr('class', 'node')
+            .style('fill', (d: any) => colorScale(d.group))
 
         const textElements = canvasRef.current.append('g')
             .selectAll('text')
             .data(nodes)
             .enter().append('text')
-            .attr('dx', 12)
-            .attr('dy', '.35em')
+            .attr('dy', '.15em')
+            .attr('class', 'node-number')
             .text((d: any) => d.id)
-            .style('font-size', '12px');
+            .style('font-size', '12px')
+            .style('pointer-events', 'none')
+            .style('fill', 'white')
+            .style('font-weight', 'bold')
+            .attr('text-anchor', 'middle')
+            .attr('dominant-baseline', 'middle');
 
         simulationRef.current = d3.forceSimulation(nodes)
             .force('link', d3.forceLink(links).id((d: any) => d.id).distance(100))
             .force("charge", d3.forceManyBody()
                 .strength(-50)
-                .distanceMax(100))
-            .force('center', d3.forceCenter(
+                .distanceMax(50))
+            .force('center', !updateEvent ? d3.forceCenter(
                 w / 2,
                 h / 2
-            ))
+            ) : () => {
+                setUpdateEvent(false)
+                return null
+            }
+            )
             .on('tick', () => {
                 linkElements
                     .attr('x1', (d: any) => d.source.x)
@@ -272,8 +353,12 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps }> = ({ graphData }) =>
                     .attr('x', (d: any) => d.x)
                     .attr('y', (d: any) => d.y);
             });
+        return () => {
+            // Остановка симуляции при размонтировании компонента
+            simulationRef.current.stop();
+        };
 
-    }, [nodes, links]);
+    }, [nodes, links, viewBox]);
 
     const constructorArea = cn(
         "card",
@@ -299,16 +384,21 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps }> = ({ graphData }) =>
             <div className="card-header d-flex justify-content-between">
                 <strong className='my-auto'>{'canvas'.toUpperCase()}</strong>
                 <div className={tools}>
-                    <Fab onClick={zoomIn} className={tool} size='small'>
+                    {/* <Fab onClick={zoomIn} className={tool} size='small'>
                         <ZoomInIcon></ZoomInIcon>
                     </Fab>
                     <Fab onClick={zoomOut} className={tool} size='small'>
                         <ZoomOutIcon></ZoomOutIcon>
-                    </Fab>
+                    </Fab> */}
                     <Fab color={addBtn === true ? 'primary' : 'default'}
                         onClick={setAdding}
                         className={tool} size='small'>
                         <AddCircleOutlineIcon></AddCircleOutlineIcon>
+                    </Fab>
+                    <Fab hidden={isConstructorPage ? false : true} color={matrixBtn === true ? 'primary' : 'default'}
+                        onClick={setMatrix}
+                        className={tool} size='small'>
+                        <AppsIcon></AppsIcon>
                     </Fab>
                     <Fab color={colorsBtn === true ? 'primary' : 'default'}
                         onClick={setColoring}
