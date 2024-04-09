@@ -63,6 +63,7 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
     const [edgeSizeScale, setEdgeSizeScale] = useState(1);
     const [textScale, setTextScale] = useState(1);
     const [repulsiveForceScale, setRepulsiveForceScale] = useState(1);
+    const [repulsiveDistanceScale, setRepulsiveDistanceScale] = useState(1);
     const [isDragging, setIsDragging] = useState(false);
     const [updateEvent, setUpdateEvent] = useState(false);
     const [nodeSource, setNodeSource] = useState<Node | null>(null);
@@ -189,6 +190,9 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
     const repulsiveForceChange = (e: any) => {
         setRepulsiveForceScale(e.target.value)
     }
+    const repulsiveDistanceChange = (e: any) => {
+        setRepulsiveDistanceScale(e.target.value)
+    }
 
     useEffect(() => {
 
@@ -218,18 +222,17 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
     useEffect(() => {
         // // console.log('state source: ', nodeSource)
     }, [nodeSource])
+
     useEffect(() => {
-        // // console.log('state target: ', nodeTarget)
-        // console.log('new node source', nodeSource)
-        // console.log('new node target', nodeTarget)
         if (nodeSource?.id && nodeTarget?.id) {
 
             const newLink: Link = { source: nodeSource.id, target: nodeTarget.id }
-            // console.log('new node target', newLink)
-            updateSimulation()
+            setNodes(prevNodes => [...prevNodes])
             setLinks(prevLinks => [...prevLinks, newLink]);
+            updateSimulation()
         }
     }, [nodeTarget])
+    
     useEffect(() => {
         if (!linesBtn) return;
         setAddBtn(false)
@@ -373,8 +376,8 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
         simulationRef.current = d3.forceSimulation(nodes)
             .force('link', d3.forceLink(links).id((d: any) => d.id).distance(100 * scale * edgeLengthScale))
             .force("charge", d3.forceManyBody()
-                .strength(-50)
-                .distanceMax(50 * repulsiveForceScale))
+                .strength(-50 * repulsiveForceScale)
+                .distanceMax(50 * repulsiveDistanceScale))
             .force('center', !updateEvent ? d3.forceCenter(
                 w / 2,
                 h / 2
@@ -419,6 +422,7 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
         edgeLengthScale,
         edgeSizeScale,
         textScale,
+        repulsiveDistanceScale,
         repulsiveForceScale,]);
 
     const constructorArea = cn(
@@ -457,7 +461,7 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
                         <Fab onClick={settingsHandle} type="button" className={cn("btn dropdown-toggle", tool, s.beforeOff)} data-bs-toggle="dropdown" aria-expanded="false" size='small'>
                             <SettingsIcon></SettingsIcon>
                         </Fab>
-                        <ul className="dropdown-menu mx-2 p-2 border-primary border-2">
+                        <ul style={{width: "max-content"}} className="dropdown-menu mx-2 p-2 border-primary border-2">
                             <li>
                                 <div className={rangeControlStyle}>Node size:
                                     <output className='mx-1'>{nodeScale}</output>
@@ -485,6 +489,13 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
                                     {/* <RestartAltIcon></RestartAltIcon> */}
                                 </div>
                                 <input onChange={textSizeChange} type="range" min={0.1} max={10} step={0.1} defaultValue={1} className="form-range" />
+                            </li>
+                            <li>
+                                <div className={rangeControlStyle}>Repulsive distance:
+                                    <output className='mx-1'>{repulsiveDistanceScale}</output>
+                                    {/* <RestartAltIcon></RestartAltIcon> */}
+                                </div>
+                                <input onChange={repulsiveDistanceChange} type="range" min={0.1} max={10} step={0.1} defaultValue={1} className="form-range" />
                             </li>
                             <li>
                                 <div className={rangeControlStyle}>Repulsive force:
