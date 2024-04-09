@@ -95,11 +95,11 @@ const ConstructorPage = () => {
         "justify-content-start",
         "border-bottom",
         "border-secondary",
-        "pb-2" 
+        "pb-2"
     )
     const actionBtnStyle = cn(
         "mx-1",
-        "p-1"
+        "p-0"
     )
     return (
         <div className={mainContainer}>
@@ -107,14 +107,12 @@ const ConstructorPage = () => {
             <div className={subContainer}>
                 <div hidden={!matrixControlState} className="card position-absolute" style={{ top: 65, left: 15, width: 'auto', zIndex: 99 }}>
                     <div className="card-body">
-
-
-                    <div className={actionsStyle}>
+                        <div className={actionsStyle}>
                             <button className={cn("btn btn-primary", actionBtnStyle)} style={{ height: 'fit-content' }} onClick={increaseMatrix}>
-                            <AddIcon></AddIcon>
+                                <AddIcon></AddIcon>
                             </button>
                             <button className={cn("btn btn-secondary", actionBtnStyle)} style={{ height: 'fit-content' }} onClick={decreaseMatrix}>
-                            <RemoveIcon></RemoveIcon>                                
+                                <RemoveIcon></RemoveIcon>
                             </button>
                         </div>
                         <table className="table">
@@ -129,7 +127,7 @@ const ConstructorPage = () => {
                             <tbody>
                                 {matrix.map((row, rowIndex) => (
                                     <tr className={cn(s.borderOff)} key={rowIndex}>
-                                        <th className={cn('pb-1 pt-0 px-1', s.rowHead)}>{rowIndex}</th>
+                                        <th className={cn('pb-1 pt-1 px-1', s.rowHead)}>{rowIndex}</th>
                                         {row.map((cell, cellIndex) => (
                                             <td className='pb-0 pt-1 px-1' key={cellIndex}>
                                                 <input

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import cn from 'classnames'
 import * as d3 from 'd3'
-import s from 'graph-canvas.module.css'
+import s from './graphCanvas.module.css'
 import { useLocation } from 'react-router-dom';
 import { visualArea } from '../../utils/styles/global-styles';
 
@@ -15,8 +15,8 @@ import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import ZoomOutIcon from '@mui/icons-material/ZoomOut';
 import AppsIcon from '@mui/icons-material/Apps';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import MaximizeIcon from '@mui/icons-material/Maximize';
-import StraightenIcon from '@mui/icons-material/Straighten';
+import SettingsIcon from '@mui/icons-material/Settings';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
 
 interface Node extends d3.SimulationNodeDatum {
     id: string,
@@ -52,11 +52,17 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
     const [viewBox, setViewBox] = useState(`0 0 0 0`);
 
     const [addBtn, setAddBtn] = useState(false)
+    const [settingsBtn, setSettingsBtn] = useState(false)
     const [matrixBtn, setMatrixBtn] = useState(false)
     const [colorsBtn, setColorsBtn] = useState(false)
     const [linesBtn, setLinesBtn] = useState(false)
     const [swipeBtn, setSwipeBtn] = useState(false)
     const [scale, setScale] = useState(1);
+    const [nodeScale, setNodeScale] = useState(1);
+    const [edgeLengthScale, setEdgeLengthScale] = useState(1);
+    const [edgeSizeScale, setEdgeSizeScale] = useState(1);
+    const [textScale, setTextScale] = useState(1);
+    const [repulsiveForceScale, setRepulsiveForceScale] = useState(1);
     const [isDragging, setIsDragging] = useState(false);
     const [updateEvent, setUpdateEvent] = useState(false);
     const [nodeSource, setNodeSource] = useState<Node | null>(null);
@@ -75,6 +81,9 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
 
 
     };
+    const settingsHandle = () => {
+        setSettingsBtn(!settingsBtn);
+    }
     const zoomIn = () => {
         setScale(scale * 1.1);
     }
@@ -117,9 +126,11 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
     }
     const setLining = () => {
         setLinesBtn(!linesBtn)
+        setSwipeBtn(false)
     }
     const setSwiping = () => {
         setSwipeBtn(!swipeBtn)
+        setLinesBtn(false)
     }
 
     const updateViewBox = () => {
@@ -129,10 +140,10 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
             // setViewBox(`0 0 ${width} ${height}`);
         }
     };
-    function createLoopPath(d: any, loopRadius = 75*scale, offsetX = 0, offsetY = 0) {
+    function createLoopPath(d: any, loopRadius = 75 * scale * (edgeLengthScale - edgeLengthScale / 2), offsetX = 0, offsetY = 0) {
         const loopPath = d3.path();
         loopPath.moveTo(d.x + offsetX, d.y + offsetY); // Стартовая точка на вершине
-      
+
         // Контрольные точки и конечная точка для кривой Безье
         const cp1x = d.x + offsetX + loopRadius; // Контрольная точка 1 по оси X
         const cp1y = d.y + offsetY - loopRadius; // Контрольная точка 1 по оси Y
@@ -140,15 +151,12 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
         const cp2y = d.y + offsetY - loopRadius; // Контрольная точка 2 по оси Y
         const endX = d.x + offsetX; // Конечная точка по оси X (вернуться к исходной вершине)
         const endY = d.y + offsetY; // Конечная точка по оси Y (вернуться к исходной вершине)
-      
+
         // Рисуем кривую Безье для создания петли
         loopPath.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, endX, endY);
-      
+
         return loopPath.toString();
-      }
-      
-      
-      
+    }
     useEffect(() => {
         if (!svgRef.current) return;
 
@@ -163,7 +171,28 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
 
         svgElement.attr('viewBox', newViewBox);
         canvasRef.current = svgElement
-    }, [window.screen.height, window.screen.width]);
+    }, [window.screen.height, window.screen.width, scale]);
+
+
+    const nodeSizeChange = (e: any) => {
+        setNodeScale(e.target.value)
+    }
+    const edgeLengthChange = (e: any) => {
+        setEdgeLengthScale(e.target.value)
+    }
+    const edgeSizeChange = (e: any) => {
+        setEdgeSizeScale(e.target.value)
+    }
+    const textSizeChange = (e: any) => {
+        setTextScale(e.target.value)
+    }
+    const repulsiveForceChange = (e: any) => {
+        setRepulsiveForceScale(e.target.value)
+    }
+
+    useEffect(() => {
+
+    }, [settingsBtn])
 
     useEffect(() => {
         if (canvasRef.current) {
@@ -312,10 +341,10 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
             .data(links)
             .enter()
             .append('path')
-            .attr('fill', 'none') 
+            .attr('fill', 'none')
             .attr('class', 'link')
             .attr('stroke', '#aaa')
-            .attr('stroke-width', 4*scale)
+            .attr('stroke-width', 4 * edgeSizeScale)
             .attr('stroke-linecap', 'round');
 
         const nodeElements = canvasRef.current.append('g')
@@ -323,7 +352,7 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
             .data(nodes, (d: any) => d.id)
             .enter()
             .append('circle')
-            .attr('r', 15*scale)
+            .attr('r', 15 * nodeScale)
             .attr('class', 'node')
             .style('fill', (d: any) => colorScale(d.group))
 
@@ -334,7 +363,7 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
             .attr('dy', '.15em')
             .attr('class', 'node-number')
             .text((d: any) => d.id)
-            .style('font-size', `${12*scale}px`)
+            .style('font-size', `${12 * textScale}px`)
             .style('pointer-events', 'none')
             .style('fill', 'white')
             .style('font-weight', 'bold')
@@ -342,10 +371,10 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
             .attr('dominant-baseline', 'middle');
 
         simulationRef.current = d3.forceSimulation(nodes)
-            .force('link', d3.forceLink(links).id((d: any) => d.id).distance(100*scale))
+            .force('link', d3.forceLink(links).id((d: any) => d.id).distance(100 * scale * edgeLengthScale))
             .force("charge", d3.forceManyBody()
-                .strength(-50*scale)
-                .distanceMax(50*scale))
+                .strength(-50)
+                .distanceMax(50 * repulsiveForceScale))
             .force('center', !updateEvent ? d3.forceCenter(
                 w / 2,
                 h / 2
@@ -356,13 +385,13 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
             )
             .on('tick', () => {
                 linkElements
-                    .attr('d', (d: any)=> {
-                    if (d.source.id === d.target.id) {
-                        const loopPath = createLoopPath(d.source);
-                        return loopPath;
-                    } else {
-                        return `M${d.source.x},${d.source.y} L${d.target.x},${d.target.y}`;
-                    }
+                    .attr('d', (d: any) => {
+                        if (d.source.id === d.target.id) {
+                            const loopPath = createLoopPath(d.source);
+                            return loopPath;
+                        } else {
+                            return `M${d.source.x},${d.source.y} L${d.target.x},${d.target.y}`;
+                        }
                     });
                 // linkElements
                 //     .attr('x1', (d: any) => d.source.x)
@@ -382,7 +411,15 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
             simulationRef.current.stop();
         };
 
-    }, [nodes, links, viewBox, scale]);
+    }, [nodes,
+        links,
+        viewBox,
+        scale,
+        nodeScale,
+        edgeLengthScale,
+        edgeSizeScale,
+        textScale,
+        repulsiveForceScale,]);
 
     const constructorArea = cn(
         "card",
@@ -402,18 +439,63 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
         'graph-canvas',
         'bg-light'
     )
+    const rangeControlStyle = cn(
+        "mb-0",
+        "form-label",
+        "text-primary-emphasis",
+        "d-flex",
+        "justify-content-between"
+    )
+
 
     return (
         <div className={constructorArea}>
             <div className="card-header d-flex justify-content-between">
                 <strong className='my-auto'>{'canvas'.toUpperCase()}</strong>
                 <div className={tools}>
-                    <Fab className={tool} size='small'>
-                        <div>
-                        <MaximizeIcon viewBox='0 -5 24 1'></MaximizeIcon>
-                        <StraightenIcon></StraightenIcon>
-                        </div>
-                    </Fab>
+                    <div hidden={isConstructorPage ? false : true} className="btn-group dropstart">
+                        <Fab onClick={settingsHandle} type="button" className={cn("btn dropdown-toggle", tool, s.beforeOff)} data-bs-toggle="dropdown" aria-expanded="false" size='small'>
+                            <SettingsIcon></SettingsIcon>
+                        </Fab>
+                        <ul className="dropdown-menu mx-2 p-2 border-primary border-2">
+                            <li>
+                                <div className={rangeControlStyle}>Node size:
+                                    <output className='mx-1'>{nodeScale}</output>
+                                    {/* <RestartAltIcon></RestartAltIcon> */}
+                                </div>
+                                <input onChange={nodeSizeChange} type="range" min={0.1} max={10} step={0.1} defaultValue={1} className="form-range" />
+                            </li>
+                            <li>
+                                <div className={rangeControlStyle}>Edge length:
+                                    <output className='mx-1'>{edgeLengthScale}</output>
+                                    {/* <RestartAltIcon></RestartAltIcon> */}
+                                </div>
+                                <input onChange={edgeLengthChange} type="range" min={0.1} max={10} step={0.1} defaultValue={1} className="form-range" />
+                            </li>
+                            <li>
+                                <div className={rangeControlStyle}>Edge size:
+                                    <output className='mx-1'>{edgeSizeScale}</output>
+                                    {/* <RestartAltIcon></RestartAltIcon> */}
+                                </div>
+                                <input onChange={edgeSizeChange} type="range" min={0.1} max={10} step={0.1} defaultValue={1} className="form-range" />
+                            </li>
+                            <li>
+                                <div className={rangeControlStyle}>Text size:
+                                    <output className='mx-1'>{textScale}</output>
+                                    {/* <RestartAltIcon></RestartAltIcon> */}
+                                </div>
+                                <input onChange={textSizeChange} type="range" min={0.1} max={10} step={0.1} defaultValue={1} className="form-range" />
+                            </li>
+                            <li>
+                                <div className={rangeControlStyle}>Repulsive force:
+                                    <output className='mx-1'>{repulsiveForceScale}</output>
+                                    {/* <RestartAltIcon></RestartAltIcon> */}
+                                </div>
+                                <input onChange={repulsiveForceChange} type="range" min={0.1} max={10} step={0.1} defaultValue={1} className="form-range" />
+                            </li>
+                        </ul>
+                    </div>
+
                     <Fab onClick={zoomIn} className={tool} size='small'>
                         <ZoomInIcon></ZoomInIcon>
                     </Fab>

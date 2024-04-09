@@ -1,0 +1,3 @@
+.beforeOff::before {
+    display: none !important;
+}
