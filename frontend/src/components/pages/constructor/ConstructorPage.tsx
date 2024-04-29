@@ -79,7 +79,6 @@ const ConstructorPage = () => {
     };
 
     useEffect(() => {
-        console.log(parseMatrixToObject())
         setGraphTemplate(parseMatrixToObject())
         if (parentRef) {
         }
