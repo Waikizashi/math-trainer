@@ -6,5 +6,4 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface TheoryRepository extends JpaRepository<Theory, Long> {
-    // Дополнительные методы запросов, например, поиск по теме
 }

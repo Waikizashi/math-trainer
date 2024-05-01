@@ -76,7 +76,7 @@ const TheoryPage: React.FC<any> = () => {
                         className="progress"
                         role="progressbar"
                         aria-label={segment.label}
-                        aria-valuenow={segment.value} // Убедитесь, что здесь число
+                        aria-valuenow={segment.value}
                         aria-valuemin={0}
                         aria-valuemax={100}
                         style={{ width: `${segment.value}%` }}
