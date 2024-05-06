@@ -1,5 +1,5 @@
 .imgResponsive {
-    max-width: 100%;
+    max-width: 80%;
     height: auto;
 }
 
@@ -13,7 +13,7 @@
     transform: scale(1.1);
 }
 
-.boxesContainer{
+.boxesContainer {
     max-height: 35vh;
     overflow: auto;
 }

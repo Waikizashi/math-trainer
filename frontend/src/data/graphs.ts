@@ -2,6 +2,7 @@ import { GraphDataProps } from "../components/graphs/GraphCanvas";
 
 export const graphs: GraphDataProps[] = [
     {
+        title: 'graph-1',
         nodes: [
             { id: "0", group: "1" },
             { id: "1", group: "1" },
@@ -18,6 +19,7 @@ export const graphs: GraphDataProps[] = [
         ]
     },
     {
+        title: 'graph-2',
         nodes: [
             { id: "0", group: "1" },
             { id: "1", group: "1" },
@@ -39,6 +41,7 @@ export const graphs: GraphDataProps[] = [
         ]
     },
     {
+        title: 'graph-3',
         nodes: [
             { id: "0", group: "1" },
             { id: "1", group: "1" },
@@ -54,6 +57,7 @@ export const graphs: GraphDataProps[] = [
         ]
     },
     {
+        title: 'graph-4',
         nodes: [
             { id: "0", group: "1" },
             { id: "1", group: "1" },

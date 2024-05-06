@@ -11,6 +11,7 @@ import TrainerPage from './components/pages/trainer/TrainerPage';
 import ConstructorPage from './components/pages/constructor/ConstructorPage';
 import LoginPage from './components/pages/login/LoginPage';
 import Profile from './components/pages/profile/Profile';
+import AdminPage from './components/pages/admin/AdminPanel';
 
 function RedirectToHome() {
   let navigate = useNavigate();
@@ -33,6 +34,7 @@ function App() {
           <Route path="/constructor" element={<ConstructorPage></ConstructorPage>} />
           <Route path="/login" element={<LoginPage></LoginPage>} />
           <Route path="/profile" element={<Profile></Profile>} />
+          <Route path="/admin" element={<AdminPage></AdminPage>} />
         </Routes>
       </Router>
     </div>

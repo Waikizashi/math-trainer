@@ -30,8 +30,9 @@ interface Link extends d3.SimulationLinkDatum<Node> {
 }
 
 export interface GraphDataProps {
-    nodes: Node[];
-    links: Link[];
+    title?: string,
+    nodes: Node[],
+    links: Link[],
 
 }
 interface CanvasProps {
@@ -158,6 +159,29 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
 
         return loopPath.toString();
     }
+
+    function createPath(d: any, links: any) {
+        const duplicates = links.filter((link: any) =>
+            (link.source.id === d.source.id && link.target.id === d.target.id) ||
+            (link.source.id === d.target.id && link.target.id === d.source.id)
+        );
+
+        const index = duplicates.indexOf(d);
+        const total = duplicates.length;
+
+        if (total > 1) {
+            const curvature = 0.2;
+            const amplitude = 20 * curvature * (index - (total - 1) / 2);
+            const dx = d.target.x - d.source.x;
+            const dy = d.target.y - d.source.y;
+            const dr = Math.sqrt(dx * dx + dy * dy);
+
+            return `M${d.source.x},${d.source.y}A${dr},${dr} 0 0,${(amplitude >= 0 ? 1 : 0)} ${d.target.x},${d.target.y}`;
+        } else {
+            return `M${d.source.x},${d.source.y}L${d.target.x},${d.target.y}`;
+        }
+    }
+
     useEffect(() => {
         if (!svgRef.current) return;
 
@@ -232,7 +256,7 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
             updateSimulation()
         }
     }, [nodeTarget])
-    
+
     useEffect(() => {
         if (!linesBtn) return;
         setAddBtn(false)
@@ -393,7 +417,8 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
                             const loopPath = createLoopPath(d.source);
                             return loopPath;
                         } else {
-                            return `M${d.source.x},${d.source.y} L${d.target.x},${d.target.y}`;
+                            // return `M${d.source.x},${d.source.y} L${d.target.x},${d.target.y}`;
+                            return createPath(d, links);
                         }
                     });
                 // linkElements
@@ -461,7 +486,7 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
                         <Fab onClick={settingsHandle} type="button" className={cn("btn dropdown-toggle", tool, s.beforeOff)} data-bs-toggle="dropdown" aria-expanded="false" size='small'>
                             <SettingsIcon></SettingsIcon>
                         </Fab>
-                        <ul style={{width: "max-content"}} className="dropdown-menu mx-2 p-2 border-primary border-2">
+                        <ul style={{ width: "max-content" }} className="dropdown-menu mx-2 p-2 border-primary border-2">
                             <li>
                                 <div className={rangeControlStyle}>Node size:
                                     <output className='mx-1'>{nodeScale}</output>
