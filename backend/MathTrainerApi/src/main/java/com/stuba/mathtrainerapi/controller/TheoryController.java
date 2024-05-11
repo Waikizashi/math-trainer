@@ -45,7 +45,6 @@ public class TheoryController {
         return ResponseEntity.ok(theoryService.updateTheory(theory));
     }
 
-    // Удаление теории
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteTheory(@PathVariable Long id) {
         if (theoryService.findTheoryById(id).isEmpty()) {

@@ -17,6 +17,7 @@ import AppsIcon from '@mui/icons-material/Apps';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import SettingsIcon from '@mui/icons-material/Settings';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
+import SwipeUpAltIcon from '@mui/icons-material/SwipeUpAlt';
 
 interface Node extends d3.SimulationNodeDatum {
     id: string,
@@ -26,18 +27,18 @@ interface Node extends d3.SimulationNodeDatum {
 
 interface Link extends d3.SimulationLinkDatum<Node> {
     source: string | Node;
-    target: string | Node;
+    target: string | Node
 }
 
 export interface GraphDataProps {
     title?: string,
     nodes: Node[],
     links: Link[],
-
 }
 interface CanvasProps {
     parent?: string,
     matrixControl?: (matrixControlState: boolean) => void;
+    getCurrentGraphData?: (currentGraphData: GraphDataProps) => void;
 }
 
 const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: CanvasProps }> = ({ graphData, canvasPreferencies }) => {
@@ -57,6 +58,7 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
     const [matrixBtn, setMatrixBtn] = useState(false)
     const [colorsBtn, setColorsBtn] = useState(false)
     const [linesBtn, setLinesBtn] = useState(false)
+    const [directionsBtn, setDirectionsBtn] = useState(false)
     const [swipeBtn, setSwipeBtn] = useState(false)
     const [scale, setScale] = useState(1);
     const [nodeScale, setNodeScale] = useState(1);
@@ -125,6 +127,9 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
     }
     const setColoring = () => {
         setColorsBtn(!colorsBtn)
+    }
+    const setDirections = () => {
+        setDirectionsBtn(!directionsBtn)
     }
     const setLining = () => {
         setLinesBtn(!linesBtn)
@@ -438,7 +443,6 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
         return () => {
             simulationRef.current.stop();
         };
-
     }, [nodes,
         links,
         viewBox,
@@ -449,6 +453,10 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
         textScale,
         repulsiveDistanceScale,
         repulsiveForceScale,]);
+
+    useEffect(() => {
+        canvasPreferencies?.getCurrentGraphData && canvasPreferencies.getCurrentGraphData({ nodes, links })
+    }, [nodes, links])
 
     const constructorArea = cn(
         "card",
@@ -490,42 +498,36 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
                             <li>
                                 <div className={rangeControlStyle}>Node size:
                                     <output className='mx-1'>{nodeScale}</output>
-                                    {/* <RestartAltIcon></RestartAltIcon> */}
                                 </div>
                                 <input onChange={nodeSizeChange} type="range" min={0.1} max={10} step={0.1} defaultValue={1} className="form-range" />
                             </li>
                             <li>
                                 <div className={rangeControlStyle}>Edge length:
                                     <output className='mx-1'>{edgeLengthScale}</output>
-                                    {/* <RestartAltIcon></RestartAltIcon> */}
                                 </div>
                                 <input onChange={edgeLengthChange} type="range" min={0.1} max={10} step={0.1} defaultValue={1} className="form-range" />
                             </li>
                             <li>
                                 <div className={rangeControlStyle}>Edge size:
                                     <output className='mx-1'>{edgeSizeScale}</output>
-                                    {/* <RestartAltIcon></RestartAltIcon> */}
                                 </div>
                                 <input onChange={edgeSizeChange} type="range" min={0.1} max={10} step={0.1} defaultValue={1} className="form-range" />
                             </li>
                             <li>
                                 <div className={rangeControlStyle}>Text size:
                                     <output className='mx-1'>{textScale}</output>
-                                    {/* <RestartAltIcon></RestartAltIcon> */}
                                 </div>
                                 <input onChange={textSizeChange} type="range" min={0.1} max={10} step={0.1} defaultValue={1} className="form-range" />
                             </li>
                             <li>
                                 <div className={rangeControlStyle}>Repulsive distance:
                                     <output className='mx-1'>{repulsiveDistanceScale}</output>
-                                    {/* <RestartAltIcon></RestartAltIcon> */}
                                 </div>
                                 <input onChange={repulsiveDistanceChange} type="range" min={0.1} max={10} step={0.1} defaultValue={1} className="form-range" />
                             </li>
                             <li>
                                 <div className={rangeControlStyle}>Repulsive force:
                                     <output className='mx-1'>{repulsiveForceScale}</output>
-                                    {/* <RestartAltIcon></RestartAltIcon> */}
                                 </div>
                                 <input onChange={repulsiveForceChange} type="range" min={0.1} max={10} step={0.1} defaultValue={1} className="form-range" />
                             </li>
@@ -560,6 +562,11 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
                         onClick={() => setLining()}
                         className={tool} size='small'>
                         <TimelineIcon></TimelineIcon>
+                    </Fab>
+                    <Fab color={directionsBtn === true ? 'primary' : 'default'}
+                        onClick={() => setDirections()}
+                        className={tool} size='small'>
+                        <SwipeUpAltIcon></SwipeUpAltIcon>
                     </Fab>
                     <Fab className={tool} size='small'>
                         <AutoFixOffIcon></AutoFixOffIcon>

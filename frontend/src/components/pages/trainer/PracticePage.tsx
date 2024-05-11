@@ -1,47 +1,24 @@
 import React, { useEffect, useRef } from 'react';
-import s from './trainerPage.module.css';
+import s from './practicePage.module.css';
 import cn from 'classnames';
 import MainMenu from '../../navigation/Menu';
 import GraphCanvas from '../../graphs/GraphCanvas';
+import { mainContainer, section, subContainer } from '../../../utils/styles/global-styles';
 
-const TrainerPage = () => {
+const PracticePage = () => {
 
     const segments = [
         { id: 1, value: 20, label: 'Segment one', className: 'progress-bar bg-info' },
         { id: 2, value: 20, label: 'Segment two', className: 'progress-bar bg-info' },
         { id: 3, value: 20, label: 'Segment three', className: 'progress-bar bg-info' },
     ];
-    const mainContainer = cn(
-        'main-container',
-        'd-flex',
-        'flex-column',
-        'justify-content-center',
-        'align-items-center',
-        'w-100',
-        'h-100'
-    )
-    const subContainer = cn(
-        'd-flex',
-        'justify-content-center',
-        'align-items-center',
-        'w-100',
-        'h-100',
-        'my-2'
-    )
-    const section = cn(
-        "card",
-        "text-center",
-        "mx-2",
-        'h-100',
-        'w-50'
-    )
     return (
         <div className={mainContainer}>
             <MainMenu />
             <div className={subContainer}>
                 <div className={section}>
                     <div className="card-header">
-                        Theory
+                        Task
                     </div>
                     <div className="card-body">
                         <h5 className="card-title">Graphs beggining</h5>
@@ -94,4 +71,4 @@ const TrainerPage = () => {
     );
 }
 
-export default TrainerPage;
+export default PracticePage;

@@ -13,7 +13,7 @@ interface MenuProps {
     description?: string;
 }
 
-const pages = ['home', 'theory', 'exercices', 'constructor'];
+const pages = ['home', 'theory', 'exercices', 'constructor', 'admin panel'];
 const settings = ['profile', 'logout'];
 
 
@@ -39,6 +39,10 @@ const MainMenu: React.FC<MenuProps> = (description) => {
                 </button>
                 <div className="collapse navbar-collapse" id="mainNav">
                     <ul className="w-100 navbar-nav d-flex justify-content-end">
+                        <li className="nav-item">
+                            <Link className="nav-link text-warning"
+                                aria-current="page" to="/admin">admin panel</Link>
+                        </li>
                         <li className="nav-item">
                             <Link className="nav-link"
                                 aria-current="page" to="/home">home</Link>

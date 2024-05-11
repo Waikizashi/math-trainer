@@ -1,6 +1,24 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { GraphDataProps } from '../../../graphs/GraphCanvas';
+import Matrix from '../../constructor/Matrix'
 
 const TheoryForm = () => {
+    const [graphTemplate, setGraphTemplate] = useState(undefined);
+    const [matrixControlState, setMatrixControlState] = useState(false);
+
+    useEffect(() => {
+
+    }, [graphTemplate])
+
+    const handleMatrixChange = (graphData) => {
+        setGraphTemplate(graphData);
+    }
+
+    useEffect(() => {
+        // if (parentRef) {
+        // }
+    }, [matrixControlState]);
+
     const [theory, setTheory] = useState({
         title: "",
         contents: [],
@@ -113,16 +131,20 @@ const TheoryForm = () => {
                                         value={graphData.title}
                                         onChange={(e) => handleGraphInputChange(index, graphIndex, e)}
                                     />
-                                    {/* Further graph node and link input fields would follow the same pattern */}
+                                    <div className='m-2'>
+                                        <Matrix></Matrix>
+                                    </div>
                                 </div>
                             ))}
                         </div>
                     </div>
                 ))}
-                <button type="button" className="btn btn-success" onClick={handleAddContent}>
-                    Add Content
-                </button>
-                <button type="submit" className="btn btn-primary mt-3">Save Theory</button>
+                <div className='w-100 d-flex justify-content-between mb-2'>
+                    <button type="button" className="btn btn-success" onClick={handleAddContent}>
+                        Add Content
+                    </button>
+                    <button type="" className="btn btn-primary">Save Theory</button>
+                </div>
             </form>
         </div>
     );
