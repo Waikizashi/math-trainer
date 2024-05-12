@@ -1,178 +1,67 @@
-[
-    {
-        "title": "Introduction to Graph Theory",
-        "contents": [
-            {
-                "contentType": "Article",
-                "title": "Basic Definitions",
-                "data": "Graph theory is a branch of mathematics that studies graphs, which are mathematical structures used to model pairwise relations between objects. A graph <em>G</em> consists of a set of vertices <em>V</em>, and a set of edges <em>E</em>, which connect pairs of vertices.",
-                "graphDataList": []
-            },
-            {
-                "contentType": "Article",
-                "title": "Types of Graphs",
-                "data": "Graph theory is a branch of mathematics that studies graphs, which are mathematical structures used to model pairwise relations between objects. A graph <em>G</em> consists of a set of vertices <em>V</em>, and a set of edges <em>E</em>, which connect pairs of vertices.",
-                "graphDataList": []
-            },
-            {
-                "contentType": "Video",
-                "title": "Видеоурок по алгебре",
-                "data": "Ссылка на видео",
-                "graphDataList": [
-                    {
-                        "title": "Визуализация алгебры",
-                        "nodes": [
-                            {
-                                "nodeId": "0",
-                                "group": "2"
-                            },
-                            {
-                                "nodeId": "1",
-                                "group": "2"
-                            },
-                            {
-                                "nodeId": "2",
-                                "group": "2"
-                            },
-                            {
-                                "nodeId": "3",
-                                "group": "2"
-                            },
-                            {
-                                "nodeId": "4",
-                                "group": "2"
-                            }
-                        ],
-                        "links": [
-                            {
-                                "source": "0",
-                                "target": "1"
-                            },
-                            {
-                                "source": "1",
-                                "target": "2"
-                            },
-                            {
-                                "source": "2",
-                                "target": "3"
-                            },
-                            {
-                                "source": "3",
-                                "target": "4"
-                            }
-                        ]
-                    }
-                ]
-            }
-        ]
-    },
-    {
-        "title": "Основы алгебры",
-        "contents": [
-            {
-                "contentType": "Article",
-                "title": "Основы алгебраических операций",
-                "data": "Содержание о алгебраических операциях",
-                "graphDataList": [
-                    {
-                        "title": "Граф операций",
-                        "nodes": [
-                            {
-                                "nodeId": "0",
-                                "group": "1"
-                            },
-                            {
-                                "nodeId": "1",
-                                "group": "1"
-                            },
-                            {
-                                "nodeId": "2",
-                                "group": "1"
-                            },
-                            {
-                                "nodeId": "3",
-                                "group": "1"
-                            },
-                            {
-                                "nodeId": "4",
-                                "group": "1"
-                            }
-                        ],
-                        "links": [
-                            {
-                                "source": "0",
-                                "target": "1"
-                            },
-                            {
-                                "source": "1",
-                                "target": "2"
-                            },
-                            {
-                                "source": "2",
-                                "target": "3"
-                            },
-                            {
-                                "source": "3",
-                                "target": "4"
-                            },
-                            {
-                                "source": "4",
-                                "target": "0"
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "contentType": "Video",
-                "title": "Видеоурок по алгебре",
-                "data": "Ссылка на видео",
-                "graphDataList": [
-                    {
-                        "title": "Визуализация алгебры",
-                        "nodes": [
-                            {
-                                "nodeId": "0",
-                                "group": "2"
-                            },
-                            {
-                                "nodeId": "1",
-                                "group": "2"
-                            },
-                            {
-                                "nodeId": "2",
-                                "group": "2"
-                            },
-                            {
-                                "nodeId": "3",
-                                "group": "2"
-                            },
-                            {
-                                "nodeId": "4",
-                                "group": "2"
-                            }
-                        ],
-                        "links": [
-                            {
-                                "source": "0",
-                                "target": "1"
-                            },
-                            {
-                                "source": "1",
-                                "target": "2"
-                            },
-                            {
-                                "source": "2",
-                                "target": "3"
-                            },
-                            {
-                                "source": "3",
-                                "target": "4"
-                            }
-                        ]
-                    }
-                ]
-            }
-        ]
-    }
-]
+{
+    "title": "Introduction to Graph Theory",
+    "content": [
+        {
+            "contentType": "Article",
+            "title": "Basic Definitions",
+            "data": "Graph theory is a branch of mathematics that studies graphs, which are mathematical structures used to model pairwise relations between objects. A graph <em>G</em> consists of a set of vertices <em>V</em>, and a set of edges <em>E</em>, which connect pairs of vertices.",
+            "graphData": []
+        },
+        {
+            "contentType": "Article",
+            "title": "Types of Graphs",
+            "data": "Graph theory is a branch of mathematics that studies graphs, which are mathematical structures used to model pairwise relations between objects. A graph <em>G</em> consists of a set of vertices <em>V</em>, and a set of edges <em>E</em>, which connect pairs of vertices.",
+            "graphData": []
+        },
+        {
+            "contentType": "Video",
+            "title": "Видеоурок по алгебре",
+            "data": "Ссылка на видео",
+            "graphData": [
+                {
+                    "title": "Визуализация алгебры",
+                    "nodes": [
+                        {
+                            "nodeId": "0",
+                            "group": "2"
+                        },
+                        {
+                            "nodeId": "1",
+                            "group": "2"
+                        },
+                        {
+                            "nodeId": "2",
+                            "group": "2"
+                        },
+                        {
+                            "nodeId": "3",
+                            "group": "2"
+                        },
+                        {
+                            "nodeId": "4",
+                            "group": "2"
+                        }
+                    ],
+                    "links": [
+                        {
+                            "source": "0",
+                            "target": "1"
+                        },
+                        {
+                            "source": "1",
+                            "target": "2"
+                        },
+                        {
+                            "source": "2",
+                            "target": "3"
+                        },
+                        {
+                            "source": "3",
+                            "target": "4"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

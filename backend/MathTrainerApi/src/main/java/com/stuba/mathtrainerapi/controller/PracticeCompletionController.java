@@ -41,7 +41,7 @@ public class PracticeCompletionController {
         if (practiceCompletionService.findPracticeCompletionById(id).isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-        practiceCompletion.setId(id);
+//        practiceCompletion.setId(id);
         return ResponseEntity.ok(practiceCompletionService.updatePracticeCompletion(practiceCompletion));
     }
 

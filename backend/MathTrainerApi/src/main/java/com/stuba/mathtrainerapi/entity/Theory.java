@@ -19,7 +19,7 @@ public class Theory {
     private String title;
 
     @OneToMany(mappedBy = "theory", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Content> contents;
+    private List<Content> content;
 
     @OneToMany(mappedBy = "theory", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<TheoryCompletion> completions = new HashSet<>();

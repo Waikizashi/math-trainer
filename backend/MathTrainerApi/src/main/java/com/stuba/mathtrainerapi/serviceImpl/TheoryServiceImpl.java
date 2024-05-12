@@ -1,7 +1,9 @@
 package com.stuba.mathtrainerapi.serviceImpl;
 
+import com.stuba.mathtrainerapi.api.dto.TheoryDTO;
 import com.stuba.mathtrainerapi.api.service.TheoryService;
-import com.stuba.mathtrainerapi.entity.Theory;
+import com.stuba.mathtrainerapi.entity.*;
+import com.stuba.mathtrainerapi.mapper.TheoryMapper;
 import com.stuba.mathtrainerapi.repository.TheoryRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,59 +11,95 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class TheoryServiceImpl implements TheoryService {
 
     private final TheoryRepository theoryRepository;
+    private final TheoryMapper theoryMapper;
 
     @Autowired
-    public TheoryServiceImpl(TheoryRepository theoryRepository) {
+    public TheoryServiceImpl(TheoryRepository theoryRepository, TheoryMapper theoryMapper) {
         this.theoryRepository = theoryRepository;
+        this.theoryMapper = theoryMapper;
     }
 
     @Override
-    public List<Theory> findAllTheories() {
-        return theoryRepository.findAll();
+    public List<TheoryDTO> findAllTheories() {
+        return theoryRepository.findAll().stream()
+                .map(theoryMapper::toTheoryDTO)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public Optional<Theory> findTheoryById(Long id) {
-        return theoryRepository.findById(id);
+    public Optional<TheoryDTO> findTheoryById(Long id) {
+        return theoryRepository.findById(id)
+                .map(theoryMapper::toTheoryDTO);
     }
 
     @Override
     @Transactional
-    public Theory saveTheory(Theory theory) {
-        if (theory.getId() != null) {
+    public TheoryDTO saveTheory(TheoryDTO theoryDTO) {
+        if (theoryDTO.getId() != null) {
             throw new IllegalArgumentException("New Theory must not have an ID, it will be generated automatically.");
         }
-        return theoryRepository.save(theory);
+        Theory theory = theoryMapper.toTheory(theoryDTO);
+        for (Content content : theory.getContent()) {
+            content.setTheory(theory);
+            for (GraphData graphData : content.getGraphData()) {
+                graphData.setContent(content);
+                for (GraphLink graphLink : graphData.getLinks()) {
+                    graphLink.setGraphData(graphData);
+                }
+                for (GraphNode graphNode : graphData.getNodes()) {
+                    graphNode.setGraphData(graphData);
+                }
+            }
+        }
+        return theoryMapper.toTheoryDTO(theoryRepository.save(theory));
     }
 
     @Override
     @Transactional
-    public Theory updateTheory(Theory theory) {
-        if (theory.getId() == null) {
+    public TheoryDTO updateTheory(TheoryDTO theoryDTO) {
+        if (theoryDTO.getId() == null) {
             throw new IllegalArgumentException("Cannot update a theory without an ID.");
         }
-        return theoryRepository.save(theory);
+
+        Theory existingTheory = theoryRepository.findById(theoryDTO.getId())
+                .orElseThrow(() -> new IllegalArgumentException("Theory with ID " + theoryDTO.getId() + " not found"));
+
+        Theory updatedTheory =  theoryMapper.toTheory(theoryDTO);
+
+        for (Content content : updatedTheory.getContent()) {
+            content.setTheory(updatedTheory);
+            for (GraphData graphData : content.getGraphData()) {
+                graphData.setContent(content);
+                for (GraphLink graphLink : graphData.getLinks()) {
+                    graphLink.setGraphData(graphData);
+                }
+                for (GraphNode graphNode : graphData.getNodes()) {
+                    graphNode.setGraphData(graphData);
+                }
+            }
+        }
+
+        return theoryMapper.toTheoryDTO(theoryRepository.save(updatedTheory));
     }
+
 
     @Override
     @Transactional
     public boolean deleteTheory(Long id) {
-        if(theoryRepository.findById(id).isPresent()){
+        if(theoryRepository.existsById(id)){
             theoryRepository.deleteById(id);
-            if (theoryRepository.findById(id).isPresent()){
-                return true;
-            } else {
-                throw new RuntimeException("Deleting error");
-            }
-        } else{
+            return !theoryRepository.existsById(id);
+        } else {
             return false;
         }
     }
 }
+
 
 

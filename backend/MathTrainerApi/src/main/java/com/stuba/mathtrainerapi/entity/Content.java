@@ -6,7 +6,7 @@ import lombok.Data;
 import java.util.List;
 
 @Entity
-@Table(name = "contents")
+@Table(name = "content")
 @Data
 public class Content {
     @Id
@@ -19,9 +19,11 @@ public class Content {
     @Column(nullable = true)
     private String title;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String data;
 
+    @OneToMany(mappedBy = "content", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<GraphData> graphData;
     @ManyToOne
     @JoinColumn(name = "theory_id")
     private Theory theory;
@@ -29,7 +31,4 @@ public class Content {
     @ManyToOne
     @JoinColumn(name = "practice_id")
     private Practice practice;
-
-    @OneToMany(mappedBy = "content", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<GraphData> graphDataList;
 }

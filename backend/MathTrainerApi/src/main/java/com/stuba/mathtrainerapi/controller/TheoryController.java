@@ -1,7 +1,8 @@
 package com.stuba.mathtrainerapi.controller;
 
+import com.stuba.mathtrainerapi.api.dto.TheoryDTO;
 import com.stuba.mathtrainerapi.api.service.TheoryService;
-import com.stuba.mathtrainerapi.entity.Theory;
+import com.stuba.mathtrainerapi.mapper.TheoryMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -9,48 +10,53 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
 
+
 @RestController
 @RequestMapping("/api/theories")
 public class TheoryController {
 
     private final TheoryService theoryService;
+    private final TheoryMapper theoryMapper;
 
     @Autowired
-    public TheoryController(TheoryService theoryService) {
+    public TheoryController(TheoryService theoryService, TheoryMapper theoryMapper) {
+        this.theoryMapper = theoryMapper;
         this.theoryService = theoryService;
     }
 
     @GetMapping
-    public List<Theory> getAllTheories() {
+    public List<TheoryDTO> getAllTheories() {
         return theoryService.findAllTheories();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Theory> getTheoryById(@PathVariable Long id) {
-        Optional<Theory> theory = theoryService.findTheoryById(id);
-        return theory.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<TheoryDTO> getTheoryById(@PathVariable Long id) {
+        return theoryService.findTheoryById(id)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    public Theory createTheory(@RequestBody Theory theory) {
-        return theoryService.saveTheory(theory);
+    public ResponseEntity<TheoryDTO> createTheory(@RequestBody TheoryDTO theoryDTO) {
+        TheoryDTO createdTheory = theoryService.saveTheory(theoryDTO);
+        return ResponseEntity.ok(createdTheory);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Theory> updateTheory(@PathVariable Long id, @RequestBody Theory theory) {
+    public ResponseEntity<TheoryDTO> updateTheory(@PathVariable Long id, @RequestBody TheoryDTO theoryDTO) {
         if (theoryService.findTheoryById(id).isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-        theory.setId(id);
-        return ResponseEntity.ok(theoryService.updateTheory(theory));
+        theoryDTO.setId(id);
+        TheoryDTO updatedTheory = theoryService.updateTheory(theoryDTO);
+        return ResponseEntity.ok(updatedTheory);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteTheory(@PathVariable Long id) {
-        if (theoryService.findTheoryById(id).isEmpty()) {
+        if (!theoryService.deleteTheory(id)) {
             return ResponseEntity.notFound().build();
         }
-        theoryService.deleteTheory(id);
         return ResponseEntity.ok().build();
     }
 }
