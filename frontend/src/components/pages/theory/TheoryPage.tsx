@@ -6,21 +6,48 @@ import GraphCanvas, { GraphDataProps } from '../../graphs/GraphCanvas';
 import MainMenu from '../../navigation/Menu';
 
 import { mainContainer, subContainer, section, visualArea } from '../../../utils/styles/global-styles';
-import { graphs } from '../../../data/graphs';
-import { theoryTopics } from '../../../data/theory-topics';
+import theoryService, { TheoryDTO } from '../../../service/TheoryService';
+import TheoryComponent from './TheoryComponent';
 
 const TheoryPage: React.FC<any> = () => {
     const cardRef = useRef<HTMLDivElement>(null);
     const cardHeaderRef = useRef<HTMLDivElement>(null);
     const [bodyHeight, setBH] = useState(0)
-    const [currentGraph, setCurrentGraph] = useState(0);
+    const [currentTopipc, setCurrentTopic] = useState(0);
+
+
+    const [theories, setTheories] = useState<TheoryDTO[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
+
     useEffect(() => {
-    }, [currentGraph]);
+        const fetchTheories = async () => {
+            try {
+                const data = await theoryService.getAllTheories();
+                console.log("DATA:", data)
+                setTheories(data);
+            } catch (error) {
+                setError('ERROR:' + error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchTheories();
+    }, []);
+
+    useEffect(() => {
+    }, [currentTopipc]);
+
+    if (loading) return <div>Loading...</div>;
+    if (error) return <div>{error}</div>;
+
+
 
     const changeVisualization = (prevNext: number) => {
-        setCurrentGraph(prevTopic => {
+        setCurrentTopic(prevTopic => {
             const currentTopic: number = prevTopic + prevNext
-            return (currentTopic >= graphs.length || currentTopic < 0) ? 0 : currentTopic
+            return (currentTopic >= theories.length || currentTopic < 0) ? 0 : currentTopic
         })
     }
 
@@ -39,7 +66,7 @@ const TheoryPage: React.FC<any> = () => {
                         Theory
                     </div>
                     <div className="card-body overflow-auto">
-                        <div dangerouslySetInnerHTML={theoryTopics[currentGraph]} />
+                        <TheoryComponent theory={theories[0] ? theories[0] : null}></TheoryComponent>
                     </div>
                     <div className="card-footer text-body-secondary">
                         <nav aria-label="Page navigation example">
@@ -66,7 +93,8 @@ const TheoryPage: React.FC<any> = () => {
                     <div className="card-header">
                         Visualization
                     </div>
-                    <GraphCanvas graphData={graphs[currentGraph]}></GraphCanvas>
+                    {/* <GraphCanvas graphData={graphs[currentGraph]}></GraphCanvas> */}
+                    <GraphCanvas graphData={theories[0] ? theories[0].content[0].graphData[0] : undefined}></GraphCanvas>
                 </div>
             </div>
             <div className="progress-stacked w-75 p-0 my-2">

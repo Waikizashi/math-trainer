@@ -2,28 +2,25 @@ import { GraphDataProps } from "../components/graphs/GraphCanvas";
 
 export function isGraphConnected(graph: GraphDataProps): boolean {
     const nodeCount = graph.nodes.length;
-    if (nodeCount === 0) return true; // Пустой граф считаем связанным
+    if (nodeCount === 0) return true;
 
-    // Создаем карту смежности
     const adjacencyList: Map<string, string[]> = new Map();
     graph.nodes.forEach(node => {
 
-        adjacencyList.set(node.id, [])
+        adjacencyList.set(node.nodeId, [])
 
     });
     graph.links.forEach((link: any) => {
-        console.log('LINK: ', link.source.id)
-        adjacencyList.get(link.source.id)?.push(link.target.id);
-        adjacencyList.get(link.target.id)?.push(link.source.id); // Для неориентированного графа
+        console.log('LINK: ', link.source.nodeId)
+        adjacencyList.get(link.source.nodeId)?.push(link.target.nodeId);
+        adjacencyList.get(link.target.nodeId)?.push(link.source.nodeId); // Для неориентированного графа
         console.log('adjacencyList: ', adjacencyList)
     });
 
-    // console.log('###: ', graph)
     const dfs = (node: string, visited: Set<string>) => {
         visited.add(node);
 
         adjacencyList.get(node)?.forEach(neighbor => {
-            // console.log('SUSED: ', node)
             if (!visited.has(neighbor)) {
                 dfs(neighbor, visited);
             }
@@ -31,64 +28,58 @@ export function isGraphConnected(graph: GraphDataProps): boolean {
     };
 
     const visited = new Set<string>();
-    dfs(graph.nodes[0].id, visited);
+    dfs(graph.nodes[0].nodeId, visited);
 
     return visited.size === nodeCount;
 }
 
 export function findChromaticNumber(graph: GraphDataProps): number {
     const adjacencyList: Map<string, Set<string>> = new Map();
-    graph.nodes.forEach(node => adjacencyList.set(node.id, new Set()));
+    graph.nodes.forEach(node => adjacencyList.set(node.nodeId, new Set()));
     graph.links.forEach((link: any) => {
         adjacencyList.get(link.source)?.add(link.target);
-        adjacencyList.get(link.target)?.add(link.source); // Для неориентированного графа
+        adjacencyList.get(link.target)?.add(link.source);
     });
 
     const nodeColors: Map<string, number> = new Map();
     const availableColors: Set<number> = new Set();
 
-    // Сортировка вершин по убыванию степени (жадный выбор)
     const sortedNodes = [...graph.nodes].sort((a, b) => {
-        return (adjacencyList.get(b.id)?.size || 0) - (adjacencyList.get(a.id)?.size || 0);
+        return (adjacencyList.get(b.nodeId)?.size || 0) - (adjacencyList.get(a.nodeId)?.size || 0);
     });
 
     sortedNodes.forEach(node => {
         let assignedColor = 1;
         const usedColors = new Set<number>();
 
-        // Собираем цвета смежных вершин
-        adjacencyList.get(node.id)?.forEach(neighbor => {
+        adjacencyList.get(node.nodeId)?.forEach(neighbor => {
             if (nodeColors.has(neighbor)) {
                 usedColors.add(nodeColors.get(neighbor)!);
             }
         });
 
-        // Находим минимальный свободный цвет
         while (usedColors.has(assignedColor)) {
             assignedColor++;
         }
 
-        // Назначаем цвет вершине
-        nodeColors.set(node.id, assignedColor);
+        nodeColors.set(node.nodeId, assignedColor);
         availableColors.add(assignedColor);
     });
 
-    // Хроматическое число это размер множества использованных цветов
     return availableColors.size;
 }
 
 export function isAcyclic(graph: GraphDataProps): boolean {
     const adjacencyList: Map<string, string[]> = new Map();
-    graph.nodes.forEach(node => adjacencyList.set(node.id, []));
+    graph.nodes.forEach(node => adjacencyList.set(node.nodeId, []));
     graph.links.forEach((link: any) => {
         adjacencyList.get(link.source)?.push(link.target);
     });
 
-    let isCycle = false; // Флаг для обнаружения цикла
-    const visited = new Set<string>(); // Множество посещенных вершин
-    const recStack = new Set<string>(); // Стек рекурсии для обнаружения циклов
+    let isCycle = false;
+    const visited = new Set<string>();
+    const recStack = new Set<string>();
 
-    // Вспомогательная функция для выполнения DFS
     function dfs(vertex: string): void {
         if (recStack.has(vertex)) {
             isCycle = true;
@@ -109,10 +100,9 @@ export function isAcyclic(graph: GraphDataProps): boolean {
         recStack.delete(vertex);
     }
 
-    // Запускаем DFS из каждой непосещенной вершины
     for (let node of graph.nodes) {
-        if (!visited.has(node.id)) {
-            dfs(node.id);
+        if (!visited.has(node.nodeId)) {
+            dfs(node.nodeId);
             if (isCycle) break;
         }
     }
@@ -127,7 +117,7 @@ export function findGraphDiameter(graph: GraphDataProps): number {
     let diameter = 0;
     graph.nodes.forEach(i => {
         graph.nodes.forEach(j => {
-            const distance = adjacencyMatrix.get(i.id)?.get(j.id) ?? Infinity;
+            const distance = adjacencyMatrix.get(i.nodeId)?.get(j.nodeId) ?? Infinity;
             if (distance !== Infinity) {
                 diameter = Math.max(diameter, distance);
             }
@@ -145,7 +135,7 @@ export function findGraphRadius(graph: GraphDataProps): number {
     graph.nodes.forEach(i => {
         let maxDistance = 0;
         graph.nodes.forEach(j => {
-            const distance = adjacencyMatrix.get(i.id)?.get(j.id) ?? Infinity;
+            const distance = adjacencyMatrix.get(i.nodeId)?.get(j.nodeId) ?? Infinity;
             maxDistance = Math.max(maxDistance, distance);
         });
         radius = Math.min(radius, maxDistance);
@@ -158,12 +148,12 @@ export function findGraphRadius(graph: GraphDataProps): number {
 function initializeAdjacencyMatrix(graph: GraphDataProps): Map<string, Map<string, number>> {
     const adjacencyMatrix: Map<string, Map<string, number>> = new Map();
     graph.nodes.forEach(node => {
-        adjacencyMatrix.set(node.id, new Map(graph.nodes.map(n => [n.id, n.id === node.id ? 0 : Infinity])));
+        adjacencyMatrix.set(node.nodeId, new Map(graph.nodes.map(n => [n.nodeId, n.nodeId === node.nodeId ? 0 : Infinity])));
     });
 
     graph.links.forEach((link: any) => {
-        adjacencyMatrix.get(link.source.id)?.set(link.target.id, 1);
-        adjacencyMatrix.get(link.target.id)?.set(link.source.id, 1); // Для неориентированного графа
+        adjacencyMatrix.get(link.source.nodeId)?.set(link.target.nodeId, 1);
+        adjacencyMatrix.get(link.target.nodeId)?.set(link.source.nodeId, 1); // Для неориентированного графа
     });
 
     return adjacencyMatrix;
@@ -173,11 +163,11 @@ function computeAllPairsShortestPaths(graph: GraphDataProps, adjacencyMatrix: Ma
     graph.nodes.forEach(k => {
         graph.nodes.forEach(i => {
             graph.nodes.forEach(j => {
-                const ik = adjacencyMatrix.get(i.id)?.get(k.id) ?? Infinity;
-                const kj = adjacencyMatrix.get(k.id)?.get(j.id) ?? Infinity;
-                const ij = adjacencyMatrix.get(i.id)?.get(j.id) ?? Infinity;
+                const ik = adjacencyMatrix.get(i.nodeId)?.get(k.nodeId) ?? Infinity;
+                const kj = adjacencyMatrix.get(k.nodeId)?.get(j.nodeId) ?? Infinity;
+                const ij = adjacencyMatrix.get(i.nodeId)?.get(j.nodeId) ?? Infinity;
                 if (ij > ik + kj) {
-                    adjacencyMatrix.get(i.id)?.set(j.id, ik + kj);
+                    adjacencyMatrix.get(i.nodeId)?.set(j.nodeId, ik + kj);
                 }
             });
         });

@@ -51,7 +51,7 @@ const Matrix: React.FC<MatrixProps> = ({ onMatrixChange }) => {
     };
 
     const parseMatrixToObject = () => {
-        const nodes = matrix.map((_, index) => ({ id: `${index}`, group: "1" }));
+        const nodes = matrix.map((_, index) => ({ nodeId: `${index}`, group: "1" }));
         const links: any = [];
 
         matrix.forEach((row, rowIndex) => {

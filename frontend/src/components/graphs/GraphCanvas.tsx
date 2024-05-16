@@ -20,7 +20,7 @@ import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import SwipeUpAltIcon from '@mui/icons-material/SwipeUpAlt';
 
 interface Node extends d3.SimulationNodeDatum {
-    id: string,
+    nodeId: string,
     group?: string
     degree?: number
 }
@@ -41,6 +41,8 @@ interface CanvasProps {
     getCurrentGraphData?: (currentGraphData: GraphDataProps) => void;
 }
 
+const nodeDefaultSize = 15;
+
 const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: CanvasProps }> = ({ graphData, canvasPreferencies }) => {
     const location = useLocation();
     const isConstructorPage = location.pathname === '/constructor';
@@ -56,9 +58,9 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
     const [addBtn, setAddBtn] = useState(false)
     const [settingsBtn, setSettingsBtn] = useState(false)
     const [matrixBtn, setMatrixBtn] = useState(false)
-    const [colorsBtn, setColorsBtn] = useState(false)
+    const [showColors, setShowColors] = useState(false)
     const [linesBtn, setLinesBtn] = useState(false)
-    const [directionsBtn, setDirectionsBtn] = useState(false)
+    const [showArrows, setShowArrows] = useState(false);
     const [swipeBtn, setSwipeBtn] = useState(false)
     const [scale, setScale] = useState(1);
     const [nodeScale, setNodeScale] = useState(1);
@@ -71,6 +73,7 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
     const [updateEvent, setUpdateEvent] = useState(false);
     const [nodeSource, setNodeSource] = useState<Node | null>(null);
     const [nodeTarget, setNodeTarget] = useState<Node | null>(null);
+
     const tempLinkRef = useRef<null | d3.Selection<SVGLineElement, unknown, null, undefined>>(null);
 
     const view = { x: 0, y: 0 };
@@ -81,7 +84,7 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
         // simulationRef.current.nodes(nodes);
         // console.log(canvasRef.current)
         setUpdateEvent(true)
-        // simulationRef.current.force("link", d3.forceLink(links).id((d: any) => d.id));
+        // simulationRef.current.force("link", d3.forceLink(links).nodeId((d: any) => d.nodeId));
 
 
     };
@@ -126,10 +129,10 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
         setMatrixBtn(!matrixBtn)
     }
     const setColoring = () => {
-        setColorsBtn(!colorsBtn)
+        setShowColors(!showColors)
     }
     const setDirections = () => {
-        setDirectionsBtn(!directionsBtn)
+        setShowArrows(!showArrows)
     }
     const setLining = () => {
         setLinesBtn(!linesBtn)
@@ -167,8 +170,8 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
 
     function createPath(d: any, links: any) {
         const duplicates = links.filter((link: any) =>
-            (link.source.id === d.source.id && link.target.id === d.target.id) ||
-            (link.source.id === d.target.id && link.target.id === d.source.id)
+            (link.source.nodeId === d.source.nodeId && link.target.nodeId === d.target.nodeId) ||
+            (link.source.nodeId === d.target.nodeId && link.target.nodeId === d.source.nodeId)
         );
 
         const index = duplicates.indexOf(d);
@@ -186,6 +189,34 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
             return `M${d.source.x},${d.source.y}L${d.target.x},${d.target.y}`;
         }
     }
+
+    const assignNodeGroups = (nodes: Node[], links: Link[]) => {
+        const nodeDegrees: { [key: string]: number } = {};
+
+        links.forEach(link => {
+            const sourceId = typeof link.source === 'string' ? link.source : link.source.nodeId;
+            const targetId = typeof link.target === 'string' ? link.target : link.target.nodeId;
+
+            if (!nodeDegrees[sourceId]) nodeDegrees[sourceId] = 0;
+            if (!nodeDegrees[targetId]) nodeDegrees[targetId] = 0;
+
+            nodeDegrees[sourceId]++;
+            nodeDegrees[targetId]++;
+        });
+
+        nodes.forEach(node => {
+            node.degree = nodeDegrees[node.nodeId] || 0;
+
+            // Пример назначения групп на основе степени
+            if (node.degree <= 1) {
+                node.group = 'Low';
+            } else if (node.degree <= 3) {
+                node.group = 'Medium';
+            } else {
+                node.group = 'High';
+            }
+        });
+    };
 
     useEffect(() => {
         if (!svgRef.current) return;
@@ -234,7 +265,7 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
                 canvasRef.current.on('click', (event: any) => {
                     const coords = d3.pointer(event);
                     const newNode: Node = {
-                        id: nodes.length.toString(),
+                        nodeId: nodes.length.toString(),
                         group: (0).toString(),
                         x: coords[0],
                         y: coords[1],
@@ -253,9 +284,9 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
     }, [nodeSource])
 
     useEffect(() => {
-        if (nodeSource?.id && nodeTarget?.id) {
+        if (nodeSource?.nodeId && nodeTarget?.nodeId) {
 
-            const newLink: Link = { source: nodeSource.id, target: nodeTarget.id }
+            const newLink: Link = { source: nodeSource.nodeId, target: nodeTarget.nodeId }
             setNodes(prevNodes => [...prevNodes])
             setLinks(prevLinks => [...prevLinks, newLink]);
             updateSimulation()
@@ -266,7 +297,7 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
         if (!linesBtn) return;
         setAddBtn(false)
         const startTempLine = (event: any) => {
-            // console.log('mousedown')
+            if (event.button !== 0) return;
             const targetElement = d3.select(event.target);
 
             const sourceNode: any = targetElement.datum();
@@ -281,7 +312,8 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
                 .attr('stroke', 'grey')
                 .attr('stroke-width', 3)
                 .style('pointer-events', 'none')
-                .attr('stroke-linecap', 'round');
+                .attr('stroke-linecap', 'round')
+                .attr('marker-end', showArrows ? 'url(#arrow)' : null);
             setIsDragging(true);
         };
 
@@ -319,11 +351,6 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
     }, [linesBtn, isDragging])
 
     useEffect(() => {
-        if (canvasRef.current) {
-
-        }
-    }, [colorsBtn])
-    useEffect(() => {
         canvasPreferencies?.matrixControl && canvasPreferencies.matrixControl(matrixBtn)
     }, [matrixBtn])
     useEffect(() => {
@@ -358,13 +385,20 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
     }, [swipeBtn])
 
     useEffect(() => {
+        canvasRef.current.selectAll('.link')
+            .attr('marker-end', showArrows ? 'url(#arrow)' : null);
+    }, [showArrows]);
+
+    useEffect(() => {
+        console.log('####: ', graphData)
         cleanAll()
         setNodes(graphData ? graphData.nodes : [])
         setLinks(graphData ? graphData.links : [])
     }, [graphData])
 
     useEffect(() => {
-        cleanCanvas()
+        assignNodeGroups(nodes, links);
+        cleanCanvas();
         const w = svgRef.current.parentNode.getBoundingClientRect().width;
         const h = svgRef.current.parentNode.getBoundingClientRect().height;
 
@@ -377,16 +411,31 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
             .attr('class', 'link')
             .attr('stroke', '#aaa')
             .attr('stroke-width', 4 * edgeSizeScale)
-            .attr('stroke-linecap', 'round');
+            .attr('stroke-linecap', 'round')
+            .attr('marker-end', showArrows ? 'url(#arrow)' : null)
+            .on("contextmenu", (event: any, d: any) => {
+                event.preventDefault();
+                const updatedLinks = links.filter(link => link !== d);
+                setLinks(updatedLinks);
+                updateSimulation();
+            });
 
         const nodeElements = canvasRef.current.append('g')
             .selectAll('circle')
-            .data(nodes, (d: any) => d.id)
+            .data(nodes, (d: any) => d.nodeId)
             .enter()
             .append('circle')
-            .attr('r', 15 * nodeScale)
+            .attr('r', nodeDefaultSize * nodeScale)
             .attr('class', 'node')
-            .style('fill', (d: any) => colorScale(d.group))
+            .style('fill', showColors ? (d: any) => colorScale(d.degree) : 'black')
+            .on("contextmenu", (event: any, d: any) => {
+                event.preventDefault();
+                const updatedNodes = nodes.filter(node => node.nodeId !== d.nodeId);
+                const updatedLinks = links.filter((link: any) => link.source.nodeId !== d.nodeId && link.target.nodeId !== d.nodeId);
+                setNodes(updatedNodes);
+                setLinks(updatedLinks);
+                updateSimulation();
+            });
 
         const textElements = canvasRef.current.append('g')
             .selectAll('text')
@@ -394,7 +443,7 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
             .enter().append('text')
             .attr('dy', '.15em')
             .attr('class', 'node-number')
-            .text((d: any) => d.id)
+            .text((d: any) => d.nodeId)
             .style('font-size', `${12 * textScale}px`)
             .style('pointer-events', 'none')
             .style('fill', 'white')
@@ -403,7 +452,7 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
             .attr('dominant-baseline', 'middle');
 
         simulationRef.current = d3.forceSimulation(nodes)
-            .force('link', d3.forceLink(links).id((d: any) => d.id).distance(100 * scale * edgeLengthScale))
+            .force('link', d3.forceLink(links).id((d: any) => d.nodeId).distance(100 * scale * edgeLengthScale))
             .force("charge", d3.forceManyBody()
                 .strength(-50 * repulsiveForceScale)
                 .distanceMax(50 * repulsiveDistanceScale))
@@ -418,20 +467,13 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
             .on('tick', () => {
                 linkElements
                     .attr('d', (d: any) => {
-                        if (d.source.id === d.target.id) {
+                        if (d.source.nodeId === d.target.nodeId) {
                             const loopPath = createLoopPath(d.source);
                             return loopPath;
                         } else {
-                            // return `M${d.source.x},${d.source.y} L${d.target.x},${d.target.y}`;
                             return createPath(d, links);
                         }
                     });
-                // linkElements
-                //     .attr('x1', (d: any) => d.source.x)
-                //     .attr('y1', (d: any) => d.source.y)
-                //     .attr('x2', (d: any) => d.target.x)
-                //     .attr('y2', (d: any) => d.target.y)
-
                 nodeElements
                     .attr('cx', (d: any) => d.x)
                     .attr('cy', (d: any) => d.y);
@@ -444,6 +486,7 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
             simulationRef.current.stop();
         };
     }, [nodes,
+        showColors,
         links,
         viewBox,
         scale,
@@ -486,15 +529,57 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
 
 
     return (
-        <div className={constructorArea}>
+        <div onContextMenu={e => e.preventDefault()} className={constructorArea}>
             <div className="card-header d-flex justify-content-between">
                 <strong className='my-auto'>{'canvas'.toUpperCase()}</strong>
                 <div className={tools}>
+                    <Fab onClick={zoomIn} className={tool} size='small'>
+                        <ZoomInIcon></ZoomInIcon>
+                    </Fab>
+                    <Fab onClick={zoomOut} className={tool} size='small'>
+                        <ZoomOutIcon></ZoomOutIcon>
+                    </Fab>
+                    <Fab color={addBtn === true ? 'primary' : 'default'}
+                        onClick={setAdding}
+                        className={tool} size='small'>
+                        <AddCircleOutlineIcon></AddCircleOutlineIcon>
+                    </Fab>
+                    <Fab hidden={isConstructorPage ? false : true} color={matrixBtn === true ? 'primary' : 'default'}
+                        onClick={setMatrix}
+                        className={tool} size='small'>
+                        <AppsIcon></AppsIcon>
+                    </Fab>
+                    <Fab color={showColors === true ? 'primary' : 'default'}
+                        onClick={setColoring}
+                        className={tool} size='small'>
+                        <ColorLensIcon></ColorLensIcon>
+                    </Fab>
+                    <Fab onClick={cleanAll} className={tool} size='small'>
+                        <DeleteForeverIcon></DeleteForeverIcon>
+                    </Fab>
+                    <Fab color={linesBtn === true ? 'primary' : 'default'}
+                        onClick={() => setLining()}
+                        className={tool} size='small'>
+                        <TimelineIcon></TimelineIcon>
+                    </Fab>
+                    <Fab color={showArrows ? 'primary' : 'default'}
+                        onClick={() => setDirections()}
+                        className={tool} size='small'>
+                        <SwipeUpAltIcon></SwipeUpAltIcon>
+                    </Fab>
+                    <Fab className={tool} size='small'>
+                        <AutoFixOffIcon></AutoFixOffIcon>
+                    </Fab>
+                    <Fab color={swipeBtn === true ? 'primary' : 'default'}
+                        onClick={() => setSwiping()}
+                        className={tool} size='small'>
+                        <SwipeVerticalIcon></SwipeVerticalIcon>
+                    </Fab>
                     <div hidden={isConstructorPage ? false : true} className="btn-group dropstart">
                         <Fab onClick={settingsHandle} type="button" className={cn("btn dropdown-toggle", tool, s.beforeOff)} data-bs-toggle="dropdown" aria-expanded="false" size='small'>
                             <SettingsIcon></SettingsIcon>
                         </Fab>
-                        <ul style={{ width: "max-content" }} className="dropdown-menu mx-2 p-2 border-primary border-2">
+                        <ul style={{ width: "max-content", zIndex: 1111 }} className="dropdown-menu mx-2 p-2 border-primary border-2">
                             <li>
                                 <div className={rangeControlStyle}>Node size:
                                     <output className='mx-1'>{nodeScale}</output>
@@ -533,60 +618,21 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
                             </li>
                         </ul>
                     </div>
-
-                    <Fab onClick={zoomIn} className={tool} size='small'>
-                        <ZoomInIcon></ZoomInIcon>
-                    </Fab>
-                    <Fab onClick={zoomOut} className={tool} size='small'>
-                        <ZoomOutIcon></ZoomOutIcon>
-                    </Fab>
-                    <Fab color={addBtn === true ? 'primary' : 'default'}
-                        onClick={setAdding}
-                        className={tool} size='small'>
-                        <AddCircleOutlineIcon></AddCircleOutlineIcon>
-                    </Fab>
-                    <Fab hidden={isConstructorPage ? false : true} color={matrixBtn === true ? 'primary' : 'default'}
-                        onClick={setMatrix}
-                        className={tool} size='small'>
-                        <AppsIcon></AppsIcon>
-                    </Fab>
-                    <Fab color={colorsBtn === true ? 'primary' : 'default'}
-                        onClick={setColoring}
-                        className={tool} size='small'>
-                        <ColorLensIcon></ColorLensIcon>
-                    </Fab>
-                    <Fab onClick={cleanAll} className={tool} size='small'>
-                        <DeleteForeverIcon></DeleteForeverIcon>
-                    </Fab>
-                    <Fab color={linesBtn === true ? 'primary' : 'default'}
-                        onClick={() => setLining()}
-                        className={tool} size='small'>
-                        <TimelineIcon></TimelineIcon>
-                    </Fab>
-                    <Fab color={directionsBtn === true ? 'primary' : 'default'}
-                        onClick={() => setDirections()}
-                        className={tool} size='small'>
-                        <SwipeUpAltIcon></SwipeUpAltIcon>
-                    </Fab>
-                    <Fab className={tool} size='small'>
-                        <AutoFixOffIcon></AutoFixOffIcon>
-                    </Fab>
-                    <Fab color={swipeBtn === true ? 'primary' : 'default'}
-                        onClick={() => setSwiping()}
-                        className={tool} size='small'>
-                        <SwipeVerticalIcon></SwipeVerticalIcon>
-                    </Fab>
                 </div>
             </div>
             <div className={visualArea}>
-                <svg className={canvasStyles} ref={svgRef} viewBox={viewBox}></svg>
+                <svg className={canvasStyles} ref={svgRef} viewBox={viewBox}>
+                    <defs>
+                        <marker id="arrow" markerWidth="4" markerHeight="4" refX={nodeDefaultSize * nodeScale / 2 / 2 + 3} refY="2" orient="auto" markerUnits="strokeWidth">
+                            <path d="M0,0 L0,4 L4,2 z" fill="#aaa" />
+                        </marker>
+                    </defs>
+                </svg>
             </div>
             <div className="card-footer text-body-secondary">
             </div>
         </div>
     )
-
-
 };
 
 export default GraphCanvas;
