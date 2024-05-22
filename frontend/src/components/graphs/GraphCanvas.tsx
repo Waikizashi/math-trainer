@@ -18,6 +18,11 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import SettingsIcon from '@mui/icons-material/Settings';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import SwipeUpAltIcon from '@mui/icons-material/SwipeUpAlt';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import HighlightOffIcon from '@mui/icons-material/HighlightOff';
+import ClearIcon from '@mui/icons-material/Clear';
+
+import { Button, Form, Modal } from 'react-bootstrap';
 
 interface Node extends d3.SimulationNodeDatum {
     nodeId: string,
@@ -73,6 +78,11 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
     const [updateEvent, setUpdateEvent] = useState(false);
     const [nodeSource, setNodeSource] = useState<Node | null>(null);
     const [nodeTarget, setNodeTarget] = useState<Node | null>(null);
+
+    const [currentNode, setCurrentNode] = useState<Node | null>(null);
+    const [newNodeId, setNewNodeId] = useState('');
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [modalPosition, setModalPosition] = useState<{ x?: number, y?: number }>();
 
     const tempLinkRef = useRef<null | d3.Selection<SVGLineElement, unknown, null, undefined>>(null);
 
@@ -189,6 +199,33 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
             return `M${d.source.x},${d.source.y}L${d.target.x},${d.target.y}`;
         }
     }
+
+    const handleNodeClick = (event: any, node: Node) => {
+        setCurrentNode(node);
+        setNewNodeId(node.nodeId);
+        // console.log(node.x)
+        // console.log(node.y)
+        setModalPosition({ x: node.x, y: node.y });
+        setIsModalOpen(true);
+    };
+
+    const handleNodeNameChange = () => {
+        if (currentNode) {
+            const updatedNodes = nodes.map(node =>
+                node.nodeId === currentNode.nodeId ? { ...node, nodeId: newNodeId } : node
+            );
+
+            const updatedLinks = links.map(link => ({
+                ...link,
+                source: link.source === currentNode.nodeId ? newNodeId : link.source,
+                target: link.target === currentNode.nodeId ? newNodeId : link.target
+            }));
+
+            setNodes(updatedNodes);
+            setLinks(updatedLinks);
+            setIsModalOpen(false);
+        }
+    };
 
     const assignNodeGroups = (nodes: Node[], links: Link[]) => {
         const nodeDegrees: { [key: string]: number } = {};
@@ -390,7 +427,7 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
     }, [showArrows]);
 
     useEffect(() => {
-        console.log('####: ', graphData)
+        // console.log('####: ', graphData)
         cleanAll()
         setNodes(graphData ? graphData.nodes : [])
         setLinks(graphData ? graphData.links : [])
@@ -428,6 +465,10 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
             .attr('r', nodeDefaultSize * nodeScale)
             .attr('class', 'node')
             .style('fill', showColors ? (d: any) => colorScale(d.degree) : 'black')
+            .on("click", (event: any, d: any) => {
+                event.stopPropagation();
+                handleNodeClick(event, d);
+            })
             .on("contextmenu", (event: any, d: any) => {
                 event.preventDefault();
                 const updatedNodes = nodes.filter(node => node.nodeId !== d.nodeId);
@@ -631,6 +672,55 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
             </div>
             <div className="card-footer text-body-secondary">
             </div>
+            <Modal
+                backdrop={false}
+                show={isModalOpen}
+                onHide={() => setIsModalOpen(false)}
+                style={{
+                    width: "fit-content",
+                    position: 'absolute',
+                    top: `${modalPosition?.y}px`,
+                    left: `${modalPosition?.x}px`,
+                    maxWidth: '150px'
+                }}
+            >
+                <div className='modal-c-border m-0'>
+                    {/* <Modal.Header className='p-1 justify-content-end'>
+                        
+                    </Modal.Header> */}
+                    <Modal.Body className='p-1'>
+                        <Form>
+                            <Form.Group controlId="formNodeId">
+                                <Form.Label className='w-100 d-flex justify-content-center'>Node-id
+                                    {/* <Fab color='error'
+                                        onClick={() => setIsModalOpen(false)}
+                                        className={cn(s.customSmallFab, tool)} size='small'>
+                                        <ClearIcon className={cn(s.customSmalIcon)}></ClearIcon>
+                                    </Fab> */}
+                                </Form.Label>
+                                <Form.Control
+                                    className='text-center'
+                                    type="text"
+                                    value={newNodeId}
+                                    onChange={(e) => setNewNodeId(e.target.value)}
+                                />
+                            </Form.Group>
+                        </Form>
+                    </Modal.Body>
+                    <Modal.Footer className='p-1 justify-content-between'>
+                        <Fab color='error'
+                            onClick={() => setIsModalOpen(false)}
+                            className={cn(s.customSmallFab, tool)} size='small'>
+                            <HighlightOffIcon className={cn(s.customSmalIcon)}></HighlightOffIcon>
+                        </Fab>
+                        <Fab color='success'
+                            onClick={handleNodeNameChange}
+                            className={cn(s.customSmallFab, tool)} size='small'>
+                            <CheckCircleIcon className={cn(s.customSmalIcon)}></CheckCircleIcon>
+                        </Fab>
+                    </Modal.Footer>
+                </div>
+            </Modal>
         </div>
     )
 };

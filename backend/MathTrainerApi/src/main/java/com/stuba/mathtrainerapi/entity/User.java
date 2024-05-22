@@ -1,5 +1,6 @@
 package com.stuba.mathtrainerapi.entity;
 
+import com.stuba.mathtrainerapi.enums.Role;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -21,6 +22,9 @@ public class User {
 
     @Column(nullable = false, unique = true, length = 100)
     private String email;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TheoryCompletion> completedTheories;

@@ -8,7 +8,7 @@ import java.util.List;
 @Entity
 @Table(name = "content")
 @Data
-public class Content {
+public class TheoryContent {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -16,13 +16,15 @@ public class Content {
     @Column(nullable = false)
     private String contentType;
 
-    @Column(nullable = true)
+    @Column
     private String title;
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String data;
+    @Column(columnDefinition = "TEXT")
+    private String mediaLink;
 
-    @OneToMany(mappedBy = "content", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "theoryContent", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<GraphData> graphData;
     @ManyToOne
     @JoinColumn(name = "theory_id")

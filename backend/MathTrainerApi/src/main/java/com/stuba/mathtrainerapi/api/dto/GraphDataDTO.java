@@ -9,5 +9,5 @@ public class GraphDataDTO {
     private String title;
     private List<GraphNodeDTO> nodes;
     private List<GraphLinkDTO> links;
-    private Long contentId;
+    private Long theoryContentId;
 }

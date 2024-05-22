@@ -6,6 +6,6 @@ import java.util.List;
 public class TheoryDTO {
     private Long id;
     private String title;
-    private List<ContentDTO> content;
+    private List<TheoryContentDTO> content;
 }
 

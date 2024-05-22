@@ -11,10 +11,10 @@ export function isGraphConnected(graph: GraphDataProps): boolean {
 
     });
     graph.links.forEach((link: any) => {
-        console.log('LINK: ', link.source.nodeId)
+        // console.log('LINK: ', link.source.nodeId)
         adjacencyList.get(link.source.nodeId)?.push(link.target.nodeId);
         adjacencyList.get(link.target.nodeId)?.push(link.source.nodeId); // Для неориентированного графа
-        console.log('adjacencyList: ', adjacencyList)
+        // console.log('adjacencyList: ', adjacencyList)
     });
 
     const dfs = (node: string, visited: Set<string>) => {
@@ -37,19 +37,18 @@ export function findChromaticNumber(graph: GraphDataProps): number {
     const adjacencyList: Map<string, Set<string>> = new Map();
     graph.nodes.forEach(node => adjacencyList.set(node.nodeId, new Set()));
     graph.links.forEach((link: any) => {
-        adjacencyList.get(link.source)?.add(link.target);
-        adjacencyList.get(link.target)?.add(link.source);
+        adjacencyList.get(link.source.nodeId)?.add(link.target.nodeId);
+        adjacencyList.get(link.target.nodeId)?.add(link.source.nodeId);
     });
 
     const nodeColors: Map<string, number> = new Map();
-    const availableColors: Set<number> = new Set();
+    let maxColor = 0;
 
     const sortedNodes = [...graph.nodes].sort((a, b) => {
         return (adjacencyList.get(b.nodeId)?.size || 0) - (adjacencyList.get(a.nodeId)?.size || 0);
     });
 
     sortedNodes.forEach(node => {
-        let assignedColor = 1;
         const usedColors = new Set<number>();
 
         adjacencyList.get(node.nodeId)?.forEach(neighbor => {
@@ -58,16 +57,20 @@ export function findChromaticNumber(graph: GraphDataProps): number {
             }
         });
 
+        let assignedColor = 1;
         while (usedColors.has(assignedColor)) {
             assignedColor++;
         }
 
         nodeColors.set(node.nodeId, assignedColor);
-        availableColors.add(assignedColor);
+        if (assignedColor > maxColor) {
+            maxColor = assignedColor;
+        }
     });
 
-    return availableColors.size;
+    return maxColor;
 }
+
 
 export function isAcyclic(graph: GraphDataProps): boolean {
     const adjacencyList: Map<string, string[]> = new Map();

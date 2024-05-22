@@ -14,6 +14,7 @@ const GraphInfo: React.FC<GraphInfoProps> = ({ currentGraphData = { title: 'Unti
     const [chromaticNumber, setChromaticNumber] = useState<number | undefined>(undefined);
 
     useEffect(() => {
+        console.log("CURRENT_GRAPH_DATA: ", currentGraphData)
         setConnStatus(isGraphConnected(currentGraphData) ? 'Súvislý graf' : 'Nesúvislý graf');
         setRadius(findGraphRadius(currentGraphData));
         setDiameter(findGraphDiameter(currentGraphData));

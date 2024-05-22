@@ -9,7 +9,7 @@ import org.mapstruct.factory.Mappers;
 @Mapper(componentModel = "spring", uses = {GraphNodeMapper.class, GraphLinkMapper.class})
 public interface GraphDataMapper {
     GraphDataDTO toGraphDataDTO(GraphData graphData);
-    @Mapping(target = "content.id", source = "contentId")
+    @Mapping(target = "theoryContent.id", source = "theoryContentId")
     GraphData toGraphData(GraphDataDTO graphDataDTO);
 }
 

@@ -16,8 +16,8 @@ public class GraphData {
     @Column(nullable = false)
     private String title;
     @ManyToOne
-    @JoinColumn(name = "content_id")
-    private Content content;
+    @JoinColumn(name = "theoryContent_id")
+    private TheoryContent theoryContent;
     @OneToMany(mappedBy = "graphData", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<GraphNode> nodes;
 

@@ -45,10 +45,10 @@ public class TheoryServiceImpl implements TheoryService {
             throw new IllegalArgumentException("New Theory must not have an ID, it will be generated automatically.");
         }
         Theory theory = theoryMapper.toTheory(theoryDTO);
-        for (Content content : theory.getContent()) {
-            content.setTheory(theory);
-            for (GraphData graphData : content.getGraphData()) {
-                graphData.setContent(content);
+        for (TheoryContent theoryContent : theory.getTheoryContent()) {
+            theoryContent.setTheory(theory);
+            for (GraphData graphData : theoryContent.getGraphData()) {
+                graphData.setTheoryContent(theoryContent);
                 for (GraphLink graphLink : graphData.getLinks()) {
                     graphLink.setGraphData(graphData);
                 }
@@ -72,10 +72,10 @@ public class TheoryServiceImpl implements TheoryService {
 
         Theory updatedTheory =  theoryMapper.toTheory(theoryDTO);
 
-        for (Content content : updatedTheory.getContent()) {
-            content.setTheory(updatedTheory);
-            for (GraphData graphData : content.getGraphData()) {
-                graphData.setContent(content);
+        for (TheoryContent theoryContent : updatedTheory.getTheoryContent()) {
+            theoryContent.setTheory(updatedTheory);
+            for (GraphData graphData : theoryContent.getGraphData()) {
+                graphData.setTheoryContent(theoryContent);
                 for (GraphLink graphLink : graphData.getLinks()) {
                     graphLink.setGraphData(graphData);
                 }

@@ -20,7 +20,6 @@ const ConstructorPage = () => {
         setMatrixControlState(state)
     }
     const changeGraphTemplate = (currentGraphDatas: GraphDataProps) => {
-        console.log("CURRENT_GRAPH_DATA: ", currentGraphDatas)
         setCurrentGraphData(currentGraphDatas)
 
     }
