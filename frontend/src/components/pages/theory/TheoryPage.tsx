@@ -6,7 +6,7 @@ import GraphCanvas, { GraphDataProps } from '../../graphs/GraphCanvas';
 import MainMenu from '../../navigation/Menu';
 
 import { mainContainer, subContainer, section, visualArea } from '../../../utils/styles/global-styles';
-import theoryService, { TheoryDTO } from '../../../service/TheoryService';
+import theoryService, { Theory } from '../../../service/TheoryService';
 import TheoryComponent from './TheoryComponent';
 
 const TheoryPage: React.FC<any> = () => {
@@ -16,7 +16,7 @@ const TheoryPage: React.FC<any> = () => {
     const [currentTopipc, setCurrentTopic] = useState(0);
 
 
-    const [theories, setTheories] = useState<TheoryDTO[]>([]);
+    const [theories, setTheories] = useState<Theory[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -93,8 +93,7 @@ const TheoryPage: React.FC<any> = () => {
                     <div className="card-header">
                         Visualization
                     </div>
-                    {/* <GraphCanvas graphData={graphs[currentGraph]}></GraphCanvas> */}
-                    <GraphCanvas graphData={theories[0] ? theories[0].content[0].graphData[0] : undefined}></GraphCanvas>
+                    <GraphCanvas graphData={theories[0] ? theories[0].theoryContent[0].graphData[0] : undefined}></GraphCanvas>
                 </div>
             </div>
             <div className="progress-stacked w-75 p-0 my-2">

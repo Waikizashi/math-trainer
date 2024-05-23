@@ -1,9 +1,9 @@
 import React from 'react';
-import { TheoryDTO } from '../../../service/TheoryService';
+import { Theory } from '../../../service/TheoryService';
 import { Container, Row, Col, Card } from 'react-bootstrap';
 
 interface TheoryComponentProps {
-  theory: TheoryDTO | null;
+  theory: Theory | null;
 }
 
 const TheoryComponent: React.FC<TheoryComponentProps> = ({ theory }) => {
@@ -12,7 +12,7 @@ const TheoryComponent: React.FC<TheoryComponentProps> = ({ theory }) => {
       <Row>
         <Col>
           <h1 className="text-center mt-4">{theory?.title}</h1>
-          {theory?.content.map((content: any, index: any) => (
+          {theory?.theoryContent.map((content: any, index: any) => (
             <Card key={index} className="mb-3">
               <Card.Body>
                 <Card.Title>{content.title}</Card.Title>

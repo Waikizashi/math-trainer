@@ -4,7 +4,6 @@ import RemoveIcon from '@mui/icons-material/Remove';
 import s from './constructor.module.css';
 import ms from './matrix.module.css';
 import cn from 'classnames';
-import { GraphDataProps } from '../../graphs/GraphCanvas';
 
 interface MatrixProps {
     onMatrixChange: (newMatrix: any) => void; // Пример типа, где onMatrixChange - функция, принимающая матрицу строк
