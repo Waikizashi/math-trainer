@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
-import cn from 'classnames'
-import * as d3 from 'd3'
-import s from './graphCanvas.module.css'
+import cn from 'classnames';
+import * as d3 from 'd3';
+import s from './graphCanvas.module.css';
 import { useLocation } from 'react-router-dom';
 import { visualArea } from '../../utils/styles/global-styles';
 
@@ -20,28 +20,35 @@ import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import SwipeUpAltIcon from '@mui/icons-material/SwipeUpAlt';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import HighlightOffIcon from '@mui/icons-material/HighlightOff';
+import PinIcon from '@mui/icons-material/Pin';
+import AbcIcon from '@mui/icons-material/Abc';
 import ClearIcon from '@mui/icons-material/Clear';
 
-import { Button, Form, Modal } from 'react-bootstrap';
+import { Alert, Button, Form, Modal } from 'react-bootstrap';
+import NumberWithLineOrArrow from '../../utils/sub-components/NumberWithLineOrArrow';
 
 interface Node extends d3.SimulationNodeDatum {
-    nodeId: string,
-    group?: string
-    degree?: number
+    nodeId: string;
+    group?: string;
+    degree?: number;
 }
 
 interface Link extends d3.SimulationLinkDatum<Node> {
-    source: string | Node;
-    target: string | Node
+    source: Node;
+    target: Node;
+    weight?: null;
 }
 
 export interface GraphDataProps {
-    title?: string,
-    nodes: Node[],
-    links: Link[],
+    title?: string;
+    nodes: Node[];
+    links: Link[];
+    oriented?: boolean;
 }
+
 interface CanvasProps {
-    parent?: string,
+    parent?: string;
+    scale?: number;
     matrixControl?: (matrixControlState: boolean) => void;
     getCurrentGraphData?: (currentGraphData: GraphDataProps) => void;
 }
@@ -60,14 +67,15 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
 
     const [viewBox, setViewBox] = useState(`0 0 0 0`);
 
-    const [addBtn, setAddBtn] = useState(false)
-    const [settingsBtn, setSettingsBtn] = useState(false)
-    const [matrixBtn, setMatrixBtn] = useState(false)
-    const [showColors, setShowColors] = useState(false)
-    const [linesBtn, setLinesBtn] = useState(false)
-    const [showArrows, setShowArrows] = useState(false);
-    const [swipeBtn, setSwipeBtn] = useState(false)
-    const [scale, setScale] = useState(1);
+    const [addBtn, setAddBtn] = useState(false);
+    const [settingsBtn, setSettingsBtn] = useState(false);
+    const [matrixBtn, setMatrixBtn] = useState(false);
+    const [showColors, setShowColors] = useState(false);
+    const [linesBtn, setLinesBtn] = useState(false);
+    const [weightBtn, setWeight] = useState(false);
+    const [showDirections, setShowDirections] = useState(graphData?.oriented || false);
+    const [swipeBtn, setSwipeBtn] = useState(false);
+    const [scale, setScale] = useState(canvasPreferencies?.scale ? canvasPreferencies.scale : 1);
     const [nodeScale, setNodeScale] = useState(1);
     const [edgeLengthScale, setEdgeLengthScale] = useState(1);
     const [edgeSizeScale, setEdgeSizeScale] = useState(1);
@@ -76,12 +84,15 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
     const [repulsiveDistanceScale, setRepulsiveDistanceScale] = useState(1);
     const [isDragging, setIsDragging] = useState(false);
     const [updateEvent, setUpdateEvent] = useState(false);
+    const [nodeIdType, setNodeIdType] = useState<'number' | 'letter'>('number');
+
     const [nodeSource, setNodeSource] = useState<Node | null>(null);
     const [nodeTarget, setNodeTarget] = useState<Node | null>(null);
 
     const [currentNode, setCurrentNode] = useState<Node | null>(null);
     const [newNodeId, setNewNodeId] = useState('');
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isNodeModalOpen, setNodeModalOpen] = useState(false);
+    const [error, setError] = useState('');
     const [modalPosition, setModalPosition] = useState<{ x?: number, y?: number }>();
 
     const tempLinkRef = useRef<null | d3.Selection<SVGLineElement, unknown, null, undefined>>(null);
@@ -91,86 +102,83 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
 
     const updateSimulation = () => {
         canvasRef.current.selectAll('g>*').remove();
-        // simulationRef.current.nodes(nodes);
-        // console.log(canvasRef.current)
-        setUpdateEvent(true)
-        // simulationRef.current.force("link", d3.forceLink(links).nodeId((d: any) => d.nodeId));
-
-
+        setUpdateEvent(true);
     };
+
     const settingsHandle = () => {
         setSettingsBtn(!settingsBtn);
-    }
+    };
+
     const zoomIn = () => {
         setScale(scale * 1.1);
-    }
+    };
+
     const zoomOut = () => {
         setScale(scale / 1.1);
-    }
-    const addVertex = () => {
+    };
 
-    }
+    const addVertex = () => { };
 
-    const clean = () => {
-
-    }
+    const clean = () => { };
 
     const cleanAll = () => {
         canvasRef.current.selectAll('g>*').remove();
-        setNodes([])
-        setLinks([])
-    }
+        setNodes([]);
+        setLinks([]);
+    };
+
     const cleanCanvas = () => {
         canvasRef.current.selectAll('g>*').remove();
-    }
+    };
 
-    const showDegree = () => {
+    const showDegree = () => { };
 
-    }
-
-    const showDegreeIndex = () => {
-
-    }
+    const showDegreeIndex = () => { };
 
     const setAdding = () => {
-        setAddBtn(!addBtn)
-    }
+        setAddBtn(!addBtn);
+    };
+
     const setMatrix = () => {
-        setMatrixBtn(!matrixBtn)
-    }
+        setMatrixBtn(!matrixBtn);
+    };
+
     const setColoring = () => {
-        setShowColors(!showColors)
-    }
+        setShowColors(!showColors);
+    };
+
     const setDirections = () => {
-        setShowArrows(!showArrows)
-    }
+        setShowDirections(!showDirections);
+    };
+
     const setLining = () => {
-        setLinesBtn(!linesBtn)
-        setSwipeBtn(false)
-    }
+        setLinesBtn(!linesBtn);
+        setSwipeBtn(false);
+    };
+
     const setSwiping = () => {
-        setSwipeBtn(!swipeBtn)
-        setLinesBtn(false)
-    }
+        setSwipeBtn(!swipeBtn);
+        setLinesBtn(false);
+    };
+    const setWeightDisplay = () => {
+        setWeight(!weightBtn);
+    };
 
     const updateViewBox = () => {
         if (svgRef.current) {
             const { width, height } = svgRef.current.parentNode.getBoundingClientRect();
-            // setViewBox(`0 0 ${width} ${height}`);
-            // setViewBox(`0 0 ${width} ${height}`);
         }
     };
-    function createLoopPath(d: any, loopRadius = 75 * scale * (edgeLengthScale - edgeLengthScale / 2), offsetX = 0, offsetY = 0) {
-        const loopPath = d3.path();
-        loopPath.moveTo(d.x + offsetX, d.y + offsetY); // Стартовая точка на вершине
 
-        // Контрольные точки и конечная точка для кривой Безье
-        const cp1x = d.x + offsetX + loopRadius; // Контрольная точка 1 по оси X
-        const cp1y = d.y + offsetY - loopRadius; // Контрольная точка 1 по оси Y
-        const cp2x = d.x + offsetX - loopRadius; // Контрольная точка 2 по оси X
-        const cp2y = d.y + offsetY - loopRadius; // Контрольная точка 2 по оси Y
-        const endX = d.x + offsetX; // Конечная точка по оси X (вернуться к исходной вершине)
-        const endY = d.y + offsetY; // Конечная точка по оси Y (вернуться к исходной вершине)
+    function createLoopPath(d: any, loopRadius = 150 * scale * (edgeLengthScale - edgeLengthScale / 2), offsetX = 0, offsetY = 0) {
+        const loopPath = d3.path();
+        loopPath.moveTo(d.x + offsetX, d.y + offsetY);
+        const cp1x = d.x + offsetX + loopRadius;
+        const cp1y = d.y + offsetY - loopRadius;
+        const cp2x = d.x + offsetX - loopRadius;
+        const cp2y = d.y + offsetY - loopRadius;
+        const endX = d.x + offsetX;
+        const endY = d.y + offsetY;
 
         // Рисуем кривую Безье для создания петли
         loopPath.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, endX, endY);
@@ -203,27 +211,38 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
     const handleNodeClick = (event: any, node: Node) => {
         setCurrentNode(node);
         setNewNodeId(node.nodeId);
-        // console.log(node.x)
-        // console.log(node.y)
         setModalPosition({ x: node.x, y: node.y });
-        setIsModalOpen(true);
+        setNodeModalOpen(true);
     };
 
     const handleNodeNameChange = () => {
         if (currentNode) {
+            if (nodes.some(node => node.nodeId === newNodeId)) {
+                setError(`Node [${newNodeId}] already exists.`);
+                return;
+            }
+
             const updatedNodes = nodes.map(node =>
                 node.nodeId === currentNode.nodeId ? { ...node, nodeId: newNodeId } : node
             );
+            const findNodeById = (nodeId: string) => {
+                const matchingNode = updatedNodes.find(node => node.nodeId === nodeId);
+                if (!matchingNode) {
+                    throw new Error(`Node with nodeId ${nodeId} not found`);
+                }
+                return matchingNode;
+            };
 
             const updatedLinks = links.map(link => ({
                 ...link,
-                source: link.source === currentNode.nodeId ? newNodeId : link.source,
-                target: link.target === currentNode.nodeId ? newNodeId : link.target
+                source: link.source.nodeId === currentNode.nodeId ? findNodeById(newNodeId) : link.source,
+                target: link.target.nodeId === currentNode.nodeId ? findNodeById(newNodeId) : link.target
             }));
 
             setNodes(updatedNodes);
             setLinks(updatedLinks);
-            setIsModalOpen(false);
+            setNodeModalOpen(false);
+            setError('');
         }
     };
 
@@ -243,8 +262,6 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
 
         nodes.forEach(node => {
             node.degree = nodeDegrees[node.nodeId] || 0;
-
-            // Пример назначения групп на основе степени
             if (node.degree <= 1) {
                 node.group = 'Low';
             } else if (node.degree <= 3) {
@@ -268,78 +285,114 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
         ].join(' ');
 
         svgElement.attr('viewBox', newViewBox);
-        canvasRef.current = svgElement
+        canvasRef.current = svgElement;
     }, [window.screen.height, window.screen.width, scale]);
 
-
     const nodeSizeChange = (e: any) => {
-        setNodeScale(e.target.value)
-    }
+        setNodeScale(e.target.value);
+    };
+
     const edgeLengthChange = (e: any) => {
-        setEdgeLengthScale(e.target.value)
-    }
+        setEdgeLengthScale(e.target.value);
+    };
+
     const edgeSizeChange = (e: any) => {
-        setEdgeSizeScale(e.target.value)
-    }
+        setEdgeSizeScale(e.target.value);
+    };
+
     const textSizeChange = (e: any) => {
-        setTextScale(e.target.value)
-    }
+        setTextScale(e.target.value);
+    };
+
     const repulsiveForceChange = (e: any) => {
-        setRepulsiveForceScale(e.target.value)
-    }
+        setRepulsiveForceScale(e.target.value);
+    };
+
     const repulsiveDistanceChange = (e: any) => {
-        setRepulsiveDistanceScale(e.target.value)
+        setRepulsiveDistanceScale(e.target.value);
+    };
+
+    function getNextNodeId(): string {
+        const existingIds = new Set(nodes.map(node => node.nodeId));
+        if (nodeIdType === 'number') {
+            let nextId = nodes.length;
+            while (existingIds.has(nextId.toString())) {
+                nextId++;
+            }
+            return nextId.toString();
+        } else {
+            let nextId = getNextLetterId('');
+            while (existingIds.has(nextId)) {
+                nextId = getNextLetterId(nextId);
+            }
+            return nextId;
+        }
     }
 
-    useEffect(() => {
+    function getNextLetterId(currentId: string): string {
+        if (currentId === '') return 'A';
+        const endCharCode = 'Z'.charCodeAt(0);
+        const charCodes = Array.from(currentId).map(char => char.charCodeAt(0));
+        let index = charCodes.length - 1;
+        while (index >= 0) {
+            if (charCodes[index] < endCharCode) {
+                charCodes[index]++;
+                return String.fromCharCode(...charCodes);
+            }
+            charCodes[index] = 'A'.charCodeAt(0);
+            index--;
+        }
+        charCodes.unshift('A'.charCodeAt(0));
+        return String.fromCharCode(...charCodes);
+    }
 
-    }, [settingsBtn])
+    useEffect(() => { }, [settingsBtn]);
 
     useEffect(() => {
         if (canvasRef.current) {
             if (addBtn) {
-                setLinesBtn(false)
+                setLinesBtn(false);
                 canvasRef.current.on('click', (event: any) => {
                     const coords = d3.pointer(event);
+                    const newNodeId = getNextNodeId();
                     const newNode: Node = {
-                        nodeId: nodes.length.toString(),
+                        nodeId: newNodeId,
                         group: (0).toString(),
                         x: coords[0],
                         y: coords[1],
+                        vx: 0,
+                        vy: 0,
                     };
                     setNodes(prevNodes => [...prevNodes, newNode]);
-                    updateSimulation()
+                    updateSimulation();
                 });
             } else {
-                canvasRef.current.on('click', null)
+                canvasRef.current.on('click', null);
             }
         }
-    }, [addBtn, nodes])
+    }, [addBtn, nodes, nodeIdType]);
 
-    useEffect(() => {
-        // // console.log('state source: ', nodeSource)
-    }, [nodeSource])
+    useEffect(() => { }, [nodeSource]);
 
     useEffect(() => {
         if (nodeSource?.nodeId && nodeTarget?.nodeId) {
-
-            const newLink: Link = { source: nodeSource.nodeId, target: nodeTarget.nodeId }
-            setNodes(prevNodes => [...prevNodes])
+            const newLink: Link = { source: nodeSource, target: nodeTarget };
+            setNodes(prevNodes => [...prevNodes]);
             setLinks(prevLinks => [...prevLinks, newLink]);
-            updateSimulation()
+            updateSimulation();
         }
-    }, [nodeTarget])
+    }, [nodeTarget]);
 
     useEffect(() => {
         if (!linesBtn) return;
-        setAddBtn(false)
+        setAddBtn(false);
         const startTempLine = (event: any) => {
             if (event.button !== 0) return;
             const targetElement = d3.select(event.target);
 
             const sourceNode: any = targetElement.datum();
             if (sourceNode === undefined) return;
-            setNodeSource(sourceNode)
+            setNodeSource(sourceNode);
             tempLinkRef.current = canvasRef.current.append('line')
                 .attr('class', 'temp-line')
                 .attr('x1', sourceNode.x)
@@ -350,7 +403,7 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
                 .attr('stroke-width', 3)
                 .style('pointer-events', 'none')
                 .attr('stroke-linecap', 'round')
-                .attr('marker-end', showArrows ? 'url(#arrow)' : null);
+                .attr('marker-end', showDirections ? 'url(#arrow)' : null);
             setIsDragging(true);
         };
 
@@ -369,11 +422,10 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
             const targetElement = d3.select(event.target);
             const targetNode: any = targetElement.datum();
             if (targetElement.datum() && targetElement.classed('node')) {
-                setNodeTarget(targetNode)
+                setNodeTarget(targetNode);
             }
 
             if (tempLinkRef.current) tempLinkRef.current.remove();
-            // console.log('mouseup')
             setIsDragging(false);
         };
 
@@ -385,16 +437,19 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
             canvasRef.current.on('mousemove', null);
             canvasRef.current.on('mouseup', null);
         };
-    }, [linesBtn, isDragging])
+    }, [linesBtn, isDragging]);
 
     useEffect(() => {
-        canvasPreferencies?.matrixControl && canvasPreferencies.matrixControl(matrixBtn)
-    }, [matrixBtn])
-    useEffect(() => {
-        if (canvasRef.current) {
+        canvasPreferencies?.matrixControl && canvasPreferencies.matrixControl(matrixBtn);
+    }, [matrixBtn]);
 
-        }
-    }, [linesBtn])
+    useEffect(() => {
+        if (canvasRef.current) { }
+    }, [linesBtn]);
+    useEffect(() => {
+
+    }, [weightBtn]);
+
     useEffect(() => {
         if (canvasRef.current) {
             const dragHandler = d3.drag<SVGSVGElement, unknown>()
@@ -419,19 +474,19 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
                 canvasRef.current.on('.drag', null);
             }
         }
-    }, [swipeBtn])
+    }, [swipeBtn]);
 
     useEffect(() => {
         canvasRef.current.selectAll('.link')
-            .attr('marker-end', showArrows ? 'url(#arrow)' : null);
-    }, [showArrows]);
+            .attr('marker-end', showDirections ? 'url(#arrow)' : null);
+    }, [showDirections]);
 
     useEffect(() => {
-        // console.log('####: ', graphData)
-        cleanAll()
-        setNodes(graphData ? graphData.nodes : [])
-        setLinks(graphData ? graphData.links : [])
-    }, [graphData])
+        cleanAll();
+        setNodes(graphData ? graphData.nodes : []);
+        setLinks(graphData ? graphData.links : []);
+        setShowDirections(graphData?.oriented || false); // Установка значения showDirections из graphData
+    }, [graphData]);
 
     useEffect(() => {
         assignNodeGroups(nodes, links);
@@ -449,7 +504,7 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
             .attr('stroke', '#aaa')
             .attr('stroke-width', 4 * edgeSizeScale)
             .attr('stroke-linecap', 'round')
-            .attr('marker-end', showArrows ? 'url(#arrow)' : null)
+            .attr('marker-end', showDirections ? 'url(#arrow)' : null)
             .on("contextmenu", (event: any, d: any) => {
                 event.preventDefault();
                 const updatedLinks = links.filter(link => link !== d);
@@ -501,10 +556,9 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
                 w / 2,
                 h / 2
             ) : () => {
-                setUpdateEvent(false)
-                return null
-            }
-            )
+                setUpdateEvent(false);
+                return null;
+            })
             .on('tick', () => {
                 linkElements
                     .attr('d', (d: any) => {
@@ -523,10 +577,12 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
                     .attr('x', (d: any) => d.x)
                     .attr('y', (d: any) => d.y);
             });
+
         return () => {
             simulationRef.current.stop();
         };
-    }, [nodes,
+    }, [
+        nodes,
         showColors,
         links,
         viewBox,
@@ -536,11 +592,12 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
         edgeSizeScale,
         textScale,
         repulsiveDistanceScale,
-        repulsiveForceScale,]);
+        repulsiveForceScale,
+    ]);
 
     useEffect(() => {
-        canvasPreferencies?.getCurrentGraphData && canvasPreferencies.getCurrentGraphData({ nodes, links })
-    }, [nodes, links])
+        canvasPreferencies?.getCurrentGraphData && canvasPreferencies.getCurrentGraphData({ nodes, links });
+    }, [nodes, links]);
 
     const constructorArea = cn(
         "card",
@@ -548,26 +605,25 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
         'h-100',
         'w-100',
         !isConstructorPage ? 'border-0' : 'mx-2',
-    )
+    );
 
-    const tools = cn(
+    const tools = cn();
 
-    )
     const tool = cn(
         "mx-2",
-    )
+    );
+
     const canvasStyles = cn(
         'graph-canvas',
-        'bg-light'
-    )
+    );
+
     const rangeControlStyle = cn(
         "mb-0",
         "form-label",
         "text-primary-emphasis",
         "d-flex",
         "justify-content-between"
-    )
-
+    );
 
     return (
         <div onContextMenu={e => e.preventDefault()} className={constructorArea}>
@@ -595,6 +651,12 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
                         className={tool} size='small'>
                         <ColorLensIcon></ColorLensIcon>
                     </Fab>
+                    <Fab
+                        color={nodeIdType === 'number' ? 'success' : 'warning'}
+                        onClick={() => setNodeIdType(nodeIdType === 'number' ? 'letter' : 'number')}
+                        className={tool} size='small'>
+                        {nodeIdType === 'number' ? <PinIcon /> : <AbcIcon />}
+                    </Fab>
                     <Fab onClick={cleanAll} className={tool} size='small'>
                         <DeleteForeverIcon></DeleteForeverIcon>
                     </Fab>
@@ -603,7 +665,12 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
                         className={tool} size='small'>
                         <TimelineIcon></TimelineIcon>
                     </Fab>
-                    <Fab color={showArrows ? 'primary' : 'default'}
+                    <Fab color={weightBtn === true ? 'primary' : 'default'}
+                        onClick={() => setWeightDisplay()}
+                        className={tool} size='small'>
+                        <NumberWithLineOrArrow lineColor={weightBtn} />
+                    </Fab>
+                    <Fab color={showDirections ? 'primary' : 'default'}
                         onClick={() => setDirections()}
                         className={tool} size='small'>
                         <SwipeUpAltIcon></SwipeUpAltIcon>
@@ -620,7 +687,7 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
                         <Fab onClick={settingsHandle} type="button" className={cn("btn dropdown-toggle", tool, s.beforeOff)} data-bs-toggle="dropdown" aria-expanded="false" size='small'>
                             <SettingsIcon></SettingsIcon>
                         </Fab>
-                        <ul style={{ width: "max-content", zIndex: 1111 }} className="dropdown-menu mx-2 p-2 border-primary border-2">
+                        <ul style={{ width: "max-content", zIndex: 1111 }} className="dropdown-menu mx-2 p-2 border-primary border-1">
                             <li>
                                 <div className={rangeControlStyle}>Node size:
                                     <output className='mx-1'>{nodeScale}</output>
@@ -664,18 +731,20 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
             <div className={visualArea}>
                 <svg className={canvasStyles} ref={svgRef} viewBox={viewBox}>
                     <defs>
+                        <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="gray" strokeWidth="0.5" />
+                        </pattern>
                         <marker id="arrow" markerWidth="4" markerHeight="4" refX={nodeDefaultSize * nodeScale / 2 / 2 + 3} refY="2" orient="auto" markerUnits="strokeWidth">
                             <path d="M0,0 L0,4 L4,2 z" fill="#aaa" />
                         </marker>
                     </defs>
                 </svg>
             </div>
-            <div className="card-footer text-body-secondary">
-            </div>
+            <div className="card-footer text-body-secondary"></div>
             <Modal
                 backdrop={false}
-                show={isModalOpen}
-                onHide={() => setIsModalOpen(false)}
+                show={isNodeModalOpen}
+                onHide={() => setNodeModalOpen(false)}
                 style={{
                     width: "fit-content",
                     position: 'absolute',
@@ -685,19 +754,15 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
                 }}
             >
                 <div className='modal-c-border m-0'>
-                    {/* <Modal.Header className='p-1 justify-content-end'>
-                        
-                    </Modal.Header> */}
                     <Modal.Body className='p-1'>
+                        {error && (
+                            <Alert variant="danger" className='text-center'>
+                                {error}
+                            </Alert>
+                        )}
                         <Form>
                             <Form.Group controlId="formNodeId">
-                                <Form.Label className='w-100 d-flex justify-content-center'>Node-id
-                                    {/* <Fab color='error'
-                                        onClick={() => setIsModalOpen(false)}
-                                        className={cn(s.customSmallFab, tool)} size='small'>
-                                        <ClearIcon className={cn(s.customSmalIcon)}></ClearIcon>
-                                    </Fab> */}
-                                </Form.Label>
+                                <Form.Label className='w-100 d-flex justify-content-center'>Node-id</Form.Label>
                                 <Form.Control
                                     className='text-center'
                                     type="text"
@@ -709,7 +774,7 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
                     </Modal.Body>
                     <Modal.Footer className='p-1 justify-content-between'>
                         <Fab color='error'
-                            onClick={() => setIsModalOpen(false)}
+                            onClick={() => { setNodeModalOpen(false); setError('') }}
                             className={cn(s.customSmallFab, tool)} size='small'>
                             <HighlightOffIcon className={cn(s.customSmalIcon)}></HighlightOffIcon>
                         </Fab>
@@ -722,7 +787,7 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
                 </div>
             </Modal>
         </div>
-    )
+    );
 };
 
 export default GraphCanvas;

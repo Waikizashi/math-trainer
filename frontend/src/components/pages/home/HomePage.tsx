@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import MainMenu from '../../navigation/Menu';
 import s from './home.module.css';
 import cn from 'classnames';
+import FloatingGraphs from '../../../utils/visulaEffects/FloatingGraphs';
 
 // Определите типы для props
 interface MyComponentProps {
@@ -28,6 +29,7 @@ const HomePage: React.FC<MyComponentProps> = ({ title, description }) => {
                     <h1 className={titleClasses}>{title}</h1>
                 </div>
             </header>
+            {/* <FloatingGraphs backgroundColor={"#0a459c"} backgroundImage={""}></FloatingGraphs> */}
             <div className={homePageClasses}>
                 <div className={s.container}>
                     <MainMenu />

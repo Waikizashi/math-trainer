@@ -1,20 +1,152 @@
 import { GraphDataProps } from "../components/graphs/GraphCanvas";
 
+export function isBipartite(graph: GraphDataProps): boolean {
+    const color: Map<string, number> = new Map();
+
+    const bfs = (start: string): boolean => {
+        const queue: string[] = [start];
+        color.set(start, 0);
+
+        while (queue.length > 0) {
+            const node = queue.shift()!;
+            const nodeColor = color.get(node)!;
+
+            const neighbors = graph.links
+                .filter(link => link.source.nodeId === node || link.target.nodeId === node)
+                .map(link => link.source.nodeId === node ? link.target.nodeId : link.source.nodeId);
+
+            for (const neighbor of neighbors) {
+                if (!color.has(neighbor)) {
+                    color.set(neighbor, 1 - nodeColor);
+                    queue.push(neighbor);
+                } else if (color.get(neighbor) === nodeColor) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    };
+
+    for (const node of graph.nodes) {
+        if (!color.has(node.nodeId)) {
+            if (!bfs(node.nodeId)) {
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+export function isTree(graph: GraphDataProps): boolean {
+    return isGraphConnected(graph) && isAcyclic(graph);
+}
+
+export function isComplete(graph: GraphDataProps): boolean {
+    const nodeCount = graph.nodes.length;
+    const expectedEdges = (nodeCount * (nodeCount - 1)) / 2;
+    return graph.links.length === expectedEdges;
+}
+
+export function findBridges(graph: GraphDataProps): { from: string, to: string }[] {
+    const adjacencyList: Map<string, string[]> = new Map();
+    graph.nodes.forEach(node => adjacencyList.set(node.nodeId, []));
+    graph.links.forEach(link => {
+        adjacencyList.get(link.source.nodeId)?.push(link.target.nodeId);
+        adjacencyList.get(link.target.nodeId)?.push(link.source.nodeId);
+    });
+
+    const bridges: { from: string, to: string }[] = [];
+    const visited: Map<string, number> = new Map();
+    const disc: Map<string, number> = new Map();
+    const low: Map<string, number> = new Map();
+    let time = 0;
+
+    const dfs = (u: string, parent: string | null) => {
+        visited.set(u, time);
+        disc.set(u, time);
+        low.set(u, time);
+        time++;
+
+        const neighbors = adjacencyList.get(u) || [];
+        for (const v of neighbors) {
+            if (!visited.has(v)) {
+                dfs(v, u);
+                low.set(u, Math.min(low.get(u)!, low.get(v)!));
+
+                if (low.get(v)! > disc.get(u)!) {
+                    bridges.push({ from: u, to: v });
+                }
+            } else if (v !== parent) {
+                low.set(u, Math.min(low.get(u)!, disc.get(v)!));
+            }
+        }
+    };
+
+    graph.nodes.forEach(node => {
+        if (!visited.has(node.nodeId)) {
+            dfs(node.nodeId, null);
+        }
+    });
+
+    return bridges;
+}
+
+
+export function isEulerian(graph: GraphDataProps): boolean {
+    if (!isGraphConnected(graph)) return false;
+
+    const oddDegreeCount = graph.nodes.reduce((count, node) => {
+        const degree = graph.links.filter(link => link.source.nodeId === node.nodeId || link.target.nodeId === node.nodeId).length;
+        return count + (degree % 2 !== 0 ? 1 : 0);
+    }, 0);
+
+    return oddDegreeCount === 0;
+}
+
+export function isHamiltonian(graph: GraphDataProps): boolean {
+    const path: string[] = [];
+    const visited: Set<string> = new Set();
+
+    const hamiltonianDFS = (node: string): boolean => {
+        path.push(node);
+        visited.add(node);
+
+        if (path.length === graph.nodes.length) return true;
+
+        const neighbors = graph.links
+            .filter(link => link.source.nodeId === node || link.target.nodeId === node)
+            .map(link => link.source.nodeId === node ? link.target.nodeId : link.source.nodeId);
+
+        for (const neighbor of neighbors) {
+            if (!visited.has(neighbor)) {
+                if (hamiltonianDFS(neighbor)) return true;
+            }
+        }
+
+        path.pop();
+        visited.delete(node);
+        return false;
+    };
+
+    for (const node of graph.nodes) {
+        if (hamiltonianDFS(node.nodeId)) return true;
+    }
+
+    return false;
+}
+
 export function isGraphConnected(graph: GraphDataProps): boolean {
     const nodeCount = graph.nodes.length;
     if (nodeCount === 0) return true;
 
     const adjacencyList: Map<string, string[]> = new Map();
     graph.nodes.forEach(node => {
-
         adjacencyList.set(node.nodeId, [])
-
     });
     graph.links.forEach((link: any) => {
-        // console.log('LINK: ', link.source.nodeId)
         adjacencyList.get(link.source.nodeId)?.push(link.target.nodeId);
-        adjacencyList.get(link.target.nodeId)?.push(link.source.nodeId); // Для неориентированного графа
-        // console.log('adjacencyList: ', adjacencyList)
+        adjacencyList.get(link.target.nodeId)?.push(link.source.nodeId);
     });
 
     const dfs = (node: string, visited: Set<string>) => {
@@ -76,7 +208,7 @@ export function isAcyclic(graph: GraphDataProps): boolean {
     const adjacencyList: Map<string, string[]> = new Map();
     graph.nodes.forEach(node => adjacencyList.set(node.nodeId, []));
     graph.links.forEach((link: any) => {
-        adjacencyList.get(link.source)?.push(link.target);
+        adjacencyList.get(link.source.nodeId)?.push(link.target.nodeId);
     });
 
     let isCycle = false;
@@ -102,6 +234,7 @@ export function isAcyclic(graph: GraphDataProps): boolean {
         });
         recStack.delete(vertex);
     }
+
 
     for (let node of graph.nodes) {
         if (!visited.has(node.nodeId)) {
@@ -156,7 +289,7 @@ function initializeAdjacencyMatrix(graph: GraphDataProps): Map<string, Map<strin
 
     graph.links.forEach((link: any) => {
         adjacencyMatrix.get(link.source.nodeId)?.set(link.target.nodeId, 1);
-        adjacencyMatrix.get(link.target.nodeId)?.set(link.source.nodeId, 1); // Для неориентированного графа
+        adjacencyMatrix.get(link.target.nodeId)?.set(link.source.nodeId, 1);
     });
 
     return adjacencyMatrix;
@@ -177,4 +310,11 @@ function computeAllPairsShortestPaths(graph: GraphDataProps, adjacencyMatrix: Ma
     });
 }
 
+export function checkVerticesCount(graph: GraphDataProps, possibleCounts: number[]): boolean {
+    return possibleCounts.includes(graph.nodes.length);
+}
+
+export function checkEdgesCount(graph: GraphDataProps, possibleCounts: number[]): boolean {
+    return possibleCounts.includes(graph.links.length);
+}
 

@@ -1,6 +1,6 @@
 import { GraphDataProps } from "../components/graphs/GraphCanvas";
 
-export const graphs: GraphDataProps[] = [
+export const graphs: any[] = [
     {
         title: 'graph-1',
         nodes: [

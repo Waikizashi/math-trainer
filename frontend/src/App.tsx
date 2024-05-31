@@ -10,7 +10,7 @@ import ConstructorPage from './components/pages/constructor/ConstructorPage';
 import LoginPage from './components/pages/login/LoginPage';
 import Profile from './components/pages/profile/Profile';
 import AdminPage from './components/pages/admin/AdminPanel';
-import PracticePage from './components/pages/trainer/PracticePage';
+import PracticePage from './components/pages/practice/PracticePage';
 
 function RedirectToHome() {
   let navigate = useNavigate();

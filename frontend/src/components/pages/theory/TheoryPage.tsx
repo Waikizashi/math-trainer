@@ -1,22 +1,20 @@
 import React, { useEffect, useRef, useState } from 'react';
-import s from './theoryPage.module.css';
 import cn from 'classnames';
-import Fab from '@mui/material/Fab';
 import GraphCanvas, { GraphDataProps } from '../../graphs/GraphCanvas';
 import MainMenu from '../../navigation/Menu';
-
 import { mainContainer, subContainer, section, visualArea } from '../../../utils/styles/global-styles';
-import theoryService, { Theory } from '../../../service/TheoryService';
+import theoryService, { GraphData, Theory } from '../../../service/TheoryService';
 import TheoryComponent from './TheoryComponent';
+import { mapGraphData } from '../../../utils/mappers';
+import styles from './theoryPage.module.css'; // Убедитесь, что путь к файлу верный
 
 const TheoryPage: React.FC<any> = () => {
-    const cardRef = useRef<HTMLDivElement>(null);
-    const cardHeaderRef = useRef<HTMLDivElement>(null);
-    const [bodyHeight, setBH] = useState(0)
-    const [currentTopipc, setCurrentTopic] = useState(0);
-
+    const [currentTopic, setCurrentTopic] = useState(0);
+    const [currentContentFocus, setCurrentContentFocus] = useState(0);
+    const [currentContentGraphFocus, setCurrentContentGraphFocus] = useState(0);
 
     const [theories, setTheories] = useState<Theory[]>([]);
+    const [graphData, setGraphData] = useState<GraphDataProps | undefined>(undefined);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -24,7 +22,7 @@ const TheoryPage: React.FC<any> = () => {
         const fetchTheories = async () => {
             try {
                 const data = await theoryService.getAllTheories();
-                console.log("DATA:", data)
+                console.log("DATA:", data);
                 setTheories(data);
             } catch (error) {
                 setError('ERROR:' + error);
@@ -37,19 +35,31 @@ const TheoryPage: React.FC<any> = () => {
     }, []);
 
     useEffect(() => {
-    }, [currentTopipc]);
-
-    if (loading) return <div>Loading...</div>;
-    if (error) return <div>{error}</div>;
-
-
+        const content = theories[currentTopic]?.theoryContents[currentContentFocus];
+        const graph = content?.graphData[currentContentGraphFocus];
+        if (graph) {
+            setGraphData(mapGraphData(graph));
+        } else {
+            setGraphData(undefined);
+        }
+    }, [currentContentGraphFocus, currentContentFocus, currentTopic, theories]);
 
     const changeVisualization = (prevNext: number) => {
         setCurrentTopic(prevTopic => {
-            const currentTopic: number = prevTopic + prevNext
-            return (currentTopic >= theories.length || currentTopic < 0) ? 0 : currentTopic
-        })
-    }
+            const currentTopic: number = prevTopic + prevNext;
+            return (currentTopic >= theories.length || currentTopic < 0) ? 0 : currentTopic;
+        });
+    };
+
+    const handleContentClick = (contentIndex: number) => {
+        setCurrentContentFocus(contentIndex);
+        setCurrentContentGraphFocus(0); // Reset graph focus when content changes
+    };
+
+    const handleGraphClick = (contentIndex: number, graphIndex: number) => {
+        setCurrentContentFocus(contentIndex);
+        setCurrentContentGraphFocus(graphIndex);
+    };
 
     const segments = [
         { id: 1, value: 20, label: 'Segment one', className: 'progress-bar bg-success' },
@@ -58,15 +68,22 @@ const TheoryPage: React.FC<any> = () => {
     ];
 
     return (
-        <div className={mainContainer} >
+        <div className={mainContainer}>
             <MainMenu />
             <div className={subContainer}>
                 <div className={section}>
                     <div className="card-header">
                         Theory
                     </div>
-                    <div className="card-body overflow-auto">
-                        <TheoryComponent theory={theories[0] ? theories[0] : null}></TheoryComponent>
+                    <div className="card-body">
+                        {loading ? <div>Loading...</div> : error ? <div>{error}</div> :
+                            <TheoryComponent
+                                theory={theories[0] ? theories[0] : null}
+                                onContentClick={handleContentClick}
+                                onGraphClick={handleGraphClick}
+                                currentContentFocus={currentContentFocus}
+                                currentContentGraphFocus={currentContentGraphFocus}
+                            />}
                     </div>
                     <div className="card-footer text-body-secondary">
                         <nav aria-label="Page navigation example">
@@ -93,7 +110,13 @@ const TheoryPage: React.FC<any> = () => {
                     <div className="card-header">
                         Visualization
                     </div>
-                    <GraphCanvas graphData={theories[0] ? theories[0].theoryContent[0].graphData[0] : undefined}></GraphCanvas>
+                    {loading ? <div>Loading...</div> : error ? null : (
+                        graphData ? (
+                            <GraphCanvas graphData={graphData} canvasPreferencies={{ scale: 1.5 }} />
+                        ) : (
+                            <div>Select a graph to visualize</div>
+                        )
+                    )}
                 </div>
             </div>
             <div className="progress-stacked w-75 p-0 my-2">

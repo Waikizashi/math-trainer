@@ -27,14 +27,14 @@ const MainMenu: React.FC<MenuProps> = (description) => {
 
 
     const mainMenu = () => (
-        <nav className="w-100 navbar navbar-expand-lg navbar-dark bg-dark">
+        <nav className="p-0 w-100 navbar navbar-expand-lg navbar-dark bg-dark">
             <div className="container-fluid">
                 <Link className="navbar-brand" to="/home">
                     <img src="/favicon.ico" width="30" height="30" className="d-inline-block align-top mx-2" alt="Math trainer" />
                     Math trainer
                 </Link>
 
-                <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNav" aria-controls="navbarTogglerDemo01" aria-expanded="false" aria-label="Toggle navigation">
+                <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainMenu" aria-expanded="false" aria-label="Toggle navigation">
                     <span className="navbar-toggler-icon"></span>
                 </button>
                 <div className="collapse navbar-collapse" id="mainNav">
@@ -68,7 +68,7 @@ const MainMenu: React.FC<MenuProps> = (description) => {
                                     ME
                                 </button>
                             </a>
-                            <ul className="dropdown-menu" style={{ zIndex: 1100 }}>
+                            <ul className="dropdown-menu" style={{ margin: 'auto', width: "fit-content", zIndex: 1100 }}>
                                 <li><Link className="dropdown-item" to="/profile">Profile</Link></li>
                                 <li><Link className="dropdown-item" to="/login">Login</Link></li>
                             </ul>

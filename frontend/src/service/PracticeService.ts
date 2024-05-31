@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { API_URL } from './service.config';
 
 export interface PracticeContent {
     contentType: string;
@@ -15,14 +16,28 @@ export interface Practice {
     practiceContents: PracticeContent[];
 }
 
-const API_URL = '/api/practices';
+const practice_service_URL = API_URL + '/practices';
 
-export const createPractice = async (practice: Practice) => {
-    try {
-        const response = await axios.post(API_URL, practice);
-        return response.data;
-    } catch (error) {
-        console.error('Error creating practice', error);
-        throw error;
-    }
-};
+class PracticeService {
+    async createPractice(practice: Practice) {
+        try {
+            console.log(practice)
+            const response = await axios.post(practice_service_URL, practice);
+            return response.data;
+        } catch (error) {
+            console.error('Error creating practice', error);
+            throw error;
+        }
+    };
+    async getAllPractices() {
+        try {
+            const response = await axios.get(practice_service_URL);
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching practice', error);
+            throw error;
+        }
+    };
+}
+
+export default new PracticeService();

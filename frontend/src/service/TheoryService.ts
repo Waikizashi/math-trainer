@@ -1,7 +1,8 @@
 import axios from 'axios';
 import { GraphDataProps } from '../components/graphs/GraphCanvas';
+import { API_URL } from './service.config';
 
-const API_URL = 'http://localhost:8080/api/theories'
+const theory_service_URL = API_URL + '/theories'
 export interface GraphNode {
     nodeId: string;
     group?: string;
@@ -14,6 +15,7 @@ export interface GraphLink {
 
 export interface GraphData {
     title: string;
+    oriented: boolean,
     nodes: GraphNode[];
     links: GraphLink[];
 }
@@ -28,7 +30,7 @@ export interface TheoryContent {
 
 export interface Theory {
     title: string;
-    theoryContent: TheoryContent[];
+    theoryContents: TheoryContent[];
 }
 
 
@@ -36,8 +38,9 @@ class TheoryService {
 
     async createTheory(theory: Theory) {
         try {
-            const response = await axios.post(API_URL, theory);
-            return response.data;
+            console.log("@@@@", theory)
+            // const response = await axios.post(theory_service_URL, theory);
+            // return response.data;
         } catch (error) {
             console.error('Error creating theory', error);
             throw error;
@@ -45,13 +48,13 @@ class TheoryService {
     };
 
     async getAllTheories(): Promise<Theory[]> {
-        const response = await axios.get<Theory[]>(API_URL);
+        const response = await axios.get<Theory[]>(theory_service_URL);
         return response.data;
     }
 
     async getTheoryById(id: number): Promise<Theory | null> {
         try {
-            const response = await axios.get<Theory>(`${API_URL}/${id}`);
+            const response = await axios.get<Theory>(`${theory_service_URL}/${id}`);
             return response.data;
         } catch (error: any) {
             if (error.response && error.response.status === 404) {
@@ -63,7 +66,7 @@ class TheoryService {
 
     async updateTheory(id: number, theory: Theory): Promise<Theory | null> {
         try {
-            const response = await axios.put<Theory>(`${API_URL}/${id}`, theory);
+            const response = await axios.put<Theory>(`${theory_service_URL}/${id}`, theory);
             return response.data;
         } catch (error: any) {
             if (error.response && error.response.status === 404) {
@@ -75,7 +78,7 @@ class TheoryService {
 
     async deleteTheory(id: number): Promise<boolean> {
         try {
-            await axios.delete(`${API_URL}/${id}`);
+            await axios.delete(`${theory_service_URL}/${id}`);
             return true;
         } catch (error: any) {
             if (error.response && error.response.status === 404) {

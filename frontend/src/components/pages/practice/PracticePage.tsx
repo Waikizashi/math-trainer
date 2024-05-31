@@ -1,17 +1,52 @@
-import React, { useEffect, useRef } from 'react';
-import s from './practicePage.module.css';
+import React, { useEffect, useState } from 'react';
 import cn from 'classnames';
 import MainMenu from '../../navigation/Menu';
-import GraphCanvas from '../../graphs/GraphCanvas';
+import GraphCanvas, { GraphDataProps } from '../../graphs/GraphCanvas';
 import { mainContainer, section, subContainer } from '../../../utils/styles/global-styles';
+import PracticeComponent from './PracticeComponent';
+import practiceService, { Practice } from '../../../service/PracticeService';
 
 const PracticePage = () => {
+    const [currentTopic, setCurrentTopic] = useState(0);
+    const [graphData, setGraphData] = useState<GraphDataProps | undefined>(undefined);
+
+    const [practices, setPractices] = useState<Practice[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchPractices = async () => {
+            try {
+                const data = await practiceService.getAllPractices();
+                console.log("DATA:", data);
+                setPractices(data);
+            } catch (error) {
+                setError('ERROR:' + error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchPractices();
+    }, []);
+
+    const changeGraphData = (currentGraphData: GraphDataProps) => {
+        setGraphData(currentGraphData);
+    };
+
+    const changeVisualization = (prevNext: number) => {
+        setCurrentTopic(prevTopic => {
+            const currentTopic: number = prevTopic + prevNext;
+            return (currentTopic >= practices.length || currentTopic < 0) ? 0 : currentTopic;
+        });
+    };
 
     const segments = [
         { id: 1, value: 20, label: 'Segment one', className: 'progress-bar bg-info' },
         { id: 2, value: 20, label: 'Segment two', className: 'progress-bar bg-info' },
         { id: 3, value: 20, label: 'Segment three', className: 'progress-bar bg-info' },
     ];
+
     return (
         <div className={mainContainer}>
             <MainMenu />
@@ -21,20 +56,20 @@ const PracticePage = () => {
                         Task
                     </div>
                     <div className="card-body">
-                        <h5 className="card-title">Graphs beggining</h5>
+                        <PracticeComponent practice={practices[currentTopic]} graphData={graphData} />
                     </div>
                     <div className="card-footer text-body-secondary">
                         <nav aria-label="Page navigation example">
                             <ul className="pagination m-0 d-flex justify-content-center">
                                 <li className="page-item">
-                                    <a className="page-link" href="#" aria-label="Previous">
+                                    <a className="page-link" onClick={() => changeVisualization(-1)} href="#" aria-label="Previous">
                                         <span aria-hidden="true">&laquo;</span>
                                     </a>
                                 </li>
                                 <li className="page-item"><a className="page-link" href="#">1</a></li>
                                 <li className="page-item"><a className="page-link" href="#">2</a></li>
                                 <li className="page-item"><a className="page-link" href="#">3</a></li>
-                                <li className="page-item">
+                                <li className="page-item" onClick={() => changeVisualization(1)}>
                                     <a className="page-link" href="#" aria-label="Next">
                                         <span aria-hidden="true">&raquo;</span>
                                     </a>
@@ -48,7 +83,7 @@ const PracticePage = () => {
                     <div className="card-header">
                         Visualization
                     </div>
-                    <GraphCanvas></GraphCanvas>
+                    <GraphCanvas canvasPreferencies={{ getCurrentGraphData: changeGraphData }} />
                 </div>
             </div>
             <div className="progress-stacked w-75 p-0 my-2">
@@ -69,6 +104,6 @@ const PracticePage = () => {
             </div>
         </div>
     );
-}
+};
 
 export default PracticePage;

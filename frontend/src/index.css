@@ -55,7 +55,25 @@ a {
 }
 
 .main-container {
-  max-height: 85vh;
+  height: calc(100% - 60px);
+}
+
+.sub-container {
+  height: calc(100% - 40px);
+}
+
+.section {
+  overflow: hidden;
+}
+
+.visual-area {
+  height: 100%;
+  overflow: hidden;
+}
+
+.card-body {
+  flex: 1;
+  overflow: auto;
 }
 
 .graph-canvas {

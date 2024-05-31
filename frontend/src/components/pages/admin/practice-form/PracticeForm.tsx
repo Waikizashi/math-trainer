@@ -1,6 +1,6 @@
 import React from 'react';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
-import { createPractice, Practice, PracticeContent } from '../../../../service/PracticeService';
+import practiceService, { Practice, PracticeContent } from '../../../../service/PracticeService';
 import { Button, Form, Container, Row, Col } from 'react-bootstrap';
 import Select from 'react-select';
 
@@ -34,7 +34,7 @@ const PracticeForm = () => {
 
   const onSubmit = async (data: Practice) => {
     try {
-      const response = await createPractice(data);
+      const response = await practiceService.createPractice(data);
       console.log('Practice created successfully', response);
     } catch (error) {
       console.error('Error creating practice', error);

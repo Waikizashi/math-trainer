@@ -1,0 +1,267 @@
+[
+    {
+        "id": 1,
+        "title": "Začiatok",
+        "practiceContents": [
+            {
+                "id": 1,
+                "contentType": "Exercise",
+                "title": "Vytvorte jednoduchý graf",
+                "data": "Vašou úlohou je vytvoriť jednoduchý graf",
+                "mediaLink": "-",
+                "practiceId": 1,
+                "possibleVertices": [
+                    2,
+                    3
+                ],
+                "possibleEdges": [
+                    1,
+                    2
+                ],
+                "graphProperties": [
+                    "ACYCLIC",
+                    "CONNECTED"
+                ]
+            }
+        ],
+        "completions": []
+    },
+    {
+        "id": 2,
+        "title": "Spojitosť",
+        "practiceContents": [
+            {
+                "id": 2,
+                "contentType": "Exercise",
+                "title": "Vytvorte súvislý graf",
+                "data": "Vašou úlohou je vytvoriť súvislý graf so zadaným počtom vrcholov",
+                "mediaLink": "-",
+                "practiceId": 2,
+                "possibleVertices": [
+                    4,
+                    5
+                ],
+                "possibleEdges": [
+                    3,
+                    4
+                ],
+                "graphProperties": [
+                    "CONNECTED"
+                ]
+            }
+        ],
+        "completions": []
+    },
+    {
+        "id": 3,
+        "title": "Cyklus",
+        "practiceContents": [
+            {
+                "id": 3,
+                "contentType": "Exercise",
+                "title": "Vytvorte graf s cyklom",
+                "data": "Vašou úlohou je vytvoriť graf obsahujúci aspoň jeden cyklus",
+                "mediaLink": "-",
+                "practiceId": 3,
+                "possibleVertices": [
+                    4,
+                    5
+                ],
+                "possibleEdges": [
+                    4,
+                    5
+                ],
+                "graphProperties": [
+                    "CYCLIC",
+                    "CONNECTED"
+                ]
+            }
+        ],
+        "completions": []
+    },
+    {
+        "id": 4,
+        "title": "Stromy",
+        "practiceContents": [
+            {
+                "id": 4,
+                "contentType": "Exercise",
+                "title": "Vytvorte strom",
+                "data": "Vašou úlohou je vytvoriť graf, ktorý predstavuje strom",
+                "mediaLink": "-",
+                "practiceId": 4,
+                "possibleVertices": [
+                    5,
+                    6
+                ],
+                "possibleEdges": [
+                    4,
+                    5
+                ],
+                "graphProperties": [
+                    "ACYCLIC",
+                    "CONNECTED",
+                    "TREE"
+                ]
+            }
+        ],
+        "completions": []
+    },
+    {
+        "id": 5,
+        "title": "Bipartitné grafy",
+        "practiceContents": [
+            {
+                "id": 5,
+                "contentType": "Exercise",
+                "title": "Vytvorte bipartitný graf",
+                "data": "Vašou úlohou je vytvoriť bipartitný graf",
+                "mediaLink": "-",
+                "practiceId": 5,
+                "possibleVertices": [
+                    6,
+                    7
+                ],
+                "possibleEdges": [
+                    5,
+                    6
+                ],
+                "graphProperties": [
+                    "BIPARTITE",
+                    "CONNECTED"
+                ]
+            }
+        ],
+        "completions": []
+    },
+    {
+        "id": 6,
+        "title": "Úplné grafy",
+        "practiceContents": [
+            {
+                "id": 6,
+                "contentType": "Exercise",
+                "title": "Vytvorte úplný graf",
+                "data": "Vašou úlohou je vytvoriť úplný graf",
+                "mediaLink": "-",
+                "practiceId": 6,
+                "possibleVertices": [
+                    4,
+                    5
+                ],
+                "possibleEdges": [
+                    6,
+                    10
+                ],
+                "graphProperties": [
+                    "COMPLETE"
+                ]
+            }
+        ],
+        "completions": []
+    },
+    {
+        "id": 7,
+        "title": "Grafy s mostmi",
+        "practiceContents": [
+            {
+                "id": 7,
+                "contentType": "Exercise",
+                "title": "Vytvorte graf s mostmi",
+                "data": "Vašou úlohou je vytvoriť graf obsahujúci aspoň jeden most",
+                "mediaLink": "-",
+                "practiceId": 7,
+                "possibleVertices": [
+                    6,
+                    7
+                ],
+                "possibleEdges": [
+                    6,
+                    7
+                ],
+                "graphProperties": [
+                    "BRIDGES"
+                ]
+            }
+        ],
+        "completions": []
+    },
+    {
+        "id": 8,
+        "title": "Planárne grafy",
+        "practiceContents": [
+            {
+                "id": 8,
+                "contentType": "Exercise",
+                "title": "Vytvorte planárny graf",
+                "data": "Vašou úlohou je vytvoriť planárny graf",
+                "mediaLink": "-",
+                "practiceId": 8,
+                "possibleVertices": [
+                    5,
+                    6
+                ],
+                "possibleEdges": [
+                    6,
+                    7
+                ],
+                "graphProperties": [
+                    "PLANAR"
+                ]
+            }
+        ],
+        "completions": []
+    },
+    {
+        "id": 9,
+        "title": "Eulerovské grafy",
+        "practiceContents": [
+            {
+                "id": 9,
+                "contentType": "Exercise",
+                "title": "Vytvorte Eulerovský graf",
+                "data": "Vašou úlohou je vytvoriť Eulerovský graf",
+                "mediaLink": "-",
+                "practiceId": 9,
+                "possibleVertices": [
+                    5,
+                    6
+                ],
+                "possibleEdges": [
+                    6,
+                    7
+                ],
+                "graphProperties": [
+                    "EULERIAN"
+                ]
+            }
+        ],
+        "completions": []
+    },
+    {
+        "id": 10,
+        "title": "Hamiltonovské grafy",
+        "practiceContents": [
+            {
+                "id": 10,
+                "contentType": "Exercise",
+                "title": "Vytvorte Hamiltonovský graf",
+                "data": "Vašou úlohou je vytvoriť Hamiltonovský graf",
+                "mediaLink": "-",
+                "practiceId": 10,
+                "possibleVertices": [
+                    6,
+                    7
+                ],
+                "possibleEdges": [
+                    7,
+                    8
+                ],
+                "graphProperties": [
+                    "HAMILTONIAN"
+                ]
+            }
+        ],
+        "completions": []
+    }
+]

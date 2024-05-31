@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import Draggable from 'react-draggable';
 import s from './constructor.module.css';
 import cn from 'classnames';
 import MainMenu from '../../navigation/Menu';
@@ -13,50 +14,52 @@ import GraphInfo from '../../graphs/GraphInfo';
 const ConstructorPage = () => {
     const parentRef = useRef(null);
 
-    const [graphTemplate, setGraphTemplate] = useState<GraphDataProps | undefined>(undefined);
+    const [graphData, setGraphData] = useState<GraphDataProps | undefined>(undefined);
     const [currentGraphData, setCurrentGraphData] = useState<GraphDataProps | undefined>(undefined);
     const [matrixControlState, setMatrixControlState] = useState(false);
+
     const changeMatrixControlState = (state: boolean) => {
         setMatrixControlState(state)
     }
-    const changeGraphTemplate = (currentGraphDatas: GraphDataProps) => {
-        setCurrentGraphData(currentGraphDatas)
 
+    const changeGraphData = (currentGraphData: GraphDataProps) => {
+        setCurrentGraphData(currentGraphData)
     }
 
-    useEffect(() => {
-
-    }, [graphTemplate])
-    useEffect(() => {
-
-    }, [currentGraphData])
+    useEffect(() => { }, [graphData]);
+    useEffect(() => { }, [currentGraphData]);
 
     const handleMatrixChange = (graphData: any) => {
-        setGraphTemplate(graphData);
+        setGraphData(graphData);
     }
 
     useEffect(() => {
-        if (parentRef) {
-        }
+        if (parentRef) { }
     }, [matrixControlState]);
 
     return (
-        <div className={mainContainer}>
+        <div className={mainContainer} ref={parentRef}>
             <MainMenu />
             <div className={subContainer}>
-                <div hidden={!matrixControlState} className="card position-absolute" style={{ top: 65, left: 15, width: 'auto', zIndex: 99 }}>
-                    <div className="card-body">
-
-                        <Matrix onMatrixChange={handleMatrixChange}></Matrix>
+                <Draggable
+                    bounds="parent"
+                    handle=".card-header"
+                >
+                    <div hidden={!matrixControlState} className="card position-absolute" style={{ top: 65, left: 15, width: 'auto', zIndex: 99 }}>
+                        <div className="card-header" style={{ cursor: 'move' }}>
+                        </div>
+                        <div className="card-body">
+                            <Matrix onMatrixChange={handleMatrixChange}></Matrix>
+                        </div>
                     </div>
-                </div>
+                </Draggable>
                 <GraphCanvas
-
-                    graphData={graphTemplate}
+                    graphData={graphData}
                     canvasPreferencies={{
                         matrixControl: changeMatrixControlState,
-                        getCurrentGraphData: changeGraphTemplate
-                    }}></GraphCanvas>
+                        getCurrentGraphData: changeGraphData
+                    }}
+                ></GraphCanvas>
             </div>
             <GraphInfo currentGraphData={currentGraphData}></GraphInfo>
         </div>

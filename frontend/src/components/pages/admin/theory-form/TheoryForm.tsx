@@ -16,13 +16,14 @@ const TheoryForm = () => {
   const { control, handleSubmit, register, setValue, watch } = useForm<Theory>({
     defaultValues: {
       title: '',
-      theoryContent: [{
+      theoryContents: [{
         contentType: '',
         title: '',
         data: '',
         mediaLink: '',
         graphData: [{
           title: '',
+          oriented: false,
           nodes: [],
           links: []
         }]
@@ -32,25 +33,25 @@ const TheoryForm = () => {
 
   const { fields, append, remove } = useFieldArray({
     control,
-    name: 'theoryContent'
+    name: 'theoryContents'
   });
 
   const [inputTypes, setInputTypes] = useState<string[][]>(fields.map(() => ['matrix']));
 
   const handleMatrixChange = (contentIndex: number, graphIndex: number, newMatrix: any) => {
-    const graphData = watch(`theoryContent.${contentIndex}.graphData`);
+    const graphData = watch(`theoryContents.${contentIndex}.graphData`);
     graphData[graphIndex] = newMatrix;
-    setValue(`theoryContent.${contentIndex}.graphData`, graphData);
+    setValue(`theoryContents.${contentIndex}.graphData`, graphData);
   };
 
   const handleNodeChange = (contentIndex: number, graphIndex: number, nodeIndex: number, field: keyof GraphNode, value: string) => {
-    const graphData = watch(`theoryContent.${contentIndex}.graphData`);
+    const graphData = watch(`theoryContents.${contentIndex}.graphData`);
     graphData[graphIndex].nodes[nodeIndex][field] = value;
-    setValue(`theoryContent.${contentIndex}.graphData`, graphData);
+    setValue(`theoryContents.${contentIndex}.graphData`, graphData);
   };
 
   const handleLinkChange = (contentIndex: number, graphIndex: number, linkIndex: number, field: keyof GraphLink, value: string) => {
-    const graphData = watch(`theoryContent.${contentIndex}.graphData`);
+    const graphData = watch(`theoryContents.${contentIndex}.graphData`);
     const currentLink = graphData[graphIndex].links[linkIndex];
 
     // Проверка на существование узлов
@@ -73,31 +74,31 @@ const TheoryForm = () => {
     }
 
     graphData[graphIndex].links[linkIndex][field] = value;
-    setValue(`theoryContent.${contentIndex}.graphData`, graphData);
+    setValue(`theoryContents.${contentIndex}.graphData`, graphData);
   };
 
   const addNode = (contentIndex: number, graphIndex: number) => {
-    const graphData = watch(`theoryContent.${contentIndex}.graphData`);
+    const graphData = watch(`theoryContents.${contentIndex}.graphData`);
     graphData[graphIndex].nodes.push({ nodeId: '' });
-    setValue(`theoryContent.${contentIndex}.graphData`, graphData);
+    setValue(`theoryContents.${contentIndex}.graphData`, graphData);
   };
 
   const addLink = (contentIndex: number, graphIndex: number) => {
-    const graphData = watch(`theoryContent.${contentIndex}.graphData`);
+    const graphData = watch(`theoryContents.${contentIndex}.graphData`);
     graphData[graphIndex].links.push({ source: '', target: '' });
-    setValue(`theoryContent.${contentIndex}.graphData`, graphData);
+    setValue(`theoryContents.${contentIndex}.graphData`, graphData);
   };
 
   const removeNode = (contentIndex: number, graphIndex: number, nodeIndex: number) => {
-    const graphData = watch(`theoryContent.${contentIndex}.graphData`);
+    const graphData = watch(`theoryContents.${contentIndex}.graphData`);
     graphData[graphIndex].nodes.splice(nodeIndex, 1);
-    setValue(`theoryContent.${contentIndex}.graphData`, graphData);
+    setValue(`theoryContents.${contentIndex}.graphData`, graphData);
   };
 
   const removeLink = (contentIndex: number, graphIndex: number, linkIndex: number) => {
-    const graphData = watch(`theoryContent.${contentIndex}.graphData`);
+    const graphData = watch(`theoryContents.${contentIndex}.graphData`);
     graphData[graphIndex].links.splice(linkIndex, 1);
-    setValue(`theoryContent.${contentIndex}.graphData`, graphData);
+    setValue(`theoryContents.${contentIndex}.graphData`, graphData);
   };
 
   const handleInputTypeChange = (contentIndex: number, graphIndex: number, type: string) => {
@@ -107,9 +108,9 @@ const TheoryForm = () => {
   };
 
   const addGraphData = (contentIndex: number) => {
-    const graphData = watch(`theoryContent.${contentIndex}.graphData`);
-    graphData.push({ title: '', nodes: [], links: [] });
-    setValue(`theoryContent.${contentIndex}.graphData`, graphData);
+    const graphData = watch(`theoryContents.${contentIndex}.graphData`);
+    graphData.push({ title: '', oriented: false, nodes: [], links: [] });
+    setValue(`theoryContents.${contentIndex}.graphData`, graphData);
 
     const newInputTypes = [...inputTypes];
     newInputTypes[contentIndex] = [...newInputTypes[contentIndex], 'matrix'];
@@ -117,9 +118,9 @@ const TheoryForm = () => {
   };
 
   const removeGraphData = (contentIndex: number, graphIndex: number) => {
-    const graphData = watch(`theoryContent.${contentIndex}.graphData`);
+    const graphData = watch(`theoryContents.${contentIndex}.graphData`);
     graphData.splice(graphIndex, 1);
-    setValue(`theoryContent.${contentIndex}.graphData`, graphData);
+    setValue(`theoryContents.${contentIndex}.graphData`, graphData);
 
     const newInputTypes = [...inputTypes];
     newInputTypes[contentIndex].splice(graphIndex, 1);
@@ -151,7 +152,7 @@ const TheoryForm = () => {
                   <Form.Label>Content Type</Form.Label>
                   <Controller
                     control={control}
-                    name={`theoryContent.${contentIndex}.contentType`}
+                    name={`theoryContents.${contentIndex}.contentType`}
                     render={({ field }) => (
                       <Select
                         options={contentTypeOptions}
@@ -165,22 +166,22 @@ const TheoryForm = () => {
               <Col>
                 <Form.Group controlId={`title-${contentIndex}`}>
                   <Form.Label>Title</Form.Label>
-                  <Form.Control {...register(`theoryContent.${contentIndex}.title`)} placeholder="Enter content title" />
+                  <Form.Control {...register(`theoryContents.${contentIndex}.title`)} placeholder="Enter content title" />
                 </Form.Group>
               </Col>
             </Row>
             <Form.Group controlId={`data-${contentIndex}`} className="mb-3">
               <Form.Label>Data</Form.Label>
-              <Form.Control as="textarea" rows={3} {...register(`theoryContent.${contentIndex}.data`)} placeholder="Enter content data" />
+              <Form.Control as="textarea" rows={3} {...register(`theoryContents.${contentIndex}.data`)} placeholder="Enter content data" />
             </Form.Group>
             <Form.Group controlId={`mediaLink-${contentIndex}`} className="mb-3">
               <Form.Label>Media Link</Form.Label>
-              <Form.Control {...register(`theoryContent.${contentIndex}.mediaLink`)} placeholder="Enter media link" />
+              <Form.Control {...register(`theoryContents.${contentIndex}.mediaLink`)} placeholder="Enter media link" />
             </Form.Group>
 
             <Controller
               control={control}
-              name={`theoryContent.${contentIndex}.graphData`}
+              name={`theoryContents.${contentIndex}.graphData`}
               render={({ field }) => (
                 <div className='border-bottom border-2'>
                   {field.value.map((graphField, graphIndex) => (
@@ -188,8 +189,17 @@ const TheoryForm = () => {
                       <Form.Group controlId={`graphDataTitle-${contentIndex}-${graphIndex}`} className="mb-3">
                         <Form.Label>Graph Data Title</Form.Label>
                         <Form.Control
-                          {...register(`theoryContent.${contentIndex}.graphData.${graphIndex}.title`)}
+                          {...register(`theoryContents.${contentIndex}.graphData.${graphIndex}.title`)}
                           placeholder="Enter graph data title"
+                        />
+                      </Form.Group>
+
+                      <Form.Group controlId={`graphDataOriented-${contentIndex}-${graphIndex}`} className="mb-3">
+                        <Form.Check
+                          type="checkbox"
+                          label="Oriented"
+                          className='d-flex justify-content-center'
+                          {...register(`theoryContents.${contentIndex}.graphData.${graphIndex}.oriented`)}
                         />
                       </Form.Group>
 
@@ -277,7 +287,6 @@ const TheoryForm = () => {
                 </div>
               )}
             />
-
             <Button className="my-3" variant="danger" onClick={() => remove(contentIndex)}>Remove Content</Button>
           </div>
         ))}
@@ -289,6 +298,7 @@ const TheoryForm = () => {
             mediaLink: '',
             graphData: [{
               title: '',
+              oriented: false,
               nodes: [],
               links: []
             }]

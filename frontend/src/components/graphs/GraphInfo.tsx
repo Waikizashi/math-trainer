@@ -23,7 +23,7 @@ const GraphInfo: React.FC<GraphInfoProps> = ({ currentGraphData = { title: 'Unti
     }, [currentGraphData]);
 
     return (
-        <div className="container m-1 w-100">
+        <div className="container mt-1 w-100">
             <div className="card">
                 <div className="card-body">
                     {currentGraphData.title && <h5 className="card-title">{currentGraphData.title}</h5>}
