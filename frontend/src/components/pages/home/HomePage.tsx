@@ -32,7 +32,7 @@ const HomePage: React.FC<MyComponentProps> = ({ title, description }) => {
             {/* <FloatingGraphs backgroundColor={"#0a459c"} backgroundImage={""}></FloatingGraphs> */}
             <div className={homePageClasses}>
                 <div className={s.container}>
-                    <MainMenu />
+                    {/* <MainMenu /> */}
                 </div>
             </div>
         </>

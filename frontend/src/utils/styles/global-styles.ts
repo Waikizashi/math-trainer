@@ -1,7 +1,7 @@
 import cn from 'classnames';
 
 export const mainContainer = cn(
-    'main-container', // Подключаем наш кастомный стиль
+    'main-container',
     'd-flex',
     'flex-column',
     'justify-content-start',
@@ -10,7 +10,7 @@ export const mainContainer = cn(
 );
 
 export const subContainer = cn(
-    'sub-container', // Подключаем наш кастомный стиль
+    'sub-container',
     'position-relative',
     'd-flex',
     'justify-content-center',
@@ -19,9 +19,19 @@ export const subContainer = cn(
     'w-100',
     'my-2'
 );
+export const subAdminContainer = cn(
+    'sub-admin-container',
+    'sub-container',
+    'position-relative',
+    'd-flex',
+    'justify-content-center',
+    'flex-row',
+    'align-items-stretch',
+    'w-100',
+);
 
 export const section = cn(
-    'section', // Подключаем наш кастомный стиль
+    'section',
     'card',
     'text-center',
     'mx-2',

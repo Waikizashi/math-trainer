@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import TheoryForm from './theory-form/TheoryForm';
 import PracticeForm from './practice-form/PracticeForm';
-import { mainContainer, section, subContainer } from '../../../utils/styles/global-styles';
+import { mainContainer, section, subAdminContainer } from '../../../utils/styles/global-styles';
 import cn from 'classnames';
 import MainMenu from '../../navigation/Menu';
 import { NavItem } from 'react-bootstrap';
@@ -11,7 +11,7 @@ const AdminPage = () => {
 
   return (
     <div className={mainContainer}>
-      <MainMenu />
+      {/* <MainMenu /> */}
       <div className="tab nav nav-tabs mt-2">
         <NavItem>
           <button
@@ -30,7 +30,7 @@ const AdminPage = () => {
           </button>
         </NavItem>
       </div>
-      <div className={subContainer}>
+      <div className={subAdminContainer}>
         <div className={cn(section)} style={{ overflow: 'auto' }}>
           {activeTab === 'theory' && <TheoryForm />}
           {activeTab === 'exercises' && <div><PracticeForm /></div>}

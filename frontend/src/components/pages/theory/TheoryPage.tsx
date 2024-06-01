@@ -69,7 +69,7 @@ const TheoryPage: React.FC<any> = () => {
 
     return (
         <div className={mainContainer}>
-            <MainMenu />
+            {/* <MainMenu /> */}
             <div className={subContainer}>
                 <div className={section}>
                     <div className="card-header">

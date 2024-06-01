@@ -25,7 +25,7 @@ const Profile = () => {
     )
     return (
         <div className={mainContainer}>
-            <MainMenu />
+            {/* <MainMenu /> */}
             <div className={subContainer}>
                 <div className={profileSection}>
                     <h5 className="card-header">Profile</h5>

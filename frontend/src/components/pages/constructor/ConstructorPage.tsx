@@ -39,7 +39,7 @@ const ConstructorPage = () => {
 
     return (
         <div className={mainContainer} ref={parentRef}>
-            <MainMenu />
+            {/* <MainMenu /> */}
             <div className={subContainer}>
                 <Draggable
                     bounds="parent"
