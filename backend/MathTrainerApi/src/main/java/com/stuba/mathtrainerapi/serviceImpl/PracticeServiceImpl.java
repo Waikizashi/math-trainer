@@ -67,7 +67,7 @@ public class PracticeServiceImpl implements PracticeService {
             throw new IllegalArgumentException("Cannot update a practice without an ID.");
         }
 
-        Practice existingPractice = practiceRepository.findById(practiceDTO.getId())
+        practiceRepository.findById(practiceDTO.getId())
                 .orElseThrow(() -> new IllegalArgumentException("Practice with ID " + practiceDTO.getId() + " not found"));
 
         Practice updatedPractice = practiceMapper.toPractice(practiceDTO);

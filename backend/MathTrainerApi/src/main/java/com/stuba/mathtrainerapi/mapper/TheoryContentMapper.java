@@ -8,8 +8,9 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring",uses = {GraphDataMapper.class})
 public interface TheoryContentMapper {
+    @Mapping(source = "theory.id", target = "theoryId")
     TheoryContentDTO toTheoryContentDTO(TheoryContent theoryContent);
-    @Mapping(target = "theory.id", source = "theoryId")
+    @Mapping(source = "theoryId", target = "theory.id")
     TheoryContent toTheoryContent(TheoryContentDTO theoryContentDTO);
 }
 

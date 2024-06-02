@@ -8,6 +8,7 @@ import org.mapstruct.factory.Mappers;
 
 @Mapper(componentModel = "spring", uses = {GraphNodeMapper.class, GraphLinkMapper.class})
 public interface GraphDataMapper {
+    @Mapping(source = "theoryContent.id", target = "theoryContentId")
     GraphDataDTO toGraphDataDTO(GraphData graphData);
     @Mapping(target = "theoryContent.id", source = "theoryContentId")
     GraphData toGraphData(GraphDataDTO graphDataDTO);

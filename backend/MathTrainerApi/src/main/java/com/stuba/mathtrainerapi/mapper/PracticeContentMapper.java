@@ -18,17 +18,13 @@ public interface PracticeContentMapper {
     @Mapping(source = "possibleVertices", target = "possibleVertices", qualifiedByName = "vertexToInteger")
     @Mapping(source = "possibleEdges", target = "possibleEdges", qualifiedByName = "edgeToInteger")
     @Mapping(source = "graphProperties", target = "graphProperties", qualifiedByName = "entityToEnum")
-    PracticeContentDTO toDTO(PracticeContent practiceContent);
+    PracticeContentDTO toPracticeContentDTO(PracticeContent practiceContent);
 
     @Mapping(source = "practiceId", target = "practice.id")
     @Mapping(source = "possibleVertices", target = "possibleVertices", qualifiedByName = "integerToVertex")
     @Mapping(source = "possibleEdges", target = "possibleEdges", qualifiedByName = "integerToEdge")
     @Mapping(source = "graphProperties", target = "graphProperties", qualifiedByName = "enumToEntity")
-    PracticeContent toEntity(PracticeContentDTO practiceContentDTO);
-
-    List<PracticeContentDTO> toDTOs(List<PracticeContent> practiceContents);
-
-    List<PracticeContent> toEntities(List<PracticeContentDTO> practiceContentDTOs);
+    PracticeContent toPracticeContent(PracticeContentDTO practiceContentDTO);
 
     @Named("vertexToInteger")
     static List<Integer> vertexToInteger(List<PossibleVertexCount> vertices) {

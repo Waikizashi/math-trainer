@@ -7,6 +7,7 @@ import java.util.List;
 public class GraphDataDTO {
     private Long id;
     private String title;
+    private Boolean oriented;
     private List<GraphNodeDTO> nodes;
     private List<GraphLinkDTO> links;
     private Long theoryContentId;

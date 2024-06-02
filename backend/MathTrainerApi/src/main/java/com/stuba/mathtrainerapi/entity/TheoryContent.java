@@ -29,8 +29,4 @@ public class TheoryContent {
     @ManyToOne
     @JoinColumn(name = "theory_id")
     private Theory theory;
-
-    @ManyToOne
-    @JoinColumn(name = "practice_id")
-    private Practice practice;
 }

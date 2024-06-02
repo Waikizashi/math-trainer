@@ -15,6 +15,8 @@ public class GraphData {
 
     @Column(nullable = false)
     private String title;
+    @Column(nullable = false)
+    private Boolean oriented;
     @ManyToOne
     @JoinColumn(name = "theoryContent_id")
     private TheoryContent theoryContent;

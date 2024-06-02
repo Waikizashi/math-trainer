@@ -10,7 +10,6 @@ public interface PracticeMapper {
     @Mapping(source = "practiceContents", target = "practiceContents")
     @Mapping(source = "completions", target = "completions")
     PracticeDTO toPracticeDTO(Practice practice);
-
     @Mapping(source = "practiceContents", target = "practiceContents")
     @Mapping(source = "completions", target = "completions")
     Practice toPractice(PracticeDTO practiceDTO);

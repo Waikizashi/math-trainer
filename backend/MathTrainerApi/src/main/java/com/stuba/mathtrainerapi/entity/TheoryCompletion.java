@@ -23,5 +23,4 @@ public class TheoryCompletion {
 
     private boolean completed;
     private LocalDate completionDate;
-
 }

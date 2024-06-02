@@ -24,5 +24,4 @@ public class PracticeCompletion {
 
     private boolean completed;
     private LocalDate completionDate;
-
 }
