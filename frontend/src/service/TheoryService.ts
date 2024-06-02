@@ -38,9 +38,8 @@ class TheoryService {
 
     async createTheory(theory: Theory) {
         try {
-            console.log("@@@@", theory)
-            // const response = await axios.post(theory_service_URL, theory);
-            // return response.data;
+            const response = await axios.post(theory_service_URL, theory);
+            return response.data;
         } catch (error) {
             console.error('Error creating theory', error);
             throw error;
@@ -49,6 +48,7 @@ class TheoryService {
 
     async getAllTheories(): Promise<Theory[]> {
         const response = await axios.get<Theory[]>(theory_service_URL);
+        console.log("THEORY: ", response.data)
         return response.data;
     }
 

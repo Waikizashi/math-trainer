@@ -1,8 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import s from './login.module.css';
 import cn from 'classnames';
-import MainMenu from '../../navigation/Menu';
-import { mainContainer, subContainer, visualArea } from '../../../utils/styles/global-styles';
+import { mainContainer, subContainer } from '../../../utils/styles/global-styles';
 import AuthService from '../../../service/AuthService';
 import { Link } from 'react-router-dom';
 
@@ -95,7 +94,7 @@ const RegisterPage = () => {
                                 </div>
                             </div>
                             <button id="register" type="submit" className="btn btn-success">Register</button>
-                            <Link className='my-1' to='/login'><button id="login" type="submit" className="btn btn-primary w-100">Login</button></Link>
+                            <Link className='my-1' to='/login'><button id="login" className="btn btn-outline-primary w-100">Login</button></Link>
                         </form>
                     </div>
                 </div>

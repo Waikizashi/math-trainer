@@ -1,6 +1,9 @@
 import axios from 'axios';
 import { API_URL } from './service.config';
 import { UserDTO } from './UserService';
+
+
+
 class AuthService {
     async register(user: UserDTO) {
         try {

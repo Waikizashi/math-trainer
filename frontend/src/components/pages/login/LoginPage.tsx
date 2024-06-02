@@ -71,7 +71,7 @@ const LoginPage = () => {
                                 </div>
                             </div>
                             <button id="login" type="submit" className="btn btn-success">Login</button>
-                            <Link className='my-1' to='/register'><button id="login" type="submit" className="btn btn-primary w-100">Register</button></Link>
+                            <Link className='my-1' to='/register'><button id="login" className="btn btn-outline-primary w-100">Register</button></Link>
                         </form>
                     </div>
                 </div>
