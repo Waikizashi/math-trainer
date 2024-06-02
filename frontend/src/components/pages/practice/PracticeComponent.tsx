@@ -79,7 +79,7 @@ const PracticeComponent: React.FC<PracticeComponentProps> = ({ practice, graphDa
                         return (
                             <Card
                                 key={index}
-                                className={`mb-3 ${index === currentContentIndex ? 'bg-info-subtle' : ''}`}
+                                className={`mb-3 ${index === currentContentIndex ? 'bg-body-secondary' : ''}`}
                                 onClick={() => handleContentClick(index)}
                             >
                                 <Card.Body>

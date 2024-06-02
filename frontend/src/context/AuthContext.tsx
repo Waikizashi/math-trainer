@@ -15,8 +15,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     useEffect(() => {
         const checkAuth = async () => {
-            const currentUser = await UserService.getCurrentUser();
-            console.log("CURRENT USER: ", currentUser)
+            const currentUser = await AuthService.getCurrentUser();
             if (currentUser) {
                 setUser(currentUser);
             }

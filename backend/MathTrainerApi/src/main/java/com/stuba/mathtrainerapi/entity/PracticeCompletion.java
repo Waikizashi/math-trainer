@@ -1,6 +1,6 @@
 package com.stuba.mathtrainerapi.entity;
 
-
+import com.stuba.mathtrainerapi.enums.PracticeStatus;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -21,7 +21,10 @@ public class PracticeCompletion {
     @ManyToOne
     @JoinColumn(name = "practice_id")
     private Practice practice;
+    private String practiceTitle;
 
-    private boolean completed;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private PracticeStatus practiceStatus;
     private LocalDate completionDate;
 }

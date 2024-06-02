@@ -1,5 +1,6 @@
 package com.stuba.mathtrainerapi.controller;
 
+import com.stuba.mathtrainerapi.api.dto.PracticeCompletionDTO;
 import com.stuba.mathtrainerapi.api.service.PracticeCompletionService;
 import com.stuba.mathtrainerapi.entity.PracticeCompletion;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,28 +21,28 @@ public class PracticeCompletionController {
     }
 
     @GetMapping
-    public List<PracticeCompletion> getAllPracticeCompletions() {
+    public List<PracticeCompletionDTO> getAllPracticeCompletions() {
         return practiceCompletionService.findAllPracticeCompletions();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<PracticeCompletion> getPracticeCompletionById(@PathVariable Long id) {
+    public ResponseEntity<PracticeCompletionDTO> getPracticeCompletionById(@PathVariable Long id) {
         return practiceCompletionService.findPracticeCompletionById(id)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    public PracticeCompletion createPracticeCompletion(@RequestBody PracticeCompletion practiceCompletion) {
+    public PracticeCompletionDTO createPracticeCompletion(@RequestBody PracticeCompletionDTO practiceCompletion) {
         return practiceCompletionService.savePracticeCompletion(practiceCompletion);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<PracticeCompletion> updatePracticeCompletion(@PathVariable Long id, @RequestBody PracticeCompletion practiceCompletion) {
+    public ResponseEntity<PracticeCompletionDTO> updatePracticeCompletion(@PathVariable Long id, @RequestBody PracticeCompletionDTO practiceCompletion) {
         if (practiceCompletionService.findPracticeCompletionById(id).isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-//        practiceCompletion.setId(id);
+        practiceCompletion.setId(id);
         return ResponseEntity.ok(practiceCompletionService.updatePracticeCompletion(practiceCompletion));
     }
 

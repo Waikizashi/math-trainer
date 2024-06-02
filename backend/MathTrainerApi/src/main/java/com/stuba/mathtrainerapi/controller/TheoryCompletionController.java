@@ -1,5 +1,6 @@
 package com.stuba.mathtrainerapi.controller;
 
+import com.stuba.mathtrainerapi.api.dto.TheoryCompletionDTO;
 import com.stuba.mathtrainerapi.api.service.TheoryCompletionService;
 import com.stuba.mathtrainerapi.entity.TheoryCompletion;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,24 +21,24 @@ public class TheoryCompletionController {
     }
 
     @GetMapping
-    public List<TheoryCompletion> getAllTheoryCompletions() {
+    public List<TheoryCompletionDTO> getAllTheoryCompletions() {
         return theoryCompletionService.findAllTheoryCompletions();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<TheoryCompletion> getTheoryCompletionById(@PathVariable Long id) {
+    public ResponseEntity<TheoryCompletionDTO> getTheoryCompletionById(@PathVariable Long id) {
         return theoryCompletionService.findTheoryCompletionById(id)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    public TheoryCompletion createTheoryCompletion(@RequestBody TheoryCompletion theoryCompletion) {
+    public TheoryCompletionDTO createTheoryCompletion(@RequestBody TheoryCompletionDTO theoryCompletion) {
         return theoryCompletionService.saveTheoryCompletion(theoryCompletion);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<TheoryCompletion> updateTheoryCompletion(@PathVariable Long id, @RequestBody TheoryCompletion theoryCompletion) {
+    public ResponseEntity<TheoryCompletionDTO> updateTheoryCompletion(@PathVariable Long id, @RequestBody TheoryCompletionDTO theoryCompletion) {
         if (theoryCompletionService.findTheoryCompletionById(id).isEmpty()) {
             return ResponseEntity.notFound().build();
         }

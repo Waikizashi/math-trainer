@@ -1,5 +1,6 @@
 package com.stuba.mathtrainerapi.api.dto;
 
+import com.stuba.mathtrainerapi.enums.PracticeStatus;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -9,6 +10,7 @@ public class PracticeCompletionDTO {
     private Long id;
     private Long userId;
     private Long practiceId;
-    private boolean completed;
+    private String practiceTitle;
+    private PracticeStatus practiceStatus;
     private LocalDate completionDate;
 }

@@ -70,11 +70,11 @@ const MainMenu: React.FC<MenuProps> = (description) => {
                                     ME
                                 </button>
                             </a>
-                            <ul className="dropdown-menu" style={{ margin: 'auto', width: "fit-content", zIndex: 1100 }}>
+                            <ul className="dropdown-menu p-2" style={{ margin: 'auto', width: "fit-content", zIndex: 1100 }}>
                                 {user ? (
                                     <>
                                         <li><Link className="dropdown-item" to="/profile">Profile</Link></li>
-                                        <li><button className="dropdown-item" onClick={logout}>Sign Out</button></li>
+                                        <li><button className="dropdown-item bg-danger" onClick={logout}>Sign Out</button></li>
                                     </>
                                 ) : (
                                     <>

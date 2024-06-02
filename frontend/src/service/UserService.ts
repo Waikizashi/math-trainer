@@ -53,21 +53,6 @@ class UserService {
             throw error;
         }
     }
-
-    async getCurrentUser(): Promise<UserDTO | null> {
-        try {
-            const localUser = localStorage.getItem('user');
-            // console.log(localUser)
-            // const activeUser = await axios.get(`${user_service_URL}/current`);
-            // console.log(activeUser)
-            if (localUser) {
-                return JSON.parse(localUser);
-            }
-        } catch (error: any) {
-            console.log('Current user fetching error:', error)
-        }
-        return null;
-    }
 }
 
 export default new UserService();

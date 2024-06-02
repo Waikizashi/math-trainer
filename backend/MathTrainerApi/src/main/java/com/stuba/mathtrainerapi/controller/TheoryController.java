@@ -16,11 +16,9 @@ import java.util.Optional;
 public class TheoryController {
 
     private final TheoryService theoryService;
-    private final TheoryMapper theoryMapper;
 
     @Autowired
-    public TheoryController(TheoryService theoryService, TheoryMapper theoryMapper) {
-        this.theoryMapper = theoryMapper;
+    public TheoryController(TheoryService theoryService) {
         this.theoryService = theoryService;
     }
 

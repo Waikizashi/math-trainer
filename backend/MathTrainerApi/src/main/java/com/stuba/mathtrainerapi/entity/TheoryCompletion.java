@@ -1,5 +1,6 @@
 package com.stuba.mathtrainerapi.entity;
 
+import com.stuba.mathtrainerapi.enums.TheoryStatus;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -20,7 +21,10 @@ public class TheoryCompletion {
     @ManyToOne
     @JoinColumn(name = "theory_id")
     private Theory theory;
+    private String theoryTitle;
 
-    private boolean completed;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private TheoryStatus theoryStatus;
     private LocalDate completionDate;
 }

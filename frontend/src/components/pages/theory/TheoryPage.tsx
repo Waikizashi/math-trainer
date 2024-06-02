@@ -75,7 +75,7 @@ const TheoryPage: React.FC<any> = () => {
                     <div className="card-header">
                         Theory
                     </div>
-                    <div className="card-body">
+                    <div className="card-body bg-success-subtle">
                         {loading ? <div>Loading...</div> : error ? <div>{error}</div> :
                             <TheoryComponent
                                 theory={theories[0] ? theories[0] : null}

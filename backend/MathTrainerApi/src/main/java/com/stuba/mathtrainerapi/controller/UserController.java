@@ -3,9 +3,6 @@ package com.stuba.mathtrainerapi.controller;
 import com.stuba.mathtrainerapi.api.dto.UserDTO;
 import com.stuba.mathtrainerapi.api.service.UserService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -52,14 +49,5 @@ public class UserController {
         } else {
             return ResponseEntity.notFound().build();
         }
-    }
-
-    @GetMapping("/current")
-    public ResponseEntity<UserDTO> getCurrentUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName();
-        UserDTO userDTO = userService.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-        return ResponseEntity.ok(userDTO);
     }
 }

@@ -1,31 +1,39 @@
 package com.stuba.mathtrainerapi.controller;
 
+import com.stuba.mathtrainerapi.api.dto.AuthDTO;
 import com.stuba.mathtrainerapi.api.dto.UserDTO;
 import com.stuba.mathtrainerapi.api.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
+
+import jakarta.servlet.http.HttpSession;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Optional;
+
 
 @RestController
 @RequestMapping("/api")
 public class AuthController {
 
     private final UserService userService;
-    private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
 
     @Autowired
-    public AuthController(UserService userService, PasswordEncoder passwordEncoder) {
+    public AuthController(UserService userService, AuthenticationManager authenticationManager) {
         this.userService = userService;
-        this.passwordEncoder = passwordEncoder;
+        this.authenticationManager = authenticationManager;
     }
 
     @PostMapping("/register")
     public ResponseEntity<UserDTO> registerUser(@RequestBody UserDTO userDTO) {
-        System.out.println(userDTO);
         if (userService.isUserUnique(userDTO.getUsername(), userDTO.getEmail())) {
             UserDTO savedUser = userService.saveUser(userDTO);
             return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
@@ -34,16 +42,42 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<UserDTO> loginUser(@RequestBody UserDTO userDTO) {
-
-        Optional<UserDTO> userByUserName = userService.findByUsername(userDTO.getUsername());
-        if (userByUserName.isPresent() && passwordEncoder.matches(userDTO.getPassword(), userByUserName.get().getPassword())) {
-            return new ResponseEntity<>(userByUserName.get(), HttpStatus.OK);
+    public ResponseEntity<?> loginUser(@RequestBody AuthDTO loginRequest, HttpServletRequest request) {
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
+            );
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            HttpSession session = request.getSession(true);
+            session.setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
+            return ResponseEntity.ok().body("Login successful");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Login failed");
         }
-        Optional<UserDTO> userByUserEmail = userService.findByEmail(userDTO.getEmail());
-        if (userByUserEmail.isPresent() && passwordEncoder.matches(userDTO.getPassword(), userByUserEmail.get().getPassword())) {
-            return new ResponseEntity<>(userByUserEmail.get(), HttpStatus.OK);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.invalidate();
+            SecurityContextHolder.clearContext();
+            return ResponseEntity.ok().body("Logged out successfully");
+        }
+        return ResponseEntity.badRequest().body("No session found");
+    }
+
+    @GetMapping("/current/user")
+    public ResponseEntity<UserDTO> getCurrentUser(Authentication authentication) {
+        if (authentication != null && authentication.isAuthenticated()) {
+            String username = authentication.getName();
+            UserDTO user = userService.findByUsername(username).orElse(null);
+            if (user != null) {
+                return new ResponseEntity<>(user, HttpStatus.OK);
+            }
         }
         return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     }
 }
+
+

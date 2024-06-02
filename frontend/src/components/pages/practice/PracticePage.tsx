@@ -55,7 +55,7 @@ const PracticePage = () => {
                     <div className="card-header">
                         Task
                     </div>
-                    <div className="card-body">
+                    <div className="card-body bg-info-subtle">
                         <PracticeComponent practice={practices[currentTopic]} graphData={graphData} />
                     </div>
                     <div className="card-footer text-body-secondary">

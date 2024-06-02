@@ -738,6 +738,7 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
                             <path d="M0,0 L0,4 L4,2 z" fill="#aaa" />
                         </marker>
                     </defs>
+                    <rect x={-10000} y={-10000} width="20000" height="20000" fill="url(#grid)" />
                 </svg>
             </div>
             <div className="card-footer text-body-secondary"></div>

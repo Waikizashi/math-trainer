@@ -40,7 +40,7 @@ export const section = cn(
 );
 
 export const visualArea = cn(
-    'visual-area', // Подключаем наш кастомный стиль
+    'visual-area',
     'card-body',
     'p-0'
 );
