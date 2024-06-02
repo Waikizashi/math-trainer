@@ -16,5 +16,5 @@ public interface UserService {
     UserDTO updateUser(UserDTO userDTO);
     boolean deleteUser(Long id);
 
-    boolean isUserUnique(String username);
+    boolean isUserUnique(String username, String email);
 }

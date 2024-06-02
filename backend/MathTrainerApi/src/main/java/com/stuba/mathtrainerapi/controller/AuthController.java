@@ -26,21 +26,22 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<UserDTO> registerUser(@RequestBody UserDTO userDTO) {
         System.out.println(userDTO);
-        if (userService.isUserUnique(userDTO.getUsername())) {
-            return new ResponseEntity<>(HttpStatus.CONFLICT);
+        if (userService.isUserUnique(userDTO.getUsername(), userDTO.getEmail())) {
+            UserDTO savedUser = userService.saveUser(userDTO);
+            return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
         }
-        UserDTO savedUser = userService.saveUser(userDTO);
-        return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
+        return new ResponseEntity<>(HttpStatus.CONFLICT);
     }
 
     @PostMapping("/login")
     public ResponseEntity<UserDTO> loginUser(@RequestBody UserDTO userDTO) {
 
         Optional<UserDTO> userByUserName = userService.findByUsername(userDTO.getUsername());
-        Optional<UserDTO> userByUserEmail = userService.findByEmail(userDTO.getEmail());
         if (userByUserName.isPresent() && passwordEncoder.matches(userDTO.getPassword(), userByUserName.get().getPassword())) {
             return new ResponseEntity<>(userByUserName.get(), HttpStatus.OK);
-        } else if (userByUserEmail.isPresent() && passwordEncoder.matches(userDTO.getPassword(), userByUserEmail.get().getPassword())) {
+        }
+        Optional<UserDTO> userByUserEmail = userService.findByEmail(userDTO.getEmail());
+        if (userByUserEmail.isPresent() && passwordEncoder.matches(userDTO.getPassword(), userByUserEmail.get().getPassword())) {
             return new ResponseEntity<>(userByUserEmail.get(), HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);

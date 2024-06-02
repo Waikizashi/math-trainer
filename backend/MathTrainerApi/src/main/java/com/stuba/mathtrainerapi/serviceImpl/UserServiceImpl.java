@@ -91,7 +91,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean isUserUnique(String username) {
-        return true;
+    public boolean isUserUnique(String username, String email) {
+        var userByUsername = this.findByUsername(username);
+        var userByEmail = this.findByEmail(email);
+        return (userByUsername.isEmpty() && userByEmail.isEmpty());
     }
 }
