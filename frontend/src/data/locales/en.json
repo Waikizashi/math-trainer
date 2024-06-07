@@ -1,0 +1,21 @@
+{
+    "mainTitle": "Graph math trainer",
+    "homepage": "Homepage",
+    "practicePage": "Practice Page",
+    "theoryPage": "Theory Page",
+    "profile": "Profile",
+    "signUp": "Sign Up",
+    "signOut": "Sign Out",
+    "signIn": "Sign In",
+    "constructor": "Constructor",
+    "adminPanel": "Admin Panel",
+    "showGraphPanel": "Show Graph Panel",
+    "hideGraphPanel": "Hide Graph Panel",
+    "export": "Export as",
+    "nodeSize": "Node Size",
+    "edgeLength": "Edge Length",
+    "edgeSize": "Edge Size",
+    "textSize": "Text Size",
+    "repulsiveDistance": "Repulsive Distance",
+    "repulsiveForce": "Repulsive Force"
+}

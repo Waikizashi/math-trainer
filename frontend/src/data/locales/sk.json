@@ -1,0 +1,21 @@
+{
+    "mainTitle": "Graph math trainer",
+    "homepage": "Domov",
+    "practicePage": "Cviki",
+    "theoryPage": "Teoria",
+    "profile": "Profil",
+    "signUp": "Registrácia",
+    "signOut": "Odhlásiť sa",
+    "signIn": "Prihlásiť sa",
+    "constructor": "Konstruktor",
+    "adminPanel": "Admin Panel",
+    "showGraphPanel": "Zobraziť Panel Grafov",
+    "hideGraphPanel": "Skryť Panel Grafov",
+    "export": "Exportovať ako",
+    "nodeSize": "Veľkosť Uzla",
+    "edgeLength": "Dĺžka Hrany",
+    "edgeSize": "Veľkosť Hrany",
+    "textSize": "Veľkosť Textu",
+    "repulsiveDistance": "Repulzívna Vzdialenosť",
+    "repulsiveForce": "Repulzívna Sila"
+}

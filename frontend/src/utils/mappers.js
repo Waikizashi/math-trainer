@@ -20,6 +20,8 @@ export function mapGraphData(graphData) {
       sourceNode.degree++;
       targetNode.degree++;
       return {
+        linkId: link.linkId,
+        linkId: link.weigth,
         source: sourceNode,
         target: targetNode
       };
@@ -31,3 +33,4 @@ export function mapGraphData(graphData) {
 
   return output;
 }
+

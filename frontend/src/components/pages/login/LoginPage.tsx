@@ -3,12 +3,14 @@ import cn from 'classnames';
 import { mainContainer, subContainer } from '../../../utils/styles/global-styles';
 import AuthContext from '../../../context/AuthContext'; // Импортируйте AuthContext
 import { Link } from 'react-router-dom';
+import { useNotification } from '../../../context/NotificationContext';
 
 const LoginPage = () => {
     const parentRef = useRef(null);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const authContext = useContext(AuthContext);
+    const { addNotification } = useNotification();
 
     if (!authContext) {
         throw new Error('AuthContext must be used within an AuthProvider');
@@ -18,12 +20,7 @@ const LoginPage = () => {
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
-        try {
-            await login(email, password);
-            alert('Login successful');
-        } catch (error) {
-            alert('Failed to login');
-        }
+        await login(email, password);
     };
 
     useEffect(() => {

@@ -6,7 +6,8 @@ export const mainContainer = cn(
     'flex-column',
     'justify-content-start',
     'align-items-center',
-    'w-100'
+    'w-100',
+    'position-relative'
 );
 
 export const subContainer = cn(
@@ -17,7 +18,7 @@ export const subContainer = cn(
     'flex-row',
     'align-items-stretch',
     'w-100',
-    'my-2'
+    'my-2',
 );
 export const subAdminContainer = cn(
     'sub-admin-container',
@@ -36,7 +37,8 @@ export const section = cn(
     'text-center',
     'mx-2',
     'w-50',
-    'h-100'
+    'h-100',
+    'shadow'
 );
 
 export const visualArea = cn(
@@ -44,3 +46,18 @@ export const visualArea = cn(
     'card-body',
     'p-0'
 );
+
+export const getColor = (type: string): string => {
+    switch (type) {
+        case 'success':
+            return '#28a745'
+        case 'warning':
+            return '#ffc107'
+        case 'danger':
+            return '#dc3545'
+        case 'info':
+            return '#dc3545'
+        default:
+            return '#007bff'
+    }
+}

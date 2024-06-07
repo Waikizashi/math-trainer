@@ -1,4 +1,4 @@
-import { GraphDataProps } from "../components/graphs/GraphCanvas";
+import { GraphDataProps } from "../components/canvas/GraphCanvas";
 
 export const graphs: any[] = [
     {

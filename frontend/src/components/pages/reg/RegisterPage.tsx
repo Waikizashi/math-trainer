@@ -3,10 +3,14 @@ import s from './login.module.css';
 import cn from 'classnames';
 import { mainContainer, subContainer } from '../../../utils/styles/global-styles';
 import AuthService from '../../../service/AuthService';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useNotification } from '../../../context/NotificationContext';
 
 const RegisterPage = () => {
     const parentRef = useRef(null);
+    const navigate = useNavigate();
+    const { addNotification } = useNotification();
+
     useEffect(() => {
         if (parentRef) {
         }
@@ -20,14 +24,15 @@ const RegisterPage = () => {
     const handleRegister = async (e: React.FormEvent) => {
         e.preventDefault();
         if (password !== confirmPassword) {
-            alert('Passwords do not match');
+            addNotification('Warning', 'Passwords do not match', 'warning')
             return;
         }
         try {
             await AuthService.register({ username, email, password, role: 'USER' });
-            alert('Registration successful');
+            addNotification('Success', 'Registration successful', 'success')
+            navigate('/login')
         } catch (error) {
-            alert('Failed to register');
+            addNotification('Failed', 'Failed to register', 'danger')
         }
     };
 

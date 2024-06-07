@@ -4,41 +4,30 @@ import * as d3 from 'd3';
 import s from './graphCanvas.module.css';
 import { useLocation } from 'react-router-dom';
 import { visualArea } from '../../utils/styles/global-styles';
+import ControlPanel from './ControlPanel';
+import ExportMenu from './ExportMenu';
 
 import Fab from '@mui/material/Fab';
-import ColorLensIcon from '@mui/icons-material/ColorLens';
-import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
-import TimelineIcon from '@mui/icons-material/Timeline';
-import AutoFixOffIcon from '@mui/icons-material/AutoFixOff';
-import SwipeVerticalIcon from '@mui/icons-material/SwipeVertical';
-import ZoomInIcon from '@mui/icons-material/ZoomIn';
-import ZoomOutIcon from '@mui/icons-material/ZoomOut';
-import AppsIcon from '@mui/icons-material/Apps';
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import SettingsIcon from '@mui/icons-material/Settings';
-import RestartAltIcon from '@mui/icons-material/RestartAlt';
-import SwipeUpAltIcon from '@mui/icons-material/SwipeUpAlt';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import HighlightOffIcon from '@mui/icons-material/HighlightOff';
-import PinIcon from '@mui/icons-material/Pin';
-import AbcIcon from '@mui/icons-material/Abc';
-import ClearIcon from '@mui/icons-material/Clear';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 import { Alert, Button, Form, Modal } from 'react-bootstrap';
-import NumberWithLineOrArrow from '../../utils/sub-components/NumberWithLineOrArrow';
+import GraphInfo from './GraphInfo';
+import { useCenter } from '../../context/CenterContext';
 
-interface Node extends d3.SimulationNodeDatum {
+export interface Node extends d3.SimulationNodeDatum {
     nodeId: string;
     group?: string;
     degree?: number;
 }
 
-interface Link extends d3.SimulationLinkDatum<Node> {
+export interface Link extends d3.SimulationLinkDatum<Node> {
     source: Node;
     target: Node;
-    weight?: null;
+    weight?: number | null;
+    linkId?: string;
 }
-
 export interface GraphDataProps {
     title?: string;
     nodes: Node[];
@@ -54,16 +43,23 @@ interface CanvasProps {
 }
 
 const nodeDefaultSize = 15;
+const linkDefaultLength = 100;
 
 const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: CanvasProps }> = ({ graphData, canvasPreferencies }) => {
     const location = useLocation();
-    const isConstructorPage = location.pathname === '/constructor';
+    const isFullControl = Boolean(location.pathname.match(/^\/constructor(\/.*)?$/));
+    const isPartControl = Boolean(location.pathname.match(/^\/practice(\/\d+)?$/));
+
+
+
+
 
     const svgRef = useRef<any>(null);
     const canvasRef = useRef<any>(null);
     const simulationRef = useRef<any>(null);
     const [nodes, setNodes] = useState<Node[]>(graphData ? graphData.nodes : []);
     const [links, setLinks] = useState<Link[]>(graphData ? graphData.links : []);
+    const [currentGraphData, setCurrentGraphData] = useState<GraphDataProps | undefined>(graphData);
 
     const [viewBox, setViewBox] = useState(`0 0 0 0`);
 
@@ -73,8 +69,11 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
     const [showColors, setShowColors] = useState(false);
     const [linesBtn, setLinesBtn] = useState(false);
     const [weightBtn, setWeight] = useState(false);
+    const [showLinkIds, setShowLinkIds] = useState(false);
     const [showDirections, setShowDirections] = useState(graphData?.oriented || false);
     const [swipeBtn, setSwipeBtn] = useState(false);
+    const [draggingEnabled, setDraggingEnabled] = useState(false);
+    const [showDegree, setShowDegree] = useState(false);
     const [scale, setScale] = useState(canvasPreferencies?.scale ? canvasPreferencies.scale : 1);
     const [nodeScale, setNodeScale] = useState(1);
     const [edgeLengthScale, setEdgeLengthScale] = useState(1);
@@ -86,17 +85,22 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
     const [updateEvent, setUpdateEvent] = useState(false);
     const [nodeIdType, setNodeIdType] = useState<'number' | 'letter'>('number');
 
-    const [nodeSource, setNodeSource] = useState<Node | null>(null);
-    const [nodeTarget, setNodeTarget] = useState<Node | null>(null);
+    const [nodeSource, setNodeSource] = useState<Node>();
+    const [nodeTarget, setNodeTarget] = useState<Node>();
 
     const [currentNode, setCurrentNode] = useState<Node | null>(null);
+    const [currentLink, setCurrentLink] = useState<Link | null>(null);
     const [newNodeId, setNewNodeId] = useState('');
+    const [newLinkId, setNewLinkId] = useState('');
+    const [newWeight, setNewWeight] = useState('');
     const [isNodeModalOpen, setNodeModalOpen] = useState(false);
+    const [isLinkModalOpen, setLinkModalOpen] = useState(false);
     const [error, setError] = useState('');
     const [modalPosition, setModalPosition] = useState<{ x?: number, y?: number }>();
 
     const tempLinkRef = useRef<null | d3.Selection<SVGLineElement, unknown, null, undefined>>(null);
 
+    const { setCenter } = useCenter();
     const view = { x: 0, y: 0 };
     const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
 
@@ -117,10 +121,6 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
         setScale(scale / 1.1);
     };
 
-    const addVertex = () => { };
-
-    const clean = () => { };
-
     const cleanAll = () => {
         canvasRef.current.selectAll('g>*').remove();
         setNodes([]);
@@ -131,12 +131,11 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
         canvasRef.current.selectAll('g>*').remove();
     };
 
-    const showDegree = () => { };
-
-    const showDegreeIndex = () => { };
-
     const setAdding = () => {
         setAddBtn(!addBtn);
+        setLinesBtn(false);
+        setSwipeBtn(false);
+        setDraggingEnabled(false);
     };
 
     const setMatrix = () => {
@@ -153,15 +152,35 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
 
     const setLining = () => {
         setLinesBtn(!linesBtn);
+        setAddBtn(false);
         setSwipeBtn(false);
+        setDraggingEnabled(false);
     };
 
     const setSwiping = () => {
         setSwipeBtn(!swipeBtn);
         setLinesBtn(false);
+        setAddBtn(false);
+        setDraggingEnabled(false);
     };
+
     const setWeightDisplay = () => {
         setWeight(!weightBtn);
+    };
+
+    const setLinkIdDisplay = () => {
+        setShowLinkIds(!showLinkIds);
+    };
+
+    const setDegreeDisplay = () => {
+        setShowDegree(!showDegree);
+    };
+
+    const enableDragging = () => {
+        setDraggingEnabled(!draggingEnabled);
+        setAddBtn(false);
+        setSwipeBtn(false);
+        setLinesBtn(false);
     };
 
     const updateViewBox = () => {
@@ -179,8 +198,6 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
         const cp2y = d.y + offsetY - loopRadius;
         const endX = d.x + offsetX;
         const endY = d.y + offsetY;
-
-        // Рисуем кривую Безье для создания петли
         loopPath.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, endX, endY);
 
         return loopPath.toString();
@@ -208,11 +225,50 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
         }
     }
 
+    const deleteNode = (node: Node | null) => {
+        if (node) {
+            const updatedNodes = nodes.filter(n => n.nodeId !== node.nodeId);
+            const updatedLinks = links.filter(link => link.source.nodeId !== node.nodeId && link.target.nodeId !== node.nodeId);
+            setNodes(updatedNodes);
+            setLinks(updatedLinks);
+            updateSimulation();
+            setNodeModalOpen(false);
+        }
+    };
+
+    const deleteLink = (link: Link | null) => {
+        if (link) {
+            const updatedLinks = links.filter(l => l !== link);
+            setLinks(updatedLinks);
+            updateSimulation();
+            setLinkModalOpen(false);
+        }
+    };
+
     const handleNodeClick = (event: any, node: Node) => {
+        let xpos = node.x;
+        if (xpos !== undefined) {
+            xpos = isPartControl ? xpos * 2 : xpos
+        }
+
         setCurrentNode(node);
         setNewNodeId(node.nodeId);
-        setModalPosition({ x: node.x, y: node.y });
+        setModalPosition({ x: xpos, y: node.y });
         setNodeModalOpen(true);
+        setLinkModalOpen(false);
+    };
+
+    const handleLinkClick = (event: any, link: Link) => {
+        let xpos = (link.source as Node).x
+        if (xpos !== undefined) {
+            xpos = isPartControl ? xpos * 2 : xpos
+        }
+        setCurrentLink(link);
+        setNewLinkId(link.linkId || '');
+        setNewWeight(link.weight?.toString() || '');
+        setModalPosition({ x: xpos, y: (link.source as Node).y });
+        setLinkModalOpen(true);
+        setNodeModalOpen(false);
     };
 
     const handleNodeNameChange = () => {
@@ -242,6 +298,21 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
             setNodes(updatedNodes);
             setLinks(updatedLinks);
             setNodeModalOpen(false);
+            setError('');
+        }
+    };
+
+    const handleLinkChange = () => {
+        if (currentLink) {
+            const updatedLinks = links.map(link =>
+                link === currentLink ? {
+                    ...link,
+                    linkId: newLinkId,
+                    weight: newWeight ? parseFloat(newWeight) : null,
+                } : link
+            );
+            setLinks(updatedLinks);
+            setLinkModalOpen(false);
             setError('');
         }
     };
@@ -286,6 +357,7 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
 
         svgElement.attr('viewBox', newViewBox);
         canvasRef.current = svgElement;
+        setCenter(width / 2, height / 2);
     }, [window.screen.height, window.screen.width, scale]);
 
     const nodeSizeChange = (e: any) => {
@@ -352,6 +424,8 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
         if (canvasRef.current) {
             if (addBtn) {
                 setLinesBtn(false);
+                setSwipeBtn(false);
+                setDraggingEnabled(false);
                 canvasRef.current.on('click', (event: any) => {
                     const coords = d3.pointer(event);
                     const newNodeId = getNextNodeId();
@@ -386,6 +460,8 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
     useEffect(() => {
         if (!linesBtn) return;
         setAddBtn(false);
+        setSwipeBtn(false);
+        setDraggingEnabled(false);
         const startTempLine = (event: any) => {
             if (event.button !== 0) return;
             const targetElement = d3.select(event.target);
@@ -421,12 +497,14 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
 
             const targetElement = d3.select(event.target);
             const targetNode: any = targetElement.datum();
-            if (targetElement.datum() && targetElement.classed('node')) {
-                setNodeTarget(targetNode);
-            }
+            if (targetNode === undefined) return
+            setNodeTarget(targetNode);
 
             if (tempLinkRef.current) tempLinkRef.current.remove();
             setIsDragging(false);
+            // canvasRef.current.on('mousedown', null);
+            // canvasRef.current.on('mousemove', null);
+            // canvasRef.current.on('mouseup', null);
         };
 
         canvasRef.current.on('mousedown', startTempLine);
@@ -442,13 +520,6 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
     useEffect(() => {
         canvasPreferencies?.matrixControl && canvasPreferencies.matrixControl(matrixBtn);
     }, [matrixBtn]);
-
-    useEffect(() => {
-        if (canvasRef.current) { }
-    }, [linesBtn]);
-    useEffect(() => {
-
-    }, [weightBtn]);
 
     useEffect(() => {
         if (canvasRef.current) {
@@ -477,6 +548,34 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
     }, [swipeBtn]);
 
     useEffect(() => {
+        if (canvasRef.current) {
+            const dragHandler = d3.drag<SVGCircleElement, Node>()
+                .on('start', function (event, d) {
+                    if (!draggingEnabled) return;
+                    if (!event.active) simulationRef.current.alphaTarget(0.3).restart();
+                    d.fx = d.x;
+                    d.fy = d.y;
+                })
+                .on('drag', function (event, d) {
+                    if (!draggingEnabled) return;
+                    d.fx = event.x;
+                    d.fy = event.y;
+                })
+                .on('end', function (event, d) {
+                    if (!draggingEnabled) return;
+                    if (!event.active) simulationRef.current.alphaTarget(0);
+                    d.fx = null;
+                    d.fy = null;
+                });
+            if (draggingEnabled) {
+                dragHandler(canvasRef.current.selectAll('.node'));
+            } else {
+                canvasRef.current.selectAll('.node').on('.drag', null);
+            }
+        }
+    }, [draggingEnabled]);
+
+    useEffect(() => {
         canvasRef.current.selectAll('.link')
             .attr('marker-end', showDirections ? 'url(#arrow)' : null);
     }, [showDirections]);
@@ -485,8 +584,11 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
         cleanAll();
         setNodes(graphData ? graphData.nodes : []);
         setLinks(graphData ? graphData.links : []);
-        setShowDirections(graphData?.oriented || false); // Установка значения showDirections из graphData
+        setShowDirections(graphData?.oriented || false);
+        setCurrentGraphData(graphData)
     }, [graphData]);
+
+    useEffect(() => { }, [currentGraphData]);
 
     useEffect(() => {
         assignNodeGroups(nodes, links);
@@ -506,10 +608,10 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
             .attr('stroke-linecap', 'round')
             .attr('marker-end', showDirections ? 'url(#arrow)' : null)
             .on("contextmenu", (event: any, d: any) => {
-                event.preventDefault();
-                const updatedLinks = links.filter(link => link !== d);
-                setLinks(updatedLinks);
-                updateSimulation();
+                if (isFullControl || isPartControl) {
+                    event.preventDefault();
+                    handleLinkClick(event, d);
+                }
             });
 
         const nodeElements = canvasRef.current.append('g')
@@ -520,17 +622,11 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
             .attr('r', nodeDefaultSize * nodeScale)
             .attr('class', 'node')
             .style('fill', showColors ? (d: any) => colorScale(d.degree) : 'black')
-            .on("click", (event: any, d: any) => {
-                event.stopPropagation();
-                handleNodeClick(event, d);
-            })
             .on("contextmenu", (event: any, d: any) => {
-                event.preventDefault();
-                const updatedNodes = nodes.filter(node => node.nodeId !== d.nodeId);
-                const updatedLinks = links.filter((link: any) => link.source.nodeId !== d.nodeId && link.target.nodeId !== d.nodeId);
-                setNodes(updatedNodes);
-                setLinks(updatedLinks);
-                updateSimulation();
+                if (isFullControl || isPartControl) {
+                    event.preventDefault();
+                    handleNodeClick(event, d);
+                }
             });
 
         const textElements = canvasRef.current.append('g')
@@ -547,8 +643,52 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
             .attr('text-anchor', 'middle')
             .attr('dominant-baseline', 'middle');
 
+        const degreeElements = canvasRef.current.append('g')
+            .selectAll('text')
+            .data(nodes)
+            .enter().append('text')
+            .attr('dy', '.15em')
+            .attr('class', 'node-degree')
+            .text((d: any) => d.degree)
+            .style('font-size', `${12 * textScale}px`)
+            .style('pointer-events', 'none')
+            .style('fill', 'red')
+            .style('font-weight', 'bold')
+            .attr('text-anchor', 'start')
+            .attr('dominant-baseline', 'middle')
+            .attr('dx', nodeDefaultSize * nodeScale);
+
+        const linkIdElements = canvasRef.current.append('g')
+            .selectAll('text')
+            .data(links)
+            .enter().append('text')
+            .attr('dy', `-4px`)
+            .attr('class', 'link-id')
+            .text((d: any) => d.linkId ? `{${d.linkId}}` : '*')
+            .style('font-size', `${15 * textScale}px`)
+            .style('pointer-events', 'none')
+            .style('fill', 'blue')
+            .style('font-weight', 'bold')
+            .attr('text-anchor', 'middle')
+            .attr('dominant-baseline', 'middle')
+
+        const linkWeightElements = canvasRef.current.append('g')
+            .selectAll('text')
+            .data(links)
+            .enter().append('text')
+            .attr('dy', `6px`)
+            .attr('class', 'link-weight')
+            .text((d: any) => d.weight ? `[${d.weight}]` : '0')
+            .style('font-size', `${15 * textScale}px`)
+            .style('pointer-events', 'none')
+            .style('fill', 'green')
+            .style('font-weight', 'bold')
+            .attr('text-anchor', 'middle')
+            .attr('dominant-baseline', 'middle')
+
+
         simulationRef.current = d3.forceSimulation(nodes)
-            .force('link', d3.forceLink(links).id((d: any) => d.nodeId).distance(100 * scale * edgeLengthScale))
+            .force('link', d3.forceLink(links).id((d: any) => d.nodeId).distance(linkDefaultLength * scale * edgeLengthScale))
             .force("charge", d3.forceManyBody()
                 .strength(-50 * repulsiveForceScale)
                 .distanceMax(50 * repulsiveDistanceScale))
@@ -576,6 +716,21 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
                 textElements
                     .attr('x', (d: any) => d.x)
                     .attr('y', (d: any) => d.y);
+
+                degreeElements
+                    .attr('x', (d: any) => d.x)
+                    .attr('y', (d: any) => d.y)
+                    .style('display', showDegree ? 'block' : 'none');
+
+                linkIdElements
+                    .attr('x', (d: any) => d.source && d.target ? (((d.source as Node).x || 0) + ((d.target as Node).x || 0)) / 2 + 6 * edgeSizeScale : 0)
+                    .attr('y', (d: any) => d.source && d.target ? (((d.source as Node).y || 0) + ((d.target as Node).y || 0)) / 2 - 6 * edgeSizeScale : 0)
+                    .style('display', showLinkIds ? 'block' : 'none');
+
+                linkWeightElements
+                    .attr('x', (d: any) => d.source && d.target ? (((d.source as Node).x || 0) + ((d.target as Node).x || 0)) / 2 - 6 * edgeSizeScale : 0)
+                    .attr('y', (d: any) => d.source && d.target ? (((d.source as Node).y || 0) + ((d.target as Node).y || 0)) / 2 + 6 * edgeSizeScale : 0)
+                    .style('display', weightBtn ? 'block' : 'none');
             });
 
         return () => {
@@ -593,24 +748,28 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
         textScale,
         repulsiveDistanceScale,
         repulsiveForceScale,
+        showDegree,
+        showLinkIds,
+        weightBtn,
     ]);
 
     useEffect(() => {
         canvasPreferencies?.getCurrentGraphData && canvasPreferencies.getCurrentGraphData({ nodes, links });
+        setCurrentGraphData({ nodes, links });
     }, [nodes, links]);
 
     const constructorArea = cn(
+        'shadow',
         "card",
         "text-center",
         'h-100',
         'w-100',
-        !isConstructorPage ? 'border-0' : 'mx-2',
+        !isFullControl ? 'border-0' : 'mx-2',
     );
 
-    const tools = cn();
 
-    const tool = cn(
-        "mx-2",
+    const formControl = cn(
+        "mx-1",
     );
 
     const canvasStyles = cn(
@@ -626,122 +785,51 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
     );
 
     return (
-        <div onContextMenu={e => e.preventDefault()} className={constructorArea}>
-            <div className="card-header d-flex justify-content-between">
-                <strong className='my-auto'>{'canvas'.toUpperCase()}</strong>
-                <div className={tools}>
-                    <Fab onClick={zoomIn} className={tool} size='small'>
-                        <ZoomInIcon></ZoomInIcon>
-                    </Fab>
-                    <Fab onClick={zoomOut} className={tool} size='small'>
-                        <ZoomOutIcon></ZoomOutIcon>
-                    </Fab>
-                    <Fab color={addBtn === true ? 'primary' : 'default'}
-                        onClick={setAdding}
-                        className={tool} size='small'>
-                        <AddCircleOutlineIcon></AddCircleOutlineIcon>
-                    </Fab>
-                    <Fab hidden={isConstructorPage ? false : true} color={matrixBtn === true ? 'primary' : 'default'}
-                        onClick={setMatrix}
-                        className={tool} size='small'>
-                        <AppsIcon></AppsIcon>
-                    </Fab>
-                    <Fab color={showColors === true ? 'primary' : 'default'}
-                        onClick={setColoring}
-                        className={tool} size='small'>
-                        <ColorLensIcon></ColorLensIcon>
-                    </Fab>
-                    <Fab
-                        color={nodeIdType === 'number' ? 'success' : 'warning'}
-                        onClick={() => setNodeIdType(nodeIdType === 'number' ? 'letter' : 'number')}
-                        className={tool} size='small'>
-                        {nodeIdType === 'number' ? <PinIcon /> : <AbcIcon />}
-                    </Fab>
-                    <Fab onClick={cleanAll} className={tool} size='small'>
-                        <DeleteForeverIcon></DeleteForeverIcon>
-                    </Fab>
-                    <Fab color={linesBtn === true ? 'primary' : 'default'}
-                        onClick={() => setLining()}
-                        className={tool} size='small'>
-                        <TimelineIcon></TimelineIcon>
-                    </Fab>
-                    <Fab color={weightBtn === true ? 'primary' : 'default'}
-                        onClick={() => setWeightDisplay()}
-                        className={tool} size='small'>
-                        <NumberWithLineOrArrow lineColor={weightBtn} />
-                    </Fab>
-                    <Fab color={showDirections ? 'primary' : 'default'}
-                        onClick={() => setDirections()}
-                        className={tool} size='small'>
-                        <SwipeUpAltIcon></SwipeUpAltIcon>
-                    </Fab>
-                    <Fab className={tool} size='small'>
-                        <AutoFixOffIcon></AutoFixOffIcon>
-                    </Fab>
-                    <Fab color={swipeBtn === true ? 'primary' : 'default'}
-                        onClick={() => setSwiping()}
-                        className={tool} size='small'>
-                        <SwipeVerticalIcon></SwipeVerticalIcon>
-                    </Fab>
-                    <div hidden={isConstructorPage ? false : true} className="btn-group dropstart">
-                        <Fab onClick={settingsHandle} type="button" className={cn("btn dropdown-toggle", tool, s.beforeOff)} data-bs-toggle="dropdown" aria-expanded="false" size='small'>
-                            <SettingsIcon></SettingsIcon>
-                        </Fab>
-                        <ul style={{ width: "max-content", zIndex: 1111 }} className="dropdown-menu mx-2 p-2 border-primary border-1">
-                            <li>
-                                <div className={rangeControlStyle}>Node size:
-                                    <output className='mx-1'>{nodeScale}</output>
-                                </div>
-                                <input onChange={nodeSizeChange} type="range" min={0.1} max={10} step={0.1} defaultValue={1} className="form-range" />
-                            </li>
-                            <li>
-                                <div className={rangeControlStyle}>Edge length:
-                                    <output className='mx-1'>{edgeLengthScale}</output>
-                                </div>
-                                <input onChange={edgeLengthChange} type="range" min={0.1} max={10} step={0.1} defaultValue={1} className="form-range" />
-                            </li>
-                            <li>
-                                <div className={rangeControlStyle}>Edge size:
-                                    <output className='mx-1'>{edgeSizeScale}</output>
-                                </div>
-                                <input onChange={edgeSizeChange} type="range" min={0.1} max={10} step={0.1} defaultValue={1} className="form-range" />
-                            </li>
-                            <li>
-                                <div className={rangeControlStyle}>Text size:
-                                    <output className='mx-1'>{textScale}</output>
-                                </div>
-                                <input onChange={textSizeChange} type="range" min={0.1} max={10} step={0.1} defaultValue={1} className="form-range" />
-                            </li>
-                            <li>
-                                <div className={rangeControlStyle}>Repulsive distance:
-                                    <output className='mx-1'>{repulsiveDistanceScale}</output>
-                                </div>
-                                <input onChange={repulsiveDistanceChange} type="range" min={0.1} max={10} step={0.1} defaultValue={1} className="form-range" />
-                            </li>
-                            <li>
-                                <div className={rangeControlStyle}>Repulsive force:
-                                    <output className='mx-1'>{repulsiveForceScale}</output>
-                                </div>
-                                <input onChange={repulsiveForceChange} type="range" min={0.1} max={10} step={0.1} defaultValue={1} className="form-range" />
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-            <div className={visualArea}>
-                <svg className={canvasStyles} ref={svgRef} viewBox={viewBox}>
-                    <defs>
-                        <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
-                            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="gray" strokeWidth="0.5" />
-                        </pattern>
-                        <marker id="arrow" markerWidth="4" markerHeight="4" refX={nodeDefaultSize * nodeScale / 2 / 2 + 3} refY="2" orient="auto" markerUnits="strokeWidth">
-                            <path d="M0,0 L0,4 L4,2 z" fill="#aaa" />
-                        </marker>
-                    </defs>
-                    <rect x={-10000} y={-10000} width="20000" height="20000" fill="url(#grid)" />
-                </svg>
-            </div>
-            <div className="card-footer text-body-secondary"></div>
+        <div style={{ position: 'relative' }} onContextMenu={e => e.preventDefault()} className={constructorArea}>
+            <ControlPanel
+                zoomIn={zoomIn}
+                zoomOut={zoomOut}
+                setAdding={setAdding}
+                setMatrix={setMatrix}
+                setColoring={setColoring}
+                setNodeIdType={() => setNodeIdType(nodeIdType === 'number' ? 'letter' : 'number')}
+                cleanAll={cleanAll}
+                setLining={setLining}
+                setWeightDisplay={setWeightDisplay}
+                setLinkIdDisplay={setLinkIdDisplay}
+                setDegreeDisplay={setDegreeDisplay}
+                setDirections={setDirections}
+                setSwiping={setSwiping}
+                enableDragging={enableDragging}
+                settingsHandle={settingsHandle}
+                addBtn={addBtn}
+                matrixBtn={matrixBtn}
+                showColors={showColors}
+                nodeIdType={nodeIdType}
+                linesBtn={linesBtn}
+                weightBtn={weightBtn}
+                showLinkIds={showLinkIds}
+                showDirections={showDirections}
+                swipeBtn={swipeBtn}
+                showDegree={showDegree}
+                draggingEnabled={draggingEnabled}
+                isFullControl={isFullControl}
+                isPartControl={isPartControl}
+                s={s}
+                rangeControlStyle={rangeControlStyle}
+                nodeScale={nodeScale}
+                edgeLengthScale={edgeLengthScale}
+                edgeSizeScale={edgeSizeScale}
+                textScale={textScale}
+                repulsiveDistanceScale={repulsiveDistanceScale}
+                repulsiveForceScale={repulsiveForceScale}
+                nodeSizeChange={nodeSizeChange}
+                edgeLengthChange={edgeLengthChange}
+                edgeSizeChange={edgeSizeChange}
+                textSizeChange={textSizeChange}
+                repulsiveDistanceChange={repulsiveDistanceChange}
+                repulsiveForceChange={repulsiveForceChange}
+            />
             <Modal
                 backdrop={false}
                 show={isNodeModalOpen}
@@ -775,18 +863,99 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
                     </Modal.Body>
                     <Modal.Footer className='p-1 justify-content-between'>
                         <Fab color='error'
-                            onClick={() => { setNodeModalOpen(false); setError('') }}
-                            className={cn(s.customSmallFab, tool)} size='small'>
+                            onClick={() => { deleteNode(currentNode); setError('') }}
+                            className={cn(s.customSmallFab, formControl)} size='small'>
                             <HighlightOffIcon className={cn(s.customSmalIcon)}></HighlightOffIcon>
+                        </Fab>
+                        <Fab color='warning'
+                            onClick={() => { setNodeModalOpen(false); setError('') }}
+                            className={cn(s.customSmallFab, formControl)} size='small'>
+                            <ArrowBackIcon className={cn(s.customSmalIcon)}></ArrowBackIcon>
                         </Fab>
                         <Fab color='success'
                             onClick={handleNodeNameChange}
-                            className={cn(s.customSmallFab, tool)} size='small'>
+                            className={cn(s.customSmallFab, formControl)} size='small'>
                             <CheckCircleIcon className={cn(s.customSmalIcon)}></CheckCircleIcon>
                         </Fab>
                     </Modal.Footer>
                 </div>
             </Modal>
+            <Modal
+                backdrop={false}
+                show={isLinkModalOpen}
+                onHide={() => setLinkModalOpen(false)}
+                style={{
+                    width: "fit-content",
+                    position: 'absolute',
+                    top: `${modalPosition?.y}px`,
+                    left: `${modalPosition?.x}px`,
+                    maxWidth: '150px'
+                }}
+            >
+                <div className='modal-c-border m-0'>
+                    <Modal.Body className='p-1'>
+                        {error && (
+                            <Alert variant="danger" className='text-center'>
+                                {error}
+                            </Alert>
+                        )}
+                        <Form>
+                            <Form.Group controlId="formLinkId">
+                                <Form.Label className='w-100 d-flex justify-content-center'>Link-id</Form.Label>
+                                <Form.Control
+                                    className='text-center'
+                                    type="text"
+                                    value={newLinkId}
+                                    onChange={(e) => setNewLinkId(e.target.value)}
+                                />
+                            </Form.Group>
+                            <Form.Group controlId="formWeight">
+                                <Form.Label className='w-100 d-flex justify-content-center'>Weight</Form.Label>
+                                <Form.Control
+                                    className='text-center'
+                                    type="number"
+                                    value={newWeight}
+                                    onChange={(e) => setNewWeight(e.target.value)}
+                                />
+                            </Form.Group>
+                        </Form>
+                    </Modal.Body>
+                    <Modal.Footer className='p-1 justify-content-between'>
+                        <Fab color='error'
+                            onClick={() => { deleteLink(currentLink); setError('') }}
+                            className={cn(s.customSmallFab, formControl)} size='small'>
+                            <HighlightOffIcon className={cn(s.customSmalIcon)}></HighlightOffIcon>
+                        </Fab>
+                        <Fab color='warning'
+                            onClick={() => { setLinkModalOpen(false); setError('') }}
+                            className={cn(s.customSmallFab, formControl)} size='small'>
+                            <ArrowBackIcon className={cn(s.customSmalIcon)}></ArrowBackIcon>
+                        </Fab>
+                        <Fab color='success'
+                            onClick={handleLinkChange}
+                            className={cn(s.customSmallFab, formControl)} size='small'>
+                            <CheckCircleIcon className={cn(s.customSmalIcon)}></CheckCircleIcon>
+                        </Fab>
+                    </Modal.Footer>
+                </div>
+            </Modal>
+            <div className={visualArea}>
+                <svg className={canvasStyles} ref={svgRef} viewBox={viewBox}>
+                    <defs>
+                        <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="gray" strokeWidth="0.5" />
+                        </pattern>
+                        <marker id="arrow" markerWidth="4" markerHeight="4" refX={nodeDefaultSize * nodeScale / 2 / 2 + 3} refY="2" orient="auto" markerUnits="strokeWidth">
+                            <path d="M0,0 L0,4 L4,2 z" fill="#aaa" />
+                        </marker>
+                    </defs>
+                    <rect x={-10000} y={-10000} width="20000" height="20000" fill="url(#grid)" />
+                </svg>
+            </div>
+            <div className="card-footer text-body-secondary">
+                <GraphInfo currentGraphData={currentGraphData}></GraphInfo>
+                <ExportMenu svgRef={svgRef} />
+            </div>
         </div>
     );
 };

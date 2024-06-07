@@ -9,6 +9,7 @@ export interface UserDTO {
     password: string;
     email: string;
     role: string;
+    saves?: string;
 }
 
 class UserService {

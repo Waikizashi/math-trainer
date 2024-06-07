@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { GraphDataProps } from '../components/graphs/GraphCanvas';
+import { GraphDataProps } from '../components/canvas/GraphCanvas';
 import { API_URL } from './service.config';
 
 const theory_service_URL = API_URL + '/theories'
@@ -11,6 +11,8 @@ export interface GraphNode {
 export interface GraphLink {
     source: string;
     target: string;
+    linkId?: string;
+    weight?: string;
 }
 
 export interface GraphData {
@@ -29,6 +31,7 @@ export interface TheoryContent {
 }
 
 export interface Theory {
+    id: number,
     title: string;
     theoryContents: TheoryContent[];
 }
@@ -48,7 +51,6 @@ class TheoryService {
 
     async getAllTheories(): Promise<Theory[]> {
         const response = await axios.get<Theory[]>(theory_service_URL);
-        console.log("THEORY: ", response.data)
         return response.data;
     }
 
@@ -87,6 +89,32 @@ class TheoryService {
             throw error;
         }
     }
+    async fetchCompletion(): Promise<any> {
+        try {
+            const theoryCompletionsResponse = await axios.get('http://localhost:8080/api/user-profile/theory-completions');
+            const theoryCompletions = theoryCompletionsResponse.data;
+
+            const theorysResponse = await axios.get('http://localhost:8080/api/theories');
+            const theories = theorysResponse.data;
+
+            const segmentsData = theories.map((theory: Theory) => {
+                const completedTheories = theoryCompletions.filter((completion: any) =>
+                    completion.theoryId === theory.id && completion.theoryStatus === 'COMPLETED'
+                );
+                const totalTheories = theories.length;
+                const completionRate = (completedTheories.length / totalTheories) * 100;
+                return {
+                    id: theory.id,
+                    value: completionRate,
+                    label: theory.title,
+                    className: 'progress-bar bg-success'
+                };
+            });
+            return segmentsData;
+        } catch (error) {
+            return ('Failed to fetch data' + error);
+        }
+    };
 }
 
 export default new TheoryService();

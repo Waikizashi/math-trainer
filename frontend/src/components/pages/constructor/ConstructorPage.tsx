@@ -7,9 +7,10 @@ import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 
 import { mainContainer, subContainer } from '../../../utils/styles/global-styles';
-import GraphCanvas, { GraphDataProps } from '../../graphs/GraphCanvas';
+import GraphCanvas, { GraphDataProps } from '../../canvas/GraphCanvas';
 import Matrix from './Matrix';
-import GraphInfo from '../../graphs/GraphInfo';
+import GraphInfo from '../../canvas/GraphInfo';
+import { CenterProvider } from '../../../context/CenterContext';
 
 const ConstructorPage = () => {
     const parentRef = useRef(null);
@@ -22,12 +23,12 @@ const ConstructorPage = () => {
         setMatrixControlState(state)
     }
 
-    const changeGraphData = (currentGraphData: GraphDataProps) => {
+    const changeCurrentGraphData = (currentGraphData: GraphDataProps) => {
         setCurrentGraphData(currentGraphData)
     }
 
-    useEffect(() => { }, [graphData]);
     useEffect(() => { }, [currentGraphData]);
+    useEffect(() => { }, [graphData]);
 
     const handleMatrixChange = (graphData: any) => {
         setGraphData(graphData);
@@ -39,17 +40,16 @@ const ConstructorPage = () => {
 
     return (
         <div className={mainContainer} ref={parentRef}>
-            {/* <MainMenu /> */}
             <div className={subContainer}>
                 <Draggable
                     bounds="parent"
                     handle=".card-header"
                 >
                     <div hidden={!matrixControlState} className="card position-absolute" style={{ top: 65, left: 15, width: 'auto', zIndex: 99 }}>
-                        <div className="card-header" style={{ cursor: 'move' }}>
+                        <div className="card-header bg-primary bg-opacity-75" style={{ cursor: 'move' }}>
                         </div>
                         <div className="card-body">
-                            <Matrix onMatrixChange={handleMatrixChange}></Matrix>
+                            <Matrix onMatrixChange={handleMatrixChange} graphData={currentGraphData} />
                         </div>
                     </div>
                 </Draggable>
@@ -57,11 +57,10 @@ const ConstructorPage = () => {
                     graphData={graphData}
                     canvasPreferencies={{
                         matrixControl: changeMatrixControlState,
-                        getCurrentGraphData: changeGraphData
+                        getCurrentGraphData: changeCurrentGraphData
                     }}
                 ></GraphCanvas>
             </div>
-            <GraphInfo currentGraphData={currentGraphData}></GraphInfo>
         </div>
     );
 }

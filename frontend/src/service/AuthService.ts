@@ -40,14 +40,15 @@ class AuthService {
     async getCurrentUser(): Promise<UserDTO | null> {
         try {
             const localUser = localStorage.getItem('user');
-            console.log("LOCAL SESSION: ", localUser)
             const activeUser = await axios.get(`${API_URL}/current/user`);
-            console.log("SERVER SESSION: ", activeUser)
             if (localUser && activeUser) {
                 return JSON.parse(localUser);
+            } else {
+                localStorage.removeItem('user');
             }
         } catch (error: any) {
-            console.log('Current user fetching error:', error)
+            console.error('Current user fetching error:', error)
+            localStorage.removeItem('user');
         }
         return null;
     }
