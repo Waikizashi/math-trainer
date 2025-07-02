@@ -12,6 +12,7 @@ services:
       - SPRING_DATASOURCE_PASSWORD=veryh@rdp@ss
     depends_on:
       - db
+
   db:
     image: postgres:latest
     ports:
@@ -22,6 +23,15 @@ services:
       - POSTGRES_PASSWORD=veryh@rdp@ss
     volumes:
       - postgres_data:/var/lib/postgresql/data
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: ../docker/dockerfiles/frontend.Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      - app
 
 volumes:
   postgres_data:

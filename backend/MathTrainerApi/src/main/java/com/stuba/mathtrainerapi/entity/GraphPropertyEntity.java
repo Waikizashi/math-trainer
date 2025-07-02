@@ -2,7 +2,9 @@ package com.stuba.mathtrainerapi.entity;
 
 import com.stuba.mathtrainerapi.enums.GraphProperty;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "graph_properties")

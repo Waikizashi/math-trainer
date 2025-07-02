@@ -1,100 +1,76 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { useParams } from 'react-router-dom';
-import axios from 'axios';
 import GraphCanvas, { GraphDataProps } from '../../canvas/GraphCanvas';
 import { mainContainer, subContainer, section } from '../../../utils/styles/global-styles';
 import theoryService, { Theory } from '../../../service/TheoryService';
 import TheoryComponent from './TheoryComponent';
 import { mapGraphData } from '../../../utils/mappers';
-import styles from './theoryPage.module.css'; // Убедитесь, что путь к файлу верный
+import styles from './theoryPage.module.css';
 import AuthContext from '../../../context/AuthContext';
 import ProgressContainer from '../../progress/ProgressContainer';
 
-const TheoryPage: React.FC<any> = () => {
-    const [currentTopic, setCurrentTopic] = useState(0);
-    const [currentTopicByTid, setCurrentTopicByTid] = useState(0);
-    const [graphData, setGraphData] = useState<GraphDataProps | undefined>(undefined);
-    const { tid } = useParams();
+const TheoryPage: React.FC = () => {
+    const { tid } = useParams<{ tid: string }>();
     const { user } = useContext(AuthContext) || {};
-    const [loadedByTid, setLoadedByPathEid] = useState(true)
+
     const [theories, setTheories] = useState<Theory[]>([]);
-    const [loading, setLoading] = useState<boolean>(true);
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const [graphData, setGraphData] = useState<GraphDataProps | undefined>(undefined);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [contentFocus, setContentFocus] = useState(0);
+    const [graphFocus, setGraphFocus] = useState(0);
 
-    const [currentContentFocus, setCurrentContentFocus] = useState(0);
-    const [currentContentGraphFocus, setCurrentContentGraphFocus] = useState(0);
-
+    // Загрузка списка тем и установка текущего индекса по tid
     useEffect(() => {
-        const fetchTheories = async () => {
+        const fetchAll = async () => {
             try {
-                const tmpTheories = await theoryService.getAllTheories();
-                setTheories(tmpTheories);
-                if (tid && loadedByTid) {
-                    const curTheory = tmpTheories.find(theory => theory?.id === parseInt(tid))?.id;
-                    setCurrentTopic(curTheory ? curTheory : 0);
-                } else {
-                    setCurrentTopic(0)
+                const all = await theoryService.getAllTheories();
+                setTheories(all);
+                if (tid) {
+                    const idNum = parseInt(tid, 10);
+                    const idx = all.findIndex(t => t.id === idNum);
+                    setCurrentIndex(idx >= 0 ? idx : 0);
                 }
-            } catch (error) {
-                setError('ERROR:' + error);
+            } catch (err) {
+                setError(err instanceof Error ? err.message : 'Ошибка загрузки тем');
             } finally {
                 setLoading(false);
             }
         };
-
-        fetchTheories();
+        fetchAll();
     }, [tid]);
 
-    const getCurrentTheory = (): Theory | undefined => {
-        if (loadedByTid) {
-            setLoadedByPathEid(false)
-            return theories.find(theory => theory.id === currentTopicByTid)
-        } else {
-            return theories[currentTopic];
-        }
-    }
-
+    // Обновление graphData при смене темы или фокуса
     useEffect(() => {
-        const content = getCurrentTheory()?.theoryContents[0];
-        const graph = content?.graphData[0];
-        if (graph) {
-            setGraphData(mapGraphData(graph));
-        } else {
-            setGraphData(undefined);
-        }
-    }, [currentTopic, theories]);
+        if (!theories.length) return;
+        const theory = theories[currentIndex];
+        const content = theory.theoryContents[contentFocus];
+        const graphItem = content?.graphData[graphFocus];
+        setGraphData(graphItem ? mapGraphData(graphItem) : undefined);
+    }, [theories, currentIndex, contentFocus, graphFocus]);
 
-    const changeVisualization = (prevNext: number) => {
-        setCurrentTopic(prevTopic => {
-            const nextTopic = prevTopic + prevNext;
-            return nextTopic >= theories.length || nextTopic < 0 ? 0 : nextTopic;
-        });
+    // Обработчики фокуса
+    const handleContentFocus = (idx: number) => {
+        setContentFocus(idx);
+        setGraphFocus(0);
+    };
+    const handleGraphFocus = (idx: number, graphIdx: number) => {
+        setGraphFocus(graphIdx);
+        setContentFocus(idx);
     };
 
-    const handleCurrentContentFocus = (currentContentFocus: number) => {
-        setCurrentContentFocus(currentContentFocus)
-        setCurrentContentGraphFocus(0)
-    }
-    const handleCurrentContentGraphFocus = (currentContentFocus: number, currentContentGraphFocus: number) => {
-        setCurrentContentFocus(currentContentFocus)
-        setCurrentContentGraphFocus(currentContentGraphFocus)
-    }
+    // Пагинация тем
+    const changeVisualization = (delta: number) => {
+        setCurrentIndex(prev => {
+            const next = prev + delta;
+            return next < 0 || next >= theories.length ? 0 : next;
+        });
+        setContentFocus(0);
+        setGraphFocus(0);
+    };
 
-    useEffect(() => {
-        const content = getCurrentTheory()?.theoryContents[currentContentFocus];
-        const graph = content?.graphData[currentContentGraphFocus];
-        if (graph) {
-            setGraphData(mapGraphData(graph));
-        } else {
-            setGraphData(undefined);
-        }
-    }, [currentContentFocus, currentContentGraphFocus])
-
-    const segments = [
-        { id: 1, value: 20, label: 'Segment one', className: 'progress-bar bg-success' },
-        { id: 2, value: 20, label: 'Segment two', className: 'progress-bar bg-success' },
-        { id: 3, value: 20, label: 'Segment three', className: 'progress-bar bg-success' },
-    ];
+    const getCurrentTheory = () => theories[currentIndex];
 
     return (
         <div className={mainContainer}>
@@ -104,29 +80,35 @@ const TheoryPage: React.FC<any> = () => {
                         {getCurrentTheory()?.title.toUpperCase()}
                     </div>
                     <div className="card-body bg-success bg-opacity-10">
-                        {loading ? <div>Loading...</div> : error ? <div>{error}</div> :
+                        {loading ? <div>Loading...</div> : error ? <div>{error}</div> : (
                             <TheoryComponent
                                 theory={getCurrentTheory()}
                                 user={user}
-                                onContentClick={handleCurrentContentFocus}
-                                onGraphClick={handleCurrentContentGraphFocus}
-                            />}
+                                onContentClick={handleContentFocus}
+                                onGraphClick={handleGraphFocus}
+                            />
+                        )}
                     </div>
                     <div className="card-footer bg-success bg-opacity-25">
                         <nav aria-label="Page navigation example">
                             <ul className="pagination m-0 d-flex justify-content-center">
                                 <li className="page-item">
-                                    <div className="page-link" onClick={() => changeVisualization(-1)} aria-label="Previous">
+                                    <button
+                                        className="page-link"
+                                        onClick={() => changeVisualization(-1)}
+                                        aria-label="Previous"
+                                    >
                                         <span aria-hidden="true">&laquo;</span>
-                                    </div>
+                                    </button>
                                 </li>
-                                {/* <li className="page-item"><a className="page-link" href="#">1</a></li>
-                                <li className="page-item"><a className="page-link" href="#">2</a></li>
-                                <li className="page-item"><a className="page-link" href="#">3</a></li> */}
-                                <li className="page-item" onClick={() => changeVisualization(1)}>
-                                    <div className="page-link" aria-label="Next">
+                                <li className="page-item">
+                                    <button
+                                        className="page-link"
+                                        onClick={() => changeVisualization(1)}
+                                        aria-label="Next"
+                                    >
                                         <span aria-hidden="true">&raquo;</span>
-                                    </div>
+                                    </button>
                                 </li>
                             </ul>
                         </nav>
@@ -143,7 +125,7 @@ const TheoryPage: React.FC<any> = () => {
                     )}
                 </div>
             </div>
-            <ProgressContainer type={'theory'} />
+            <ProgressContainer type="theory" actualize={currentIndex}/>
         </div>
     );
 };

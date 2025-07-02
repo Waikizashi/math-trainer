@@ -14,6 +14,7 @@ public interface UserService {
     Optional<UserDTO> findByEmail(String email);
     UserDTO saveUser(UserDTO userDTO);
     UserDTO updateUser(UserDTO userDTO);
+    UserDTO updateSaves(UserDTO userDTO);
     boolean deleteUser(Long id);
 
     boolean isUserUnique(String username, String email);

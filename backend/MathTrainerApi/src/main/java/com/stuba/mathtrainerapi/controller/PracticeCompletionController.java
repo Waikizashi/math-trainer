@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/practiceCompletions")
+@RequestMapping("/api/practice-completions")
 public class PracticeCompletionController {
 
     private final PracticeCompletionService practiceCompletionService;

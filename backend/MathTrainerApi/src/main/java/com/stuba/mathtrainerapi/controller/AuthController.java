@@ -50,7 +50,9 @@ public class AuthController {
             SecurityContextHolder.getContext().setAuthentication(authentication);
             HttpSession session = request.getSession(true);
             session.setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
-            return ResponseEntity.ok().body("Login successful");
+            String username = authentication.getName();
+            UserDTO user = userService.findByUsername(username).orElse(null);
+            return ResponseEntity.ok().body(user);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Login failed");
         }

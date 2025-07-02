@@ -2,12 +2,17 @@ package com.stuba.mathtrainerapi.entity;
 
 import com.stuba.mathtrainerapi.enums.TheoryStatus;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "theory_completions")
+@Table(
+        name = "theory_completions",
+        uniqueConstraints = @UniqueConstraint(name = "uq_user_theory", columnNames = {"user_id", "theory_id"})
+)
 @Data
 public class TheoryCompletion {
     @Id

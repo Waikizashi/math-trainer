@@ -1,67 +1,57 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import cn from 'classnames';
-import MainMenu from '../../navigation/Menu';
 import GraphCanvas, { GraphDataProps } from '../../canvas/GraphCanvas';
-import { mainContainer, section, subContainer } from '../../../utils/styles/global-styles';
+import { mainContainer, subContainer, section } from '../../../utils/styles/global-styles';
 import PracticeComponent from './PracticeComponent';
 import practiceService, { Practice } from '../../../service/PracticeService';
 import AuthContext from '../../../context/AuthContext';
-import ProgressBar from '../../progress/ProgressBar';
 import ProgressContainer from '../../progress/ProgressContainer';
 
-const PracticePage = () => {
-    const [currentTopic, setCurrentTopic] = useState(0);
-    const [currentTopicByEid, setCurrentTopicByEid] = useState(0);
-    const [graphData, setGraphData] = useState<GraphDataProps | undefined>(undefined);
-    const { eid } = useParams();
-    const [loadedByEid, setLoadedByPathEid] = useState(true)
-    const user = useContext(AuthContext)?.user;
+const PracticePage: React.FC = () => {
+    const { eid } = useParams<{ eid: string }>();
+    const { user } = useContext(AuthContext) || {};
 
     const [practices, setPractices] = useState<Practice[]>([]);
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const [graphData, setGraphData] = useState<GraphDataProps | undefined>(undefined);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
+    // Загрузка списка практик и установка currentIndex по eid
     useEffect(() => {
         const fetchPractices = async () => {
             try {
-                const tmpPractices = await practiceService.getAllPractices();
-                setPractices(tmpPractices);
-
-                if (eid && loadedByEid) {
-                    const curPractice = tmpPractices.find(practice => practice.id === parseInt(eid))?.id;
-                    setCurrentTopicByEid(curPractice ? curPractice : 0);
+                const all = await practiceService.getAllPractices();
+                setPractices(all);
+                if (eid) {
+                    const idNum = parseInt(eid, 10);
+                    const idx = all.findIndex(p => p.id === idNum);
+                    setCurrentIndex(idx >= 0 ? idx : 0);
                 } else {
-                    setCurrentTopic(0);
+                    setCurrentIndex(0);
                 }
-            } catch (error) {
-                setError('ERROR: ' + error);
+            } catch (err) {
+                setError(err instanceof Error ? err.message : 'Ошибка загрузки практик');
             } finally {
                 setLoading(false);
             }
         };
-
         fetchPractices();
     }, [eid]);
 
-    const getCurrentPractice = (): Practice | undefined => {
-        if (loadedByEid) {
-            setLoadedByPathEid(false)
-            return practices.find(practice => practice.id === currentTopicByEid)
-        } else {
-            return practices[currentTopic];
-        }
-    }
+    const getCurrentPractice = (): Practice | undefined => practices[currentIndex];
 
-    const changeGraphData = (currentGraphData: GraphDataProps) => {
-        setGraphData(currentGraphData);
+    // Пагинация тем практики
+    const changeVisualization = (delta: number) => {
+        setCurrentIndex(prev => {
+            const next = prev + delta;
+            return next < 0 || next >= practices.length ? 0 : next;
+        });
     };
 
-    const changeVisualization = (prevNext: number) => {
-        setCurrentTopic(prevTopic => {
-            const currentTopic: number = prevTopic + prevNext;
-            return (currentTopic >= practices.length || currentTopic < 0) ? 0 : currentTopic;
-        });
+    // Обработчик для GraphCanvas
+    const handleGraphData = (data: GraphDataProps) => {
+        setGraphData(data);
     };
 
     return (
@@ -72,23 +62,38 @@ const PracticePage = () => {
                         {getCurrentPractice()?.title.toUpperCase()}
                     </div>
                     <div className="card-body bg-info bg-opacity-10">
-                        <PracticeComponent practice={getCurrentPractice()} graphData={graphData} user={user} />
+                        {loading ? (
+                            <div>Loading...</div>
+                        ) : error ? (
+                            <div>{error}</div>
+                        ) : (
+                            <PracticeComponent
+                                practice={getCurrentPractice()}
+                                graphData={graphData}
+                                user={user}
+                            />
+                        )}
                     </div>
                     <div className="card-footer bg-info bg-opacity-25">
                         <nav aria-label="Page navigation example">
                             <ul className="pagination m-0 d-flex justify-content-center">
                                 <li className="page-item">
-                                    <a className="page-link" onClick={() => changeVisualization(-1)} href="#" aria-label="Previous">
+                                    <button
+                                        className="page-link"
+                                        onClick={() => changeVisualization(-1)}
+                                        aria-label="Previous"
+                                    >
                                         <span aria-hidden="true">&laquo;</span>
-                                    </a>
+                                    </button>
                                 </li>
-                                {/* <li className="page-item"><a className="page-link" href="#">1</a></li>
-                                <li className="page-item"><a className="page-link" href="#">2</a></li>
-                                <li className="page-item"><a className="page-link" href="#">3</a></li> */}
-                                <li className="page-item" onClick={() => changeVisualization(1)}>
-                                    <a className="page-link" aria-label="Next">
+                                <li className="page-item">
+                                    <button
+                                        className="page-link"
+                                        onClick={() => changeVisualization(1)}
+                                        aria-label="Next"
+                                    >
                                         <span aria-hidden="true">&raquo;</span>
-                                    </a>
+                                    </button>
                                 </li>
                             </ul>
                         </nav>
@@ -96,10 +101,10 @@ const PracticePage = () => {
                 </div>
 
                 <div className={section}>
-                    <GraphCanvas canvasPreferencies={{ getCurrentGraphData: changeGraphData }} />
+                    <GraphCanvas canvasPreferencies={{ getCurrentGraphData: handleGraphData }} />
                 </div>
             </div>
-            <ProgressContainer type={'practice'} />
+            <ProgressContainer type="practice" actualize={currentIndex}/>
         </div>
     );
 };

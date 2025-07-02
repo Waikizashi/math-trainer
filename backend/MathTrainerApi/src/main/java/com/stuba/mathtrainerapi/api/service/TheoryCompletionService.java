@@ -13,4 +13,5 @@ public interface TheoryCompletionService {
     TheoryCompletionDTO updateTheoryCompletion(TheoryCompletionDTO theoryCompletionDTO);
     boolean deleteTheoryCompletion(Long id);
     List<TheoryCompletionDTO> findAllTheoryCompletionsByUser(Long userId);
+    Optional<TheoryCompletionDTO> findTheoryCompletionByUserAndTheory(Long userId, Long theoryId);
 }

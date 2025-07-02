@@ -8,7 +8,7 @@ public class TheoryContentDTO {
     private String contentType;
     private String title;
     private String data;
-    private String imgLink;
+    private String mediaLink;
     private List<GraphDataDTO> graphData;
     private Long theoryId;
 }

@@ -32,7 +32,7 @@ function RedirectToHome() {
 
 function App() {
   return (
-    <div className="App bg-body-tertiary">
+    <div className="dynamic-bg">
       <Router>
         <LanguageProvider>
           <NotificationProvider>

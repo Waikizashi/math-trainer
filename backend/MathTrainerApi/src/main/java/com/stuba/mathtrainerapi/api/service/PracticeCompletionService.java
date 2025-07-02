@@ -12,4 +12,5 @@ public interface PracticeCompletionService {
     PracticeCompletionDTO updatePracticeCompletion(PracticeCompletionDTO practiceCompletionDTO);
     boolean deletePracticeCompletion(Long id);
     List<PracticeCompletionDTO> findAllPracticeCompletionsByUser(Long userId);
+    Optional<PracticeCompletionDTO> findPracticeCompletionByUserAndPractice(Long userId, Long practiceId);
 }

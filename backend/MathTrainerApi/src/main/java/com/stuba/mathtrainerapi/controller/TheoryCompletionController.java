@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/theoryCompletions")
+@RequestMapping("/api/theory-completions")
 public class TheoryCompletionController {
 
     private final TheoryCompletionService theoryCompletionService;

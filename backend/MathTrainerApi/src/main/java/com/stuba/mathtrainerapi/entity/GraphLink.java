@@ -1,7 +1,9 @@
 package com.stuba.mathtrainerapi.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "graph_links")
@@ -11,6 +13,8 @@ public class GraphLink {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private String linkId;
+    private String weight;
     @Column(nullable = false)
     private String source;
 

@@ -5,5 +5,9 @@ public enum GraphProperty {
     ACYCLIC,
     DIRECTED,
     WEIGHTED,
-    // добавьте другие свойства графа, которые вам необходимы
+    COMPLETED,
+    TREE,
+    EULERIAN,
+    HAMILTONIAN
+
 }

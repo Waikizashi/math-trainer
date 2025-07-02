@@ -13,10 +13,10 @@ import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 
-@Component
-public class DataInitializer implements CommandLineRunner {
+//@Component
+public class PracticeDataInitializer implements CommandLineRunner {
 
-    @Autowired
+    //@Autowired
     private PracticeRepository practiceRepository;
 
     @Override
@@ -156,61 +156,8 @@ public class DataInitializer implements CommandLineRunner {
 
         practice3.setPracticeContents(Arrays.asList(content3));
 
-        // Practice 4
-        Practice practice4 = new Practice();
-        practice4.setTitle("Aciklické grafy");
-
-        PracticeContent content4 = new PracticeContent();
-        content4.setContentType("Exercise");
-        content4.setTitle("Vytvorte acyklický graf");
-        content4.setData("Vašou úlohou je vytvoriť acyklický graf");
-        content4.setMediaLink("-");
-        content4.setPractice(practice4);
-
-        PossibleVertexCount pvc7 = new PossibleVertexCount();
-        pvc7.setCount(3);
-        pvc7.setPracticeContent(content4);
-
-        PossibleVertexCount pvc8 = new PossibleVertexCount();
-        pvc8.setCount(4);
-        pvc8.setPracticeContent(content4);
-
-        PossibleVertexCount pvc9 = new PossibleVertexCount();
-        pvc9.setCount(5);
-        pvc9.setPracticeContent(content4);
-
-        PossibleVertexCount pvc10 = new PossibleVertexCount();
-        pvc10.setCount(6);
-        pvc10.setPracticeContent(content4);
-
-        PossibleEdgeCount pec13 = new PossibleEdgeCount();
-        pec13.setCount(2);
-        pec13.setPracticeContent(content4);
-
-        PossibleEdgeCount pec14 = new PossibleEdgeCount();
-        pec14.setCount(3);
-        pec14.setPracticeContent(content4);
-
-        PossibleEdgeCount pec15 = new PossibleEdgeCount();
-        pec15.setCount(4);
-        pec15.setPracticeContent(content4);
-
-        PossibleEdgeCount pec16 = new PossibleEdgeCount();
-        pec16.setCount(5);
-        pec16.setPracticeContent(content4);
-
-        GraphPropertyEntity gpe4 = new GraphPropertyEntity();
-        gpe4.setProperty(GraphProperty.ACYCLIC);
-        gpe4.setPracticeContent(content4);
-
-        content4.setPossibleVertices(Arrays.asList(pvc7, pvc8, pvc9, pvc10));
-        content4.setPossibleEdges(Arrays.asList(pec13, pec14, pec15, pec16));
-        content4.setGraphProperties(Arrays.asList(gpe4));
-
-        practice4.setPracticeContents(Arrays.asList(content4));
-
         // Save all practices
-        practiceRepository.saveAll(Arrays.asList(practice1, practice2, practice3, practice4));
+        //practiceRepository.saveAll(Arrays.asList(practice1, practice2, practice3));
     }
 }
 

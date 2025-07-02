@@ -39,8 +39,11 @@ const TheoryComponent: React.FC<TheoryComponentProps> = ({ theory, user, onConte
 
   useEffect(() => {
     const allClickableContents = theory?.theoryContents.filter(content => clickableContentTypes.includes(content.contentType)) || [];
-
-    if (allClickableContents.length > 0 && allClickableContents.every((content, index) => index <= currentContentFocus)) {
+    console.log(allClickableContents.length);
+    if (
+      (allClickableContents.length > 0 && allClickableContents.every((content, index) => index <= currentContentFocus)) ||
+      allClickableContents.length == 0
+      ) {
       const updateTheoryCompletion = async () => {
         if (user && theory) {
           try {

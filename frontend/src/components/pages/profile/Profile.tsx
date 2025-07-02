@@ -32,6 +32,8 @@ const Profile = () => {
 
                 const practiceResponse = await axios.get('http://localhost:8080/api/user-profile/practice-completions');
                 setExercises(practiceResponse.data);
+                console.log(theoryCompletions);
+                console.log(practiceCompletions);
             } catch (error) {
                 console.error('Error fetching data', error);
             }
@@ -65,26 +67,6 @@ const Profile = () => {
         <div className={cn(mainContainer)}>
             <div className='m-2 shadow h-100'>
                 <div className="card h-100 w-100">
-                    {/* <div className="card-header p-0 d-flex justify-content-center">
-                        <div className="tab nav nav-tabs mt-2 p-0">
-                            <NavItem>
-                                <button
-                                    onClick={() => setActiveTab('profile')}
-                                    className={cn(activeTab === 'profile' ? 'active' : '', 'nav-link')}
-                                >
-                                    Profile
-                                </button>
-                            </NavItem>
-                            <NavItem>
-                                <button
-                                    onClick={() => setActiveTab('mygraphs')}
-                                    className={cn(activeTab === 'mygraphs' ? 'active' : '', 'nav-link')}
-                                >
-                                    My Graphs
-                                </button>
-                            </NavItem>
-                        </div>
-                    </div> */}
                     <div className="card-body h-100">
                         <div hidden={!(activeTab === 'profile')} className="row h-100">
                             <div className="col-3">
@@ -112,7 +94,7 @@ const Profile = () => {
                                     <h3 className='card-header'>Theory Topics</h3>
                                     <div className={cn("card-body row", s.boxesContainer)}>
                                         {theoryCompletions.map((theoryCompletion: any, index: any) => (
-                                            <div onClick={() => theoryTopicHandle(theoryCompletion.theoryId)} key={index} className="col-md-2 mb-3">
+                                            <div onClick={() => theoryTopicHandle(theoryCompletion.theoryId)} key={theoryCompletion.theoryId} className="col-md-2 mb-3">
                                                 <div className={cn("card shadow", s.taskBox)}>
                                                     <div className="card-body text-center">
                                                         <img src={getIcon(theoryCompletion.theoryStatus)} className={s.imgResponsive} />
@@ -128,7 +110,7 @@ const Profile = () => {
                                     <h3 className='card-header'>Exercises</h3>
                                     <div className={cn("card-body row", s.boxesContainer)}>
                                         {practiceCompletions.map((practiceCompletion: any, index: any) => (
-                                            <div onClick={() => practiceTopicHandle(practiceCompletion.practiceId)} key={index} className="col-md-2 mb-3">
+                                            <div onClick={() => practiceTopicHandle(practiceCompletion.practiceId)} key={practiceCompletion.practiceId} className="col-md-2 mb-3">
                                                 <div className={cn("card shadow", s.taskBox)}>
                                                     <div className="card-body text-center">
                                                         <img src={getIcon(practiceCompletion.practiceStatus)} className={s.imgResponsive} />

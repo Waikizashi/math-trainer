@@ -51,9 +51,6 @@ const GraphCanvas: React.FC<{ graphData?: GraphDataProps, canvasPreferencies?: C
     const isPartControl = Boolean(location.pathname.match(/^\/practice(\/\d+)?$/));
 
 
-
-
-
     const svgRef = useRef<any>(null);
     const canvasRef = useRef<any>(null);
     const simulationRef = useRef<any>(null);

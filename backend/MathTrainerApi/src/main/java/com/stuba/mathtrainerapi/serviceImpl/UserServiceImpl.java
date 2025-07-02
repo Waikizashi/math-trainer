@@ -81,6 +81,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
+    public UserDTO updateSaves(UserDTO userDTO) {
+//        var userData = userRepository.findByUsername(userDTO.getUsername());
+//        userRepository.updateUserSavesById(userData.get().getId(), userDTO.getSaves());
+        return null;
+    }
+
+    @Override
+    @Transactional
     public boolean deleteUser(Long id) {
         if (userRepository.existsById(id)) {
             userRepository.deleteById(id);

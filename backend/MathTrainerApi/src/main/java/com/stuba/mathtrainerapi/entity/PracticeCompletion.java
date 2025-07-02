@@ -2,12 +2,17 @@ package com.stuba.mathtrainerapi.entity;
 
 import com.stuba.mathtrainerapi.enums.PracticeStatus;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "practice_completions")
+@Table(
+        name = "practice_completions",
+        uniqueConstraints = @UniqueConstraint(name = "uq_user_practice", columnNames = {"user_id", "practice_id"})
+)
 @Data
 public class PracticeCompletion {
     @Id

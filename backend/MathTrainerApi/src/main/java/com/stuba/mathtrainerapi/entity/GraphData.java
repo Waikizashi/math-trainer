@@ -1,7 +1,9 @@
 package com.stuba.mathtrainerapi.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
@@ -18,7 +20,7 @@ public class GraphData {
     @Column(nullable = false)
     private Boolean oriented;
     @ManyToOne
-    @JoinColumn(name = "theoryContent_id")
+    @JoinColumn(name = "theory_content_id")
     private TheoryContent theoryContent;
     @OneToMany(mappedBy = "graphData", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<GraphNode> nodes;

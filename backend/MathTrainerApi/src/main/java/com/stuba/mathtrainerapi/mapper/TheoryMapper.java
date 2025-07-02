@@ -5,7 +5,7 @@ import com.stuba.mathtrainerapi.entity.Theory;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper(componentModel = "spring", uses = {TheoryContentMapper.class})
+@Mapper(componentModel = "spring", uses = {TheoryContentMapper.class, TheoryCompletionMapper.class})
 public interface TheoryMapper {
     @Mapping(source = "theoryContents", target = "theoryContents")
     @Mapping(source = "completions", target = "completions")

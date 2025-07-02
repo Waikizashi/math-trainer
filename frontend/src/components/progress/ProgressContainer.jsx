@@ -4,7 +4,7 @@ import ProgressBar from './ProgressBar';
 import theoryService from '../../service/TheoryService';
 import practiceService from '../../service/PracticeService';
 
-const ProgressContainer = ({ type }) => {
+const ProgressContainer = ({ type, actualize }) => {
     const [segments, setSegments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -42,7 +42,7 @@ const ProgressContainer = ({ type }) => {
             }
         }
         fetchData()
-    }, [type]);
+    }, [type, actualize]);
 
     if (loading) {
         return <div>Loading...</div>;

@@ -6,9 +6,11 @@ import Select from 'react-select';
 
 const graphPropertyOptions = [
   { value: 'CONNECTED', label: 'CONNECTED' },
-  { value: 'WEIGHTED', label: 'WEIGHTED' },
   { value: 'ACYCLIC', label: 'ACYCLIC' },
-  { value: 'DIRECTED', label: 'DIRECTED' },
+  { value: 'COMPLETED', label: 'COMPLETED' },
+  { value: 'TREE', label: 'TREE' },
+  { value: 'EULERIAN', label: 'EULERIAN' },
+  { value: 'HAMILTONIAN', label: 'HAMILTONIAN' },
 ];
 
 const PracticeForm = () => {

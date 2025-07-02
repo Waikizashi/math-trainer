@@ -13,7 +13,7 @@ const HomePage: React.FC<MyComponentProps> = ({ title, description }) => {
         s.homepage,
         'd-flex',
         'justify-content-center',
-        'align-items-center'
+        'align-items-center',
     )
     const titleClasses = cn(
         s.title,

@@ -41,10 +41,11 @@ public class PracticeServiceImpl implements PracticeService {
     @Override
     @Transactional
     public PracticeDTO savePractice(PracticeDTO practiceDTO) {
-        if (practiceDTO.getId() != null) {
-            throw new IllegalArgumentException("New Practice must not have an ID, it will be generated automatically.");
-        }
+    //        if (practiceDTO.getId() != null) {
+    //            throw new IllegalArgumentException("New Practice must not have an ID, it will be generated automatically.");
+    //        }
         Practice practice = practiceMapper.toPractice(practiceDTO);
+        practice.setId(null);
         for (PracticeContent practiceContent : practice.getPracticeContents()) {
             practiceContent.setPractice(practice);
             for (PossibleVertexCount vertexCount : practiceContent.getPossibleVertices()) {
@@ -84,7 +85,7 @@ public class PracticeServiceImpl implements PracticeService {
                 graphProperty.setPracticeContent(practiceContent);
             }
         }
-
+        practiceRepository.deleteById(practiceDTO.getId());
         return practiceMapper.toPracticeDTO(practiceRepository.save(updatedPractice));
     }
 

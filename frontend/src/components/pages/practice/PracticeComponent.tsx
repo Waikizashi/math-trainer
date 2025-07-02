@@ -23,6 +23,8 @@ const PracticeComponent: React.FC<PracticeComponentProps> = ({ practice, graphDa
     useEffect(() => {
         if (user && practice) {
             createPracticeCompletion();
+            setCurrentContentIndex(null);
+            setContentStatus({});
         }
     }, [practice, user]);
 
