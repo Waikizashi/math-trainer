@@ -73,8 +73,9 @@ exercise submissions, backup operations and the later product/security checks.
 
 Real PostgreSQL verification is opt-in with `-Ppostgres-it verify`; see the runbook
 for fixture requirements. CI also builds the Docker stack and checks same-origin
-login, restarts and dump/restore. Remote results are recorded in the implementation
-log when completed.
+login, restarts and dump/restore. The safe-startup checks passed: 92 backend unit/MVC
+tests, 6 real PostgreSQL scenarios, 7 frontend tests, type/build checks and the full
+Compose check. Exact tested commits, CI links and limits are in the implementation log.
 
 Next: complete CSRF/session safety, then graph-contract and algorithm correctness.
 See [continuation](docs/continuation.md) and

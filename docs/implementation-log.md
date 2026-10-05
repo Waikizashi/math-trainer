@@ -107,3 +107,43 @@ No live data, deployment or live backup was inspected or modified. Existing
 password/key copies require operator rotation if they were deployed. CSRF/session
 hardening, dependency upgrades, graph correctness and full production readiness
 remain pending. The next entry will record actual remote verification results.
+
+## 2026-10-05 — safe-startup verified
+
+Verified implementation: `799d996919aa49b82be57f4d3800769108cfe639`, PR #2,
+stacked on PR #1. Both remote Checks runs completed successfully:
+
+- [Pull request run 37267881955](https://github.com/Waikizashi/math-trainer/actions/runs/37267881955)
+- [Branch run 37267878847](https://github.com/Waikizashi/math-trainer/actions/runs/37267878847)
+
+| Check | Actual result |
+|---|---|
+| Backend unit/MVC tests | 92 passed; no failures/errors/skips |
+| Real PostgreSQL 16 integration tests | 6 passed; no failures/errors/skips |
+| Frontend tests | 7 passed |
+| TypeScript and frontend production build | Passed; existing CRA/UI warnings remain |
+| Docker image builds and health checks | Passed |
+| Same-origin registration/login/current user | Passed; supplied ADMIN role/id ignored, no password response |
+| Administrative API access for ordinary user | 403 as expected |
+| Application restart and database/application restart | Passed; registered account and login retained |
+| Independent PostgreSQL dump/restore | Passed; account, lesson, migration history and identity generation retained |
+| Packaged resources | Flyway migrations present; automatic data.sql and private-key files absent |
+
+The first remote run found a legacy Tomcat customizer opening a second connector
+on port 8080. Removed it; the single connector now follows standard server.port /
+TLS configuration. It also found that integration tests set active profiles after
+Spring had already loaded profile configuration. Tests now activate the demo /
+persistence-test profile in SpringApplicationBuilder before initialization.
+The corrected database and container checks passed without skipping scenarios.
+
+The PostgreSQL suite also verified explicit baseline without losing legacy rows,
+refusal of unknown unmanaged schemas, checksum mismatch and Flyway clean, demo
+idempotence/sequence state, refusal to seed populated data, and refusal to run a
+demo-marked database under the normal profile. Expected startup failures in these
+negative scenarios are intentional assertions, not failed test runs.
+
+This completes the safe-startup code and isolated runtime verification milestone.
+No live database, production deployment or operational backup inventory was
+accessed. The existing-database rehearsal in the runbook still applies to each
+actual target. Next: CSRF/session lifecycle integration, then graph contracts and
+algorithm correctness; the other production-readiness items remain open.

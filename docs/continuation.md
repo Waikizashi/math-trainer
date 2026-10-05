@@ -14,20 +14,24 @@ Spring Boot / PostgreSQL. Read any new AGENTS.md before edits.
 
 Security contracts are complete and passed local + remote CI. Safe startup is
 implemented: Flyway V1/V2, validate-only Hibernate, env inputs, explicit demo seed,
-same-origin API and a root Compose stack. Local unit/MVC checks and frontend checks
-passed. Real PostgreSQL / Docker results must be inspected in the CI run and logged.
-No live database or production deployment has been accessed.
+same-origin API and a root Compose stack. Local and remote verification passed,
+including real PostgreSQL and Docker. No live database or production deployment
+has been accessed.
 
-If this session ends before CI completes, inspect the safe-startup branch's Checks
-runs. Fix any persistence/demo/Compose failures on that branch, rerun the affected
-checks and append actual results to implementation-log. Do not silently skip the
-postgres-it suite, substitute an in-memory DB, or mark runtime checks passed based
-on compilation. CI uses random fixtures and a separate restore database.
+Safe startup is now verified at `799d996919aa49b82be57f4d3800769108cfe639`:
+[PR Checks](https://github.com/Waikizashi/math-trainer/actions/runs/37267881955) and
+[branch Checks](https://github.com/Waikizashi/math-trainer/actions/runs/37267878847)
+both passed. Results: 92 backend unit/MVC tests, 6 real PostgreSQL tests, 7 frontend
+tests, type/build checks and full Compose registration/login/access/restart/restore.
+The legacy duplicate HTTP connector was removed and test profiles now activate
+before Spring initializes. Details and limits are in implementation-log.
+CI uses random fixtures and a separate restore database; do not replace it with
+in-memory persistence or silently skip the postgres-it suite.
 
 ## Next small change
 
-After safe-startup verification, implement CSRF and session hardening together with
-frontend integration: supported SessionAuthenticationStrategy and SecurityContext
+Create a new branch stacked on safe-startup. Implement CSRF and session hardening
+together with frontend integration: supported SessionAuthenticationStrategy and SecurityContext
 persistence, session ID rotation on login, token acquisition/renewal and handling
 logout/login cycles. Add real HTTP tests for fixation, missing/wrong CSRF tokens,
 allowed origins, session invalidation and fresh login after expiry. Keep ordinary
