@@ -41,10 +41,10 @@ class PracticeService {
     };
     async fetchCompletion(): Promise<any> {
         try {
-            const practiceCompletionsResponse = await axios.get('http://localhost:8080/api/user-profile/practice-completions');
+            const practiceCompletionsResponse = await axios.get(`${API_URL}/user-profile/practice-completions`);
             const practiceCompletions = practiceCompletionsResponse.data;
 
-            const practicesResponse = await axios.get('http://localhost:8080/api/practices');
+            const practicesResponse = await axios.get(`${API_URL}/practices`);
             const practices = practicesResponse.data;
 
             const segmentsData = practices.map((practice: Practice) => {

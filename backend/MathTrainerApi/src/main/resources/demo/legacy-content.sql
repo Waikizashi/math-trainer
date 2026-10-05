@@ -1,9 +1,3 @@
--- 1) Пользователи
-INSERT INTO users (username, password, email, role)
-VALUES
-    ('admin', '$2b$12$zy0Ls2tAJiA.drfLQ4ZtjeeT0r2w81gHc0Xs5oSIlMDx6WekYEpKm', 'admin@ad.com', 'ADMIN'),
-    ('user1', '$2b$12$p9CjHDNN73c1g8nmv6HQmuf7ItJS3tX7AvfLLDUOFgmwkDWofplDi', 'user@user.com', 'USER');
-
 -- 2) Теории и контент
 INSERT INTO theories (id, title) VALUES
                                      (1, 'Uvod do teorii grafov 1.1'),
@@ -393,7 +387,6 @@ INSERT INTO graph_links (id, link_id, weight, source, target, graph_data_id) VAL
                                                                                  (70, '5', NULL, 'F', 'G', 15);
 -- 5) Выравниваем последовательности (serial / identity) под максимальные id из ручных INSERT
 
-SELECT setval(pg_get_serial_sequence('users',               'id'), (SELECT MAX(id) FROM users));
 SELECT setval(pg_get_serial_sequence('theories',            'id'), (SELECT MAX(id) FROM theories));
 SELECT setval(pg_get_serial_sequence('theory_content',      'id'), (SELECT MAX(id) FROM theory_content));
 SELECT setval(pg_get_serial_sequence('graph_data',          'id'), (SELECT MAX(id) FROM graph_data));

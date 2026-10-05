@@ -1,51 +1,58 @@
 # Continuation
 
-Read `README.md`, `docs/implementation-log.md` and the 4 October 2026
-`math-trainer-review-and-refactoring-plan.md` before continuing.
-
 Repository: https://github.com/Waikizashi/math-trainer
 
-Branch: `refactor/security-contracts`; baseline:
-`c0f0edb8904f2f4690c1cb052e87d8257b432ed2`.
-First plan change (`security-contracts`) is implemented and locally verified.
-Keep React / Spring Boot / PostgreSQL. Stage 0 is not yet complete.
+Current branch: `refactor/safe-startup`, stacked on `refactor/security-contracts`
+(commit `950bbec7fd3ed6c88340e9065571ff0032ff1ea1`, PR #1). The original review
+baseline is `c0f0edb8904f2f4690c1cb052e87d8257b432ed2`.
 
-## Next change: safe-startup
+Read README, docs/implementation-log.md, docs/database-runbook.md and the
+4 October 2026 `math-trainer-review-and-refactoring-plan.md`. Keep React /
+Spring Boot / PostgreSQL. Read any new AGENTS.md before edits.
 
-1. Inspect current branch/PR and run the documented checks. Read any new AGENTS.md.
-2. Inspect application properties, Docker files/Compose, all JPA entities and seed
-   SQL. Do not run the existing backend against a real database: it recreates it.
-3. Determine whether there is a live deployment/database before proposing migration
-   there. If there is, back it up and verify restoration before changing it.
-   A fresh local fixture can be prepared independently without touching live data.
-4. Plan Flyway baseline for the existing schema. Make default startup validate
-   migrations, not create/update schema. Handle pre-existing databases explicitly;
-   do not silently enable baseline-on-migrate or delete volumes.
-5. Move datasource/TLS/session/origin configuration to environment inputs. Provide
-   examples without secrets. Isolate optional demo data in an explicit dev profile;
-   keep production free of seeded demo-admin accounts.
-6. Align frontend calls and backend origin/proxy configuration. Prefer a same-origin
-   API; remove hard-coded URLs consistently across services and components.
-7. Add real persistence integration checks for fresh install, restart, migration
-   repeatability and backup/restore. Use isolated test DBs only.
-8. Update log/continuation with actual commands and results. Make a separate
-   reviewable PR. Do not deploy or merge the current security change automatically.
+## Current work
 
-Follow-up auth work must enable CSRF end-to-end and rotate/persist sessions using
-Spring Security's supported session strategy. Scope that independently if needed.
-After safe-startup, expand test-baseline, then implement graph-contract and
-algorithm-correctness in the order listed in section 16 of the plan.
+Security contracts are complete and passed local + remote CI. Safe startup is
+implemented: Flyway V1/V2, validate-only Hibernate, env inputs, explicit demo seed,
+same-origin API and a root Compose stack. Local and remote verification passed,
+including real PostgreSQL and Docker. No live database or production deployment
+has been accessed.
 
-## Security invariants introduced here
+Safe startup is now verified at `799d996919aa49b82be57f4d3800769108cfe639`:
+[PR Checks](https://github.com/Waikizashi/math-trainer/actions/runs/37267881955) and
+[branch Checks](https://github.com/Waikizashi/math-trainer/actions/runs/37267878847)
+both passed. Results: 92 backend unit/MVC tests, 6 real PostgreSQL tests, 7 frontend
+tests, type/build checks and full Compose registration/login/access/restart/restore.
+The legacy duplicate HTTP connector was removed and test profiles now activate
+before Spring initializes. Details and limits are in implementation-log.
+CI uses random fixtures and a separate restore database; do not replace it with
+in-memory persistence or silently skip the postgres-it suite.
 
-- No public role/ID assignment, no response credential fields.
-- Administrative routes are server-protected; new routes start denied.
-- Personal progress ownership comes from the session; no inbound completion ID.
-- Content JSON never includes users' completion entities.
-- An account edit cannot replace password/role through the ordinary request.
-- Current user data comes from the server, not localStorage.
+## Next small change
 
-Existing tests include 92 backend cases and 7 frontend cases. HTTP tests use the
-real filter chain with mocked business services; service tests exercise the real
-account service and generated mapper with a mocked repository. These do not prove
-database persistence, full browser rendering or production security.
+Create a new branch stacked on safe-startup. Implement CSRF and session hardening
+together with frontend integration: supported SessionAuthenticationStrategy and SecurityContext
+persistence, session ID rotation on login, token acquisition/renewal and handling
+logout/login cycles. Add real HTTP tests for fixation, missing/wrong CSRF tokens,
+allowed origins, session invalidation and fresh login after expiry. Keep ordinary
+API authorization and DTO invariants from PR #1. Do not permit broad API exceptions
+just to make the UI work.
+
+Then proceed to graph-contract and algorithm-correctness in section 16 of the
+review plan; isolate graph data from React/D3 before redesigning the editor.
+
+## Data rules
+
+- Do not edit applied Flyway migrations; append new ones.
+- Do not auto-baseline an unknown database or delete a volume to pass startup.
+- Existing data needs backup, independent restore, full schema comparison and an
+  explicit reviewed baseline. See the runbook. Hibernate validation is not a
+  comprehensive schema-equivalence check.
+- Demo requires a separate database and a supplied password; normal runtime refuses
+  demo-marked data. Never promote a demo volume to production.
+- `.env`/keystores/backups are excluded from git and image contexts.
+- Do not merge/deploy the stacked PRs automatically; continue on their branches.
+
+Full production readiness is still pending, including dependency upgrades,
+server-verified exercise answers, board storage, collaboration and operational
+backup/monitoring checks. Preserve the baseline and append results to the log.

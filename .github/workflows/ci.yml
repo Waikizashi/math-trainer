@@ -10,6 +10,18 @@ permissions:
 jobs:
   backend:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: math_trainer_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: isolated-ci-password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d math_trainer_test"
+          --health-interval 5s --health-timeout 3s --health-retries 20
     defaults:
       run:
         working-directory: backend/MathTrainerApi
@@ -21,8 +33,19 @@ jobs:
           java-version: '17'
           cache: maven
           cache-dependency-path: backend/MathTrainerApi/pom.xml
-      # Tests use mocked persistence / MVC slices and never start the legacy database.
-      - run: bash mvnw -B test
+      - run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - run: bash mvnw -B -Ppostgres-it verify
+        env:
+          POSTGRES_TEST_URL: jdbc:postgresql://127.0.0.1:5432/math_trainer_test
+          POSTGRES_TEST_USERNAME: postgres
+          POSTGRES_TEST_PASSWORD: isolated-ci-password
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: backend-test-reports
+          path: |
+            backend/MathTrainerApi/target/surefire-reports
+            backend/MathTrainerApi/target/failsafe-reports
 
   frontend:
     runs-on: ubuntu-latest
@@ -45,3 +68,18 @@ jobs:
         env:
           # Existing UI lint warnings are tracked debt; compiler/build failures still fail.
           CI: 'false'
+
+  compose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      DATABASE_NAME: math_trainer_compose_test
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: isolated-compose-password
+      DATABASE_VOLUME_NAME: math-trainer-ci-${{ github.run_id }}-${{ github.run_attempt }}
+      HTTP_BIND: 127.0.0.1
+      HTTP_PORT: '8088'
+      SESSION_COOKIE_SECURE: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash scripts/check-compose.sh

@@ -1,3 +1,4 @@
+import { API_URL } from '../../../service/service.config';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import s from './profile.module.css';
 import cn from 'classnames'
@@ -27,10 +28,10 @@ const Profile = () => {
     useEffect(() => {
         async function fetchData() {
             try {
-                const theoryResponse = await axios.get('http://localhost:8080/api/user-profile/theory-completions');
+                const theoryResponse = await axios.get(`${API_URL}/user-profile/theory-completions`);
                 setTopics(theoryResponse.data);
 
-                const practiceResponse = await axios.get('http://localhost:8080/api/user-profile/practice-completions');
+                const practiceResponse = await axios.get(`${API_URL}/user-profile/practice-completions`);
                 setExercises(practiceResponse.data);
                 console.log(theoryCompletions);
                 console.log(practiceCompletions);
