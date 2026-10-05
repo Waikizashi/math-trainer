@@ -176,3 +176,37 @@ Actual local results: 104 backend tests passed with no failures/errors/skips;
 existing UI/CRA warnings. Shell syntax and diff checks passed. PostgreSQL/Compose
 runtime checks await CI; do not claim them based on compilation/local mock tests.
 No live database, production deployment or operational backup was accessed.
+
+## 2026-10-05 — session-csrf verified
+
+Verified implementation: `9a574b638782326a2a709957b92d4bfcadb2a9c9`, PR #3,
+stacked on PR #2. Both remote Checks runs completed successfully:
+
+- [Pull request run 37274686303](https://github.com/Waikizashi/math-trainer/actions/runs/37274686303)
+- [Branch run 37274681604](https://github.com/Waikizashi/math-trainer/actions/runs/37274681604)
+
+| Check | Actual result |
+|---|---|
+| Backend unit/MVC/real HTTP tests | 104 passed, including 3 socket/Tomcat session/CORS tests; no failures/errors/skips |
+| Real PostgreSQL integration tests | 6 passed; no failures/errors/skips |
+| Frontend API/auth/routing tests | 18 passed |
+| TypeScript and frontend production build | Passed; existing UI/CRA warnings remain |
+| Full Docker builds, startup and proxy | Passed |
+| Register/login CSRF, ID rotation, stale cookie/token denial | Passed through Nginx with PostgreSQL-backed accounts |
+| CSRF-protected personal progress write | Passed; forged user/record IDs ignored |
+| Logout and subsequent fresh login | Passed; old session could not authenticate |
+| Application/database restart and independent backup restore | Passed; account, lesson, progress and migration history retained |
+
+The first Compose attempt passed login, session rotation and stale-token rejection,
+then failed because the fixture's INSERT RETURNING output included psql's command
+status in the JSON lesson ID. The quiet flag and numeric assertion corrected the
+fixture; the full subsequent run passed. No security rule or runtime check was
+removed to pass the test.
+
+The milestone is complete for CSRF and the implemented browser-session lifecycle.
+Sessions remain in-process; durable sessions/global revocation, verification/reset,
+rate limits, dependency upgrades and the remaining product work are not claimed
+complete. No live database, production deployment or operational backup was accessed.
+Next: GraphDocument, stable IDs, graph/view separation, validation and old-model
+adapters, followed by algorithm correctness. JSONB board persistence is a later
+additive migration; V1/V2 and legacy tables remain available during transition.

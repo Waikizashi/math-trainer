@@ -86,6 +86,10 @@ login, restarts and dump/restore. The safe-startup checks passed: 92 backend uni
 tests, 6 real PostgreSQL scenarios, 7 frontend tests, type/build checks and the full
 Compose check. Exact tested commits, CI links and limits are in the implementation log.
 
-Next: graph-contract and algorithm correctness after the session milestone's CI verification.
+The session milestone passed local and remote CI: 104 unit/MVC/HTTP backend tests,
+6 PostgreSQL scenarios, 18 frontend tests, type/build checks and full Compose
+CSRF/session/progress/restart/restore. Exact commits and links are in the log.
+
+Next: graph-contract and algorithm correctness.
 See [continuation](docs/continuation.md) and
 [implementation log](docs/implementation-log.md).
