@@ -1,4 +1,4 @@
-import axios from 'axios';
+import api from './apiClient';
 import { API_URL } from './service.config';
 import { RegisterRequest, UserResponse } from './UserService';
 
@@ -10,25 +10,25 @@ class AuthService {
 
     async register(user: RegisterRequest): Promise<UserResponse> {
         this.clearLegacyCache();
-        const response = await axios.post<UserResponse>(`${API_URL}/register`, user);
+        const response = await api.post<UserResponse>(`${API_URL}/register`, user);
         return response.data;
     }
 
     async login(username: string, password: string): Promise<UserResponse> {
         this.clearLegacyCache();
-        const response = await axios.post<UserResponse>(`${API_URL}/login`, { username, password });
+        const response = await api.post<UserResponse>(`${API_URL}/login`, { username, password });
         return response.data;
     }
 
     async logout(): Promise<void> {
         this.clearLegacyCache();
-        await axios.post(`${API_URL}/logout`);
+        await api.post(`${API_URL}/logout`);
     }
 
     async getCurrentUser(): Promise<UserResponse | null> {
         this.clearLegacyCache();
         try {
-            const response = await axios.get<UserResponse>(`${API_URL}/current/user`);
+            const response = await api.get<UserResponse>(`${API_URL}/current/user`);
             return response.data;
         } catch (error: any) {
             if (error.response?.status === 401) return null;

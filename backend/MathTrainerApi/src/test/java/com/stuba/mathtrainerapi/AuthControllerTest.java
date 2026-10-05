@@ -26,11 +26,12 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /** HTTP tests exercise the actual filter chain and JSON contracts, without a database. */
-@WebMvcTest(controllers = {AuthController.class, UserController.class, UserProfileController.class,
+@WebMvcTest(controllers = {AuthController.class, CsrfController.class, UserController.class, UserProfileController.class,
         TheoryController.class, PracticeController.class, TheoryCompletionController.class, PracticeCompletionController.class})
 @Import(SecurityConfig.class)
 class AuthControllerTest {
@@ -52,7 +53,7 @@ class AuthControllerTest {
     @Test void publicRegisterAcceptsOnlyIdentityAndCredentials() throws Exception {
         when(users.isUserUnique("alice", "alice@example.com")).thenReturn(true);
         when(users.registerUser(any())).thenReturn(alice);
-        mvc.perform(post("/api/register").contentType("application/json").content("""
+        mvc.perform(post("/api/register").with(csrf()).contentType("application/json").content("""
             {"username":"alice","email":"alice@example.com","password":"valid-password",
              "role":"ADMIN","id":777,"saves":"untrusted"}
             """))
@@ -67,20 +68,20 @@ class AuthControllerTest {
     @ParameterizedTest
     @ValueSource(strings = {"short", "", "яяяяяяяяяяяяяяяяяяяяяяяяяяяяяяяяяяяяяяяя"})
     void invalidPasswordsAreRejectedWithoutEchoingCredentials(String password) throws Exception {
-        mvc.perform(post("/api/register").contentType("application/json")
+        mvc.perform(post("/api/register").with(csrf()).contentType("application/json")
                 .content("{\"username\":\"alice\",\"email\":\"alice@example.com\",\"password\":\"" + password + "\"}"))
                 .andExpect(status().isBadRequest()).andExpect(jsonPath("$.error").value("invalid_request"));
         verify(users, never()).registerUser(any());
     }
 
     @Test void missingIdentityIsRejected() throws Exception {
-        mvc.perform(post("/api/register").contentType("application/json").content("{}"))
+        mvc.perform(post("/api/register").with(csrf()).contentType("application/json").content("{}"))
                 .andExpect(status().isBadRequest());
         verify(users, never()).registerUser(any());
     }
 
     @Test void duplicateRegisterIsConflict() throws Exception {
-        mvc.perform(post("/api/register").contentType("application/json").content("""
+        mvc.perform(post("/api/register").with(csrf()).contentType("application/json").content("""
                 {"username":"alice","email":"alice@example.com","password":"valid-password"}
                 """)) .andExpect(status().isConflict());
         verify(users, never()).registerUser(any());
@@ -89,7 +90,7 @@ class AuthControllerTest {
     @Test void loginAndCurrentUserNeverExposeCredentials() throws Exception {
         when(authenticationManager.authenticate(any())).thenReturn(
                 new UsernamePasswordAuthenticationToken("alice", null, List.of()));
-        mvc.perform(post("/api/login").contentType("application/json")
+        mvc.perform(post("/api/login").with(csrf()).contentType("application/json")
                 .content("{\"username\":\"alice\",\"password\":\"valid-password\"}"))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.username").value("alice"))
                 .andExpect(jsonPath("$.password").doesNotExist());
@@ -99,7 +100,7 @@ class AuthControllerTest {
 
     @Test void badCredentialsReturnUnauthorized() throws Exception {
         when(authenticationManager.authenticate(any())).thenThrow(new BadCredentialsException("bad credentials"));
-        mvc.perform(post("/api/login").contentType("application/json")
+        mvc.perform(post("/api/login").with(csrf()).contentType("application/json")
                 .content("{\"username\":\"alice\",\"password\":\"invalid-password\"}"))
                 .andExpect(status().isUnauthorized());
     }
@@ -136,7 +137,7 @@ class AuthControllerTest {
         when(users.updateUser(eq(1L), any())).thenReturn(alice);
         mvc.perform(get("/api/users").with(user("admin").roles("ADMIN")))
                 .andExpect(status().isOk()).andExpect(jsonPath("$[0].password").doesNotExist());
-        mvc.perform(put("/api/users/1").with(user("admin").roles("ADMIN")).contentType("application/json").content("""
+        mvc.perform(put("/api/users/1").with(csrf()).with(user("admin").roles("ADMIN")).contentType("application/json").content("""
                 {"username":"alice","email":"alice@example.com","id":2,"role":"ADMIN","password":"stolen"}
                 """)) .andExpect(status().isOk());
         verify(users).updateUser(eq(1L), any(UserUpdateRequest.class));
@@ -150,15 +151,15 @@ class AuthControllerTest {
         when(practices.savePractice(any())).thenReturn(new PracticeDTO());
         mvc.perform(get("/api/theories").with(user("alice"))).andExpect(status().isOk());
         mvc.perform(get("/api/practices").with(user("alice"))).andExpect(status().isOk());
-        mvc.perform(post("/api/theories").with(user("admin").roles("ADMIN"))
+        mvc.perform(post("/api/theories").with(csrf()).with(user("admin").roles("ADMIN"))
                 .contentType("application/json").content("{\"title\":\"Test\"}")) .andExpect(status().isOk());
-        mvc.perform(post("/api/practices").with(user("admin").roles("ADMIN"))
+        mvc.perform(post("/api/practices").with(csrf()).with(user("admin").roles("ADMIN"))
                 .contentType("application/json").content("{\"title\":\"Test\"}")) .andExpect(status().isCreated());
     }
 
     @Test void theoryProgressUsesSessionIdentityAndIgnoresForeignRecordId() throws Exception {
         when(theoryProgress.updateTheoryCompletion(any())).thenAnswer(i -> i.getArgument(0));
-        mvc.perform(put("/api/user-profile/theory-completions").with(user("alice"))
+        mvc.perform(put("/api/user-profile/theory-completions").with(csrf()).with(user("alice"))
                 .contentType("application/json").content("""
                 {"userId":2,"id":999,"theoryId":3,"theoryStatus":"COMPLETED","completionDate":"1900-01-01"}
                 """)) .andExpect(status().isOk()).andExpect(jsonPath("$.userId").value(1));
@@ -170,7 +171,7 @@ class AuthControllerTest {
 
     @Test void practiceProgressUsesSessionIdentityAndIgnoresForeignRecordId() throws Exception {
         when(practiceProgress.savePracticeCompletion(any())).thenAnswer(i -> i.getArgument(0));
-        mvc.perform(post("/api/user-profile/practice-completions").with(user("alice"))
+        mvc.perform(post("/api/user-profile/practice-completions").with(csrf()).with(user("alice"))
                 .contentType("application/json").content("""
                 {"userId":2,"id":999,"practiceId":3,"practiceStatus":"IN_PROGRESS"}
                 """)) .andExpect(status().isCreated()).andExpect(jsonPath("$.userId").value(1));
@@ -189,7 +190,7 @@ class AuthControllerTest {
     }
 
     @Test void missingProgressTargetIsBadRequest() throws Exception {
-        mvc.perform(put("/api/user-profile/practice-completions").with(user("alice"))
+        mvc.perform(put("/api/user-profile/practice-completions").with(csrf()).with(user("alice"))
                 .contentType("application/json").content("{\"practiceStatus\":\"COMPLETED\"}"))
                 .andExpect(status().isBadRequest());
         verifyNoInteractions(practiceProgress);
@@ -197,13 +198,40 @@ class AuthControllerTest {
 
     @Test void postLogoutInvalidatesSession() throws Exception {
         MockHttpSession session = new MockHttpSession();
-        mvc.perform(post("/api/logout").session(session).with(user("alice"))) .andExpect(status().isOk());
+        mvc.perform(post("/api/logout").with(csrf()).session(session).with(user("alice"))) .andExpect(status().isOk());
         assertTrue(session.isInvalid());
         mvc.perform(get("/api/logout").with(user("alice"))).andExpect(status().isForbidden());
     }
 
+    @ParameterizedTest
+    @CsvSource({"POST,/api/register", "POST,/api/login", "POST,/api/logout",
+            "PUT,/api/user-profile/theory-completions", "POST,/api/user-profile/practice-completions",
+            "DELETE,/api/theories/1", "PUT,/api/users/1"})
+    void everyMutationRequiresCsrfEvenForAdmin(String method, String path) throws Exception {
+        var request = org.springframework.test.web.servlet.request.MockMvcRequestBuilders.request(
+                org.springframework.http.HttpMethod.valueOf(method), path).with(user("admin").roles("ADMIN"));
+        mvc.perform(request).andExpect(status().isForbidden()).andExpect(jsonPath("$.error").value("csrf_invalid"));
+        verifyNoInteractions(authenticationManager, theories, practices, theoryProgress, practiceProgress);
+        verify(users, never()).registerUser(any());
+        verify(users, never()).updateUser(anyLong(), any());
+    }
+
+    @Test void invalidCsrfNeverReachesLogin() throws Exception {
+        mvc.perform(post("/api/login").with(csrf().useInvalidToken()).contentType("application/json")
+                .content("{\"username\":\"alice\",\"password\":\"valid-password\"}"))
+                .andExpect(status().isForbidden()).andExpect(jsonPath("$.error").value("csrf_invalid"));
+        verifyNoInteractions(authenticationManager);
+    }
+
+    @Test void anonymousClientCanAcquireANonCacheableCsrfToken() throws Exception {
+        mvc.perform(get("/api/csrf")).andExpect(status().isOk())
+                .andExpect(header().string("Cache-Control", "no-store"))
+                .andExpect(jsonPath("$.headerName").value("X-CSRF-TOKEN"))
+                .andExpect(jsonPath("$.token").isNotEmpty());
+    }
+
     private MockHttpServletRequestBuilder request(String method, String path) {
         return org.springframework.test.web.servlet.request.MockMvcRequestBuilders.request(
-                org.springframework.http.HttpMethod.valueOf(method), path);
+                org.springframework.http.HttpMethod.valueOf(method), path).with(csrf());
     }
 }

@@ -2,7 +2,7 @@ import { API_URL } from '../../../service/service.config';
 import React, { useEffect, useState } from 'react';
 import { Theory } from '../../../service/TheoryService';
 import { Container, Row, Col, Card } from 'react-bootstrap';
-import axios from 'axios';
+import api from '../../../service/apiClient';
 import MathText from '../../mathText/MathText';
 
 interface TheoryComponentProps {
@@ -22,7 +22,7 @@ const TheoryComponent: React.FC<TheoryComponentProps> = ({ theory, user, onConte
     const createTheoryCompletion = async () => {
       if (user && theory) {
         try {
-          await axios.post(`${API_URL}/user-profile/theory-completions`, {
+          await api.post(`${API_URL}/user-profile/theory-completions`, {
             theoryId: theory.id,
             theoryStatus: "IN_PROGRESS",
           });
@@ -45,7 +45,7 @@ const TheoryComponent: React.FC<TheoryComponentProps> = ({ theory, user, onConte
       const updateTheoryCompletion = async () => {
         if (user && theory) {
           try {
-            await axios.put(`${API_URL}/user-profile/theory-completions`, {
+            await api.put(`${API_URL}/user-profile/theory-completions`, {
               theoryId: theory.id,
               theoryStatus: "COMPLETED",
             });

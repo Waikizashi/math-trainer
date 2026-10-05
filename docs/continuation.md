@@ -2,8 +2,8 @@
 
 Repository: https://github.com/Waikizashi/math-trainer
 
-Current branch: `refactor/safe-startup`, stacked on `refactor/security-contracts`
-(commit `950bbec7fd3ed6c88340e9065571ff0032ff1ea1`, PR #1). The original review
+Current branch: `refactor/session-csrf`, stacked on `refactor/safe-startup`
+(commit `81a6772158757f34738ddcd24320aef21accb84b`, PR #2), itself stacked on PR #1. The original review
 baseline is `c0f0edb8904f2f4690c1cb052e87d8257b432ed2`.
 
 Read README, docs/implementation-log.md, docs/database-runbook.md and the
@@ -28,15 +28,22 @@ before Spring initializes. Details and limits are in implementation-log.
 CI uses random fixtures and a separate restore database; do not replace it with
 in-memory persistence or silently skip the postgres-it suite.
 
+## Active verification
+
+CSRF/session code is implemented. Local results: 104 backend tests (including three
+real HTTP/Tomcat session/CORS scenarios), 18 frontend tests, TypeScript and frontend
+build passed. Inspect the session-csrf branch's CI for real PostgreSQL and updated
+Compose checks before marking it complete. Fix failures on this branch and append
+actual results. See docs/auth-session-contract.md. Do not exempt mutation routes
+from CSRF or retry every 403 to make tests/UI work.
+
 ## Next small change
 
-Create a new branch stacked on safe-startup. Implement CSRF and session hardening
-together with frontend integration: supported SessionAuthenticationStrategy and SecurityContext
-persistence, session ID rotation on login, token acquisition/renewal and handling
-logout/login cycles. Add real HTTP tests for fixation, missing/wrong CSRF tokens,
-allowed origins, session invalidation and fresh login after expiry. Keep ordinary
-API authorization and DTO invariants from PR #1. Do not permit broad API exceptions
-just to make the UI work.
+After CI passes, create a branch stacked on session-csrf and implement graph-contract:
+define GraphDocument and graph/view boundaries, stable UUIDs, numeric/null weights,
+runtime validation and legacy adapters. Document graph-kind semantics in an ADR.
+Keep the legacy storage available during additive migration; do not edit applied
+Flyway V1/V2 or switch the whole editor before adapters and round-trip tests pass.
 
 Then proceed to graph-contract and algorithm-correctness in section 16 of the
 review plan; isolate graph data from React/D3 before redesigning the editor.

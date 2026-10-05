@@ -1,4 +1,4 @@
-import axios from 'axios';
+import api from './apiClient';
 import { API_URL } from './service.config';
 
 export interface PracticeContent {
@@ -23,7 +23,7 @@ class PracticeService {
     async createPractice(practice: Practice) {
         try {
             console.log(practice)
-            const response = await axios.post(practice_service_URL, practice);
+            const response = await api.post(practice_service_URL, practice);
             return response.data;
         } catch (error) {
             console.error('Error creating practice', error);
@@ -32,7 +32,7 @@ class PracticeService {
     };
     async getAllPractices(): Promise<Practice[]> {
         try {
-            const response = await axios.get(practice_service_URL);
+            const response = await api.get(practice_service_URL);
             return response.data;
         } catch (error) {
             console.error('Error fetching practice', error);
@@ -41,10 +41,10 @@ class PracticeService {
     };
     async fetchCompletion(): Promise<any> {
         try {
-            const practiceCompletionsResponse = await axios.get(`${API_URL}/user-profile/practice-completions`);
+            const practiceCompletionsResponse = await api.get(`${API_URL}/user-profile/practice-completions`);
             const practiceCompletions = practiceCompletionsResponse.data;
 
-            const practicesResponse = await axios.get(`${API_URL}/practices`);
+            const practicesResponse = await api.get(`${API_URL}/practices`);
             const practices = practicesResponse.data;
 
             const segmentsData = practices.map((practice: Practice) => {

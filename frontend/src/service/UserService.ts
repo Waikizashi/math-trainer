@@ -1,4 +1,4 @@
-import axios from 'axios';
+import api from './apiClient';
 import { API_URL } from './service.config';
 
 const user_service_URL = API_URL + '/users'
@@ -24,13 +24,13 @@ export interface UserUpdateRequest {
 class UserService {
 
     async getAllUsers(): Promise<UserResponse[]> {
-        const response = await axios.get<UserResponse[]>(user_service_URL);
+        const response = await api.get<UserResponse[]>(user_service_URL);
         return response.data;
     }
 
     async getUserById(id: number): Promise<UserResponse | null> {
         try {
-            const response = await axios.get<UserResponse>(`${user_service_URL}/${id}`);
+            const response = await api.get<UserResponse>(`${user_service_URL}/${id}`);
             return response.data;
         } catch (error: any) {
             if (error.response && error.response.status === 404) {
@@ -42,7 +42,7 @@ class UserService {
 
     async updateUser(id: number, user: UserUpdateRequest): Promise<UserResponse | null> {
         try {
-            const response = await axios.put<UserResponse>(`${user_service_URL}/${id}`, user);
+            const response = await api.put<UserResponse>(`${user_service_URL}/${id}`, user);
             return response.data;
         } catch (error: any) {
             if (error.response && error.response.status === 404) {
@@ -54,7 +54,7 @@ class UserService {
 
     async deleteUser(id: number): Promise<boolean> {
         try {
-            await axios.delete(`${user_service_URL}/${id}`);
+            await api.delete(`${user_service_URL}/${id}`);
             return true;
         } catch (error: any) {
             if (error.response && error.response.status === 404) {
