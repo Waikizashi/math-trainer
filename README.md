@@ -3,7 +3,7 @@
 React + TypeScript, Spring Boot + PostgreSQL. The project is being refactored
 into a graph learning platform with personal and shared boards.
 
-Current milestone: `safe-startup`, following `security-contracts` from the
+Current milestone: `session-csrf`, following `safe-startup` and `security-contracts` from the
 4 October 2026 refactoring plan. Baseline:
 `c0f0edb8904f2f4690c1cb052e87d8257b432ed2`.
 
@@ -47,6 +47,9 @@ CI runs the same checks. Existing CRA/UI lint warnings remain visible during bui
 - `POST /api/register`: `{ username, email, password }`; the server assigns USER.
 - `POST /api/login`, `GET /api/current/user`: `{ id, username, email, role }`, with no credentials.
 - `POST /api/logout`: handled by the Spring Security logout filter.
+- `GET /api/csrf`: session-bound, masked token and header name; usable before login.
+  All POST/PUT/PATCH/DELETE requests, including registration/login/logout, require it.
+  Login changes the session ID and token; logout invalidates the session and clears its cookie.
 - `/api/users/**` and the generic completion CRUD routes require ADMIN.
 - Authenticated users can read theories/practices; content mutations require ADMIN.
 - Profile progress writes accept only a theory/practice ID and its status.
@@ -67,8 +70,14 @@ automatic baseline are disabled. Demo seed is opt-in, transactional and applied
 once to a dedicated database. Database credentials and optional TLS keys come from
 environment inputs / mounted files. PostgreSQL and backend ports remain internal.
 
+The shared browser API client obtains tokens in memory, clears them after login/logout,
+and refreshes/retries once only on an explicit CSRF filter rejection. Protected API
+401 responses clear the browser's authenticated state. Authorization failures,
+network errors and server failures do not replay mutations. See
+[session contract](docs/auth-session-contract.md).
+
 No live database or deployment was accessed. Full production readiness still needs
-CSRF integration, session rotation, supported dependency upgrades, server-verified
+supported dependency upgrades, account verification/recovery, rate limits, server-verified
 exercise submissions, backup operations and the later product/security checks.
 
 Real PostgreSQL verification is opt-in with `-Ppostgres-it verify`; see the runbook
@@ -77,6 +86,10 @@ login, restarts and dump/restore. The safe-startup checks passed: 92 backend uni
 tests, 6 real PostgreSQL scenarios, 7 frontend tests, type/build checks and the full
 Compose check. Exact tested commits, CI links and limits are in the implementation log.
 
-Next: complete CSRF/session safety, then graph-contract and algorithm correctness.
+The session milestone passed local and remote CI: 104 unit/MVC/HTTP backend tests,
+6 PostgreSQL scenarios, 18 frontend tests, type/build checks and full Compose
+CSRF/session/progress/restart/restore. Exact commits and links are in the log.
+
+Next: graph-contract and algorithm correctness.
 See [continuation](docs/continuation.md) and
 [implementation log](docs/implementation-log.md).

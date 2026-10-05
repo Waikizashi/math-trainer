@@ -7,7 +7,7 @@ import failIcon from '../../../assets/fail.png'
 import profileImg from '../../../assets/face.png'
 import pendingIcon from '../../../assets/pending.png'
 import { mainContainer, subContainer } from '../../../utils/styles/global-styles';
-import axios from 'axios';
+import api from '../../../service/apiClient';
 import { useNavigate } from 'react-router-dom';
 import AuthContext from '../../../context/AuthContext';
 import { NavItem } from 'react-bootstrap';
@@ -28,10 +28,10 @@ const Profile = () => {
     useEffect(() => {
         async function fetchData() {
             try {
-                const theoryResponse = await axios.get(`${API_URL}/user-profile/theory-completions`);
+                const theoryResponse = await api.get(`${API_URL}/user-profile/theory-completions`);
                 setTopics(theoryResponse.data);
 
-                const practiceResponse = await axios.get(`${API_URL}/user-profile/practice-completions`);
+                const practiceResponse = await api.get(`${API_URL}/user-profile/practice-completions`);
                 setExercises(practiceResponse.data);
                 console.log(theoryCompletions);
                 console.log(practiceCompletions);

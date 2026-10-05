@@ -147,3 +147,66 @@ No live database, production deployment or operational backup inventory was
 accessed. The existing-database rehearsal in the runbook still applies to each
 actual target. Next: CSRF/session lifecycle integration, then graph contracts and
 algorithm correctness; the other production-readiness items remain open.
+
+## 2026-10-05 — session-csrf (remote verification in progress)
+
+Parent: `81a6772158757f34738ddcd24320aef21accb84b` (`safe-startup`, PR #2).
+Branch: `refactor/session-csrf`.
+
+- Enabled session-bound CSRF on every mutation, including login/register/logout.
+  Added non-cacheable GET /api/csrf exposing only the masked token and header name.
+- JSON login invokes session-ID rotation and CSRF authentication strategies, creates
+  a fresh SecurityContext and explicitly saves through the configured repository.
+  Logout invalidates the session and expires JSESSIONID. Disabled request caching
+  so ordinary unauthenticated reads do not allocate a session.
+- Added sanitized csrf_invalid/access_denied/authentication_required errors.
+- Centralized frontend requests in a same-origin credentialed Axios client. Token
+  state is memory-only, acquisition is deduplicated, login/logout invalidate it,
+  and only a confirmed pre-controller CSRF rejection gets one refresh/retry.
+  Other 403/401, network and server errors do not replay writes. Protected API
+  401 responses clear AuthContext; legacy localStorage account removal remains.
+- Added nine MVC cases and three real HTTP/Tomcat tests for login/logout cycles,
+  fixation, old tokens/cookies, timeout and CORS. Existing authorization tests now
+  supply valid CSRF tokens so they continue checking authorization independently.
+- Added eleven frontend API-client tests. Extended Compose verification with CSRF,
+  session rotation, logout/new login, protected progress and restored lesson/progress.
+
+Actual local results: 104 backend tests passed with no failures/errors/skips;
+18 frontend tests passed; TypeScript and frontend production build passed with
+existing UI/CRA warnings. Shell syntax and diff checks passed. PostgreSQL/Compose
+runtime checks await CI; do not claim them based on compilation/local mock tests.
+No live database, production deployment or operational backup was accessed.
+
+## 2026-10-05 — session-csrf verified
+
+Verified implementation: `9a574b638782326a2a709957b92d4bfcadb2a9c9`, PR #3,
+stacked on PR #2. Both remote Checks runs completed successfully:
+
+- [Pull request run 37274686303](https://github.com/Waikizashi/math-trainer/actions/runs/37274686303)
+- [Branch run 37274681604](https://github.com/Waikizashi/math-trainer/actions/runs/37274681604)
+
+| Check | Actual result |
+|---|---|
+| Backend unit/MVC/real HTTP tests | 104 passed, including 3 socket/Tomcat session/CORS tests; no failures/errors/skips |
+| Real PostgreSQL integration tests | 6 passed; no failures/errors/skips |
+| Frontend API/auth/routing tests | 18 passed |
+| TypeScript and frontend production build | Passed; existing UI/CRA warnings remain |
+| Full Docker builds, startup and proxy | Passed |
+| Register/login CSRF, ID rotation, stale cookie/token denial | Passed through Nginx with PostgreSQL-backed accounts |
+| CSRF-protected personal progress write | Passed; forged user/record IDs ignored |
+| Logout and subsequent fresh login | Passed; old session could not authenticate |
+| Application/database restart and independent backup restore | Passed; account, lesson, progress and migration history retained |
+
+The first Compose attempt passed login, session rotation and stale-token rejection,
+then failed because the fixture's INSERT RETURNING output included psql's command
+status in the JSON lesson ID. The quiet flag and numeric assertion corrected the
+fixture; the full subsequent run passed. No security rule or runtime check was
+removed to pass the test.
+
+The milestone is complete for CSRF and the implemented browser-session lifecycle.
+Sessions remain in-process; durable sessions/global revocation, verification/reset,
+rate limits, dependency upgrades and the remaining product work are not claimed
+complete. No live database, production deployment or operational backup was accessed.
+Next: GraphDocument, stable IDs, graph/view separation, validation and old-model
+adapters, followed by algorithm correctness. JSONB board persistence is a later
+additive migration; V1/V2 and legacy tables remain available during transition.

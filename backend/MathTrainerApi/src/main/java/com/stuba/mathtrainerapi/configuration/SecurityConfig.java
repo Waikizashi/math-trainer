@@ -15,6 +15,18 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandler;
+import org.springframework.security.web.context.DelegatingSecurityContextRepository;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
+import org.springframework.security.web.context.SecurityContextRepository;
+import org.springframework.security.web.csrf.CsrfAuthenticationStrategy;
+import org.springframework.security.web.csrf.CsrfException;
+import org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository;
+import org.springframework.security.web.authentication.session.ChangeSessionIdAuthenticationStrategy;
+import org.springframework.security.web.authentication.session.CompositeSessionAuthenticationStrategy;
+import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
+import java.util.List;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
@@ -28,13 +40,17 @@ public class SecurityConfig {
     private String allowedOrigins;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, HttpSessionCsrfTokenRepository csrfTokens,
+                                                   SecurityContextRepository contexts,
+                                                   AccessDeniedHandler accessDeniedHandler) throws Exception {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .csrf(AbstractHttpConfigurer::disable)
+                .csrf(csrf -> csrf.csrfTokenRepository(csrfTokens))
+                .securityContext(context -> context.securityContextRepository(contexts).requireExplicitSave(true))
+                .requestCache(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
                         .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/management/health").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/management/health", "/api/csrf").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/login", "/api/register").permitAll()
                         .requestMatchers("/api/users", "/api/users/**",
                                 "/api/theory-completions", "/api/theory-completions/**",
@@ -53,11 +69,16 @@ public class SecurityConfig {
                         .anyRequest().denyAll()
                 )
                 .exceptionHandling(errors -> errors
-                        .authenticationEntryPoint((request, response, exception) -> response.setStatus(401))
-                        .accessDeniedHandler((request, response, exception) -> response.setStatus(403)))
+                        .authenticationEntryPoint((request, response, exception) -> {
+                            response.setStatus(401);
+                            response.setContentType("application/json");
+                            response.getWriter().write("{\"error\":\"authentication_required\"}");
+                        })
+                        .accessDeniedHandler(accessDeniedHandler))
                 .formLogin(AbstractHttpConfigurer::disable) // Отключаем форму логина
                 .logout(logout -> logout
                         .logoutRequestMatcher(new AntPathRequestMatcher("/api/logout", "POST"))
+                        .deleteCookies("JSESSIONID")
                         .logoutSuccessHandler((request, response, authentication) -> {
                             response.setStatus(HttpServletResponse.SC_OK);
                             response.setContentType("application/json");
@@ -67,6 +88,34 @@ public class SecurityConfig {
                 );
 
         return http.build();
+    }
+
+    @Bean
+    public HttpSessionCsrfTokenRepository csrfTokenRepository() {
+        return new HttpSessionCsrfTokenRepository();
+    }
+
+    @Bean
+    public SecurityContextRepository securityContextRepository() {
+        return new DelegatingSecurityContextRepository(new RequestAttributeSecurityContextRepository(),
+                new HttpSessionSecurityContextRepository());
+    }
+
+    @Bean
+    public SessionAuthenticationStrategy loginSessionStrategy(HttpSessionCsrfTokenRepository csrfTokens) {
+        // JSON controller authentication must invoke both strategies explicitly in Spring Security 6.
+        return new CompositeSessionAuthenticationStrategy(List.of(
+                new ChangeSessionIdAuthenticationStrategy(), new CsrfAuthenticationStrategy(csrfTokens)));
+    }
+
+    @Bean
+    public AccessDeniedHandler apiAccessDeniedHandler() {
+        return (request, response, exception) -> {
+            response.setStatus(403);
+            response.setContentType("application/json");
+            String error = exception instanceof CsrfException ? "csrf_invalid" : "access_denied";
+            response.getWriter().write("{\"error\":\"" + error + "\"}");
+        };
     }
 
     @Bean
@@ -98,4 +147,3 @@ public class SecurityConfig {
         return new HttpSessionEventPublisher();
     }
 }
-

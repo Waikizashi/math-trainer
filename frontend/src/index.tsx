@@ -7,9 +7,6 @@ import reportWebVitals from './reportWebVitals';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import './utils/visulaEffects/dynamic-bg.css'
-import axios from 'axios';
-
-axios.defaults.withCredentials = true;
 
 
 const root = ReactDOM.createRoot(

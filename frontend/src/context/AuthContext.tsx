@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
 import AuthService from '../service/AuthService';
+import { subscribeToSessionExpiry } from '../service/apiClient';
 import { UserResponse } from '../service/UserService';
 import { useNotification } from './NotificationContext';
 import { useNavigate } from 'react-router-dom';
@@ -7,7 +8,7 @@ import { useNavigate } from 'react-router-dom';
 interface AuthContextType {
     user: UserResponse | null;
     login: (username: string, password: string) => Promise<void>;
-    logout: () => void;
+    logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -16,6 +17,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [user, setUser] = useState<UserResponse | null>(null);
     const { addNotification } = useNotification();
     const navigate = useNavigate();
+
+    useEffect(() => subscribeToSessionExpiry(() => {
+        setUser(null);
+    }), []);
 
     useEffect(() => {
         const checkAuth = async () => {

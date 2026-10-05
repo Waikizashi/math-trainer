@@ -1,9 +1,9 @@
-import axios from 'axios';
+import client from './apiClient';
 import AuthService from './AuthService';
 import { API_URL } from './service.config';
 
-jest.mock('axios');
-const api = axios as jest.Mocked<typeof axios>;
+jest.mock('./apiClient', () => ({ __esModule: true, default: { get: jest.fn(), post: jest.fn() } }));
+const api = client as jest.Mocked<typeof client>;
 const user = { id: 1, username: 'alice', email: 'alice@example.com', role: 'USER' };
 
 beforeEach(() => {
