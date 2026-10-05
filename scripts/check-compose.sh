@@ -82,7 +82,8 @@ PY
 login
 code=$(curl --silent --output /dev/null --write-out '%{http_code}' -b "$temporary/cookies" "$origin/api/users")
 [[ "$code" == 403 ]]
-theory_id=$("${compose[@]}" exec -T db sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -tAc "INSERT INTO theories(title) VALUES ('"'"'CI persistent lesson'"'"') RETURNING id"')
+theory_id=$("${compose[@]}" exec -T db sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -qtAc "INSERT INTO theories(title) VALUES ('"'"'CI persistent lesson'"'"') RETURNING id"')
+[[ "$theory_id" =~ ^[0-9]+$ ]] || { echo 'Expected a numeric fixture lesson ID'; exit 1; }
 csrf
 curl --fail --silent -b "$temporary/cookies" -H "X-CSRF-TOKEN: $token" \
     -H 'Content-Type: application/json' --request PUT \
