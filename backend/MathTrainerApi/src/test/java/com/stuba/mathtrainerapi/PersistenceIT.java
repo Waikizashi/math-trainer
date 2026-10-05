@@ -197,11 +197,11 @@ class PersistenceIT {
         properties.put("spring.flyway.default-schema", schema);
         properties.put("server.port", "0");
         properties.put("server.servlet.session.cookie.secure", "false");
-        properties.put("spring.profiles.active", demo ? "demo" : "");
         properties.put("DEMO_ADMIN_PASSWORD", "isolated-demo-password");
         properties.put("spring.main.banner-mode", "off");
         return new SpringApplicationBuilder(MathTrainerApiApplication.class)
                 .web(WebApplicationType.SERVLET)
+                .profiles(demo ? "demo" : "persistence-test")
                 .initializers(context -> context.getEnvironment().getPropertySources()
                         .addFirst(new MapPropertySource("isolated-persistence-test", properties)))
                 .run();
