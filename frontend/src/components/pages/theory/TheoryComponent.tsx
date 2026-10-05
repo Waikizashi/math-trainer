@@ -1,3 +1,4 @@
+import { API_URL } from '../../../service/service.config';
 import React, { useEffect, useState } from 'react';
 import { Theory } from '../../../service/TheoryService';
 import { Container, Row, Col, Card } from 'react-bootstrap';
@@ -21,7 +22,7 @@ const TheoryComponent: React.FC<TheoryComponentProps> = ({ theory, user, onConte
     const createTheoryCompletion = async () => {
       if (user && theory) {
         try {
-          await axios.post('http://localhost:8080/api/user-profile/theory-completions', {
+          await axios.post(`${API_URL}/user-profile/theory-completions`, {
             theoryId: theory.id,
             theoryStatus: "IN_PROGRESS",
           });
@@ -44,7 +45,7 @@ const TheoryComponent: React.FC<TheoryComponentProps> = ({ theory, user, onConte
       const updateTheoryCompletion = async () => {
         if (user && theory) {
           try {
-            await axios.put('http://localhost:8080/api/user-profile/theory-completions', {
+            await axios.put(`${API_URL}/user-profile/theory-completions`, {
               theoryId: theory.id,
               theoryStatus: "COMPLETED",
             });

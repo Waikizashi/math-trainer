@@ -1,0 +1,9 @@
+target
+.git
+.env*
+*.p12
+*.pfx
+**/*.p12
+**/*.pfx
+compose.yaml
+src/main/resources/data.sql

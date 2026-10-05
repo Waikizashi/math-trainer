@@ -1,14 +1,12 @@
-# Используем Node.js для разработки и запуска фронтенда
-FROM node:16
-
+FROM node:24-alpine AS build
 WORKDIR /app
-
 COPY package*.json ./
+RUN npm ci --ignore-scripts --no-audit --no-fund
+COPY . ./
+RUN CI=false npm run build
 
-RUN npm install
-
-COPY . .
-
-EXPOSE 3000
-
-CMD ["npm", "start"]
+FROM nginx:1.28-alpine
+COPY nginx-forwarded.conf /etc/nginx/conf.d/00-forwarded.conf
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /app/build /usr/share/nginx/html
+EXPOSE 80

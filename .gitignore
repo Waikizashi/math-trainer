@@ -1,0 +1,12 @@
+.env
+.env.*
+!.env.example
+backups/
+*.dump
+*.p12
+*.pfx
+# Retired runtime entry points and automatic seed must not be reintroduced.
+/backend/MathTrainerApi/compose.yaml
+/backend/MathTrainerApi/src/main/resources/data.sql
+/docker/docker-compose.yml
+/docker/dockerfiles/db.Dockerfile

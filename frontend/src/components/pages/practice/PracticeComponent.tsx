@@ -1,3 +1,4 @@
+import { API_URL } from '../../../service/service.config';
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, ListGroup, Button } from 'react-bootstrap';
 import axios from 'axios';
@@ -47,7 +48,7 @@ const PracticeComponent: React.FC<PracticeComponentProps> = ({ practice, graphDa
     const createPracticeCompletion = async () => {
         if (user && practice) {
             try {
-                const response = await axios.post('http://localhost:8080/api/user-profile/practice-completions', {
+                const response = await axios.post(`${API_URL}/user-profile/practice-completions`, {
                     practiceId: practice.id,
                     practiceStatus: "IN_PROGRESS",
                 });
@@ -60,7 +61,7 @@ const PracticeComponent: React.FC<PracticeComponentProps> = ({ practice, graphDa
     const updatePracticeCompletion = async (status: string) => {
         if (user && practice) {
             try {
-                await axios.put('http://localhost:8080/api/user-profile/practice-completions', {
+                await axios.put(`${API_URL}/user-profile/practice-completions`, {
                     practiceId: practice.id,
                     practiceStatus: status,
                 });

@@ -68,3 +68,42 @@ Scope and remaining work:
 
 The implementation commit is the commit containing this entry. Further work
 must append the next dated entry, rather than overwrite these results.
+
+## 2026-10-05 — safe-startup (verification in progress)
+
+Parent: `950bbec7fd3ed6c88340e9065571ff0032ff1ea1` (`security-contracts`, PR #1).
+Branch: `refactor/safe-startup`. PR #1's remote Checks workflow completed successfully.
+
+Implemented:
+
+- Flyway V1 matches the current legacy JPA schema; V2 adds the seed history table.
+  Default startup migrates then validates, never recreates schema. Automatic SQL
+  init, automatic baseline and Flyway clean are disabled.
+- Existing unmanaged databases fail startup; explicit baseline is an operator-only
+  adoption step after backup/restore and schema review. No live target was accessed.
+- Datasource/session/origin settings come from environment inputs. Removed bundled
+  TLS keystore and embedded datasource secrets; direct TLS uses a mounted keystore.
+- Demo content is preserved in a separate resource. The demo profile requires a
+  supplied admin password, refuses populated databases, serializes seed with a
+  transaction lock and records success atomically. Later starts skip the seed;
+  normal startup refuses a database marked demo. Old fixed account hashes removed.
+- Browser API calls now use `/api`; CRA's dev proxy and Nginx route it to backend.
+- Root Compose provides PostgreSQL 16, multi-stage images, health checks, internal
+  DB/backend ports and a loopback frontend bind. Removed conflicting old runtime
+  entry points. Added ignored secret files, env example and database runbook.
+- Six real PostgreSQL integration scenarios cover fresh install/restart, explicit
+  baseline, checksum refusal, demo safety/idempotence and independent dump/restore.
+- CI provisions isolated PostgreSQL and builds/starts the Docker stack to test HTTP
+  sessions, role restrictions, app/DB restarts and backup restore.
+
+Local checks: 92 backend tests passed; 7 frontend tests passed; TypeScript and
+frontend build passed (existing CRA/UI warnings). Integration sources compile.
+Compose/CI YAML and shell syntax parsed successfully. Native PostgreSQL/Docker
+runtime is unavailable in this execution environment: only UID 0 is mapped and
+PostgreSQL requires a non-root user. Real database/container results are delegated
+to the committed CI fixtures and are not claimed passed until the run completes.
+
+No live data, deployment or live backup was inspected or modified. Existing
+password/key copies require operator rotation if they were deployed. CSRF/session
+hardening, dependency upgrades, graph correctness and full production readiness
+remain pending. The next entry will record actual remote verification results.

@@ -91,10 +91,10 @@ class TheoryService {
     }
     async fetchCompletion(): Promise<any> {
         try {
-            const theoryCompletionsResponse = await axios.get('http://localhost:8080/api/user-profile/theory-completions');
+            const theoryCompletionsResponse = await axios.get(`${API_URL}/user-profile/theory-completions`);
             const theoryCompletions = theoryCompletionsResponse.data;
 
-            const theorysResponse = await axios.get('http://localhost:8080/api/theories');
+            const theorysResponse = await axios.get(`${API_URL}/theories`);
             const theories = theorysResponse.data;
 
             const segmentsData = theories.map((theory: Theory) => {

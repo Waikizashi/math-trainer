@@ -3,9 +3,19 @@
 React + TypeScript, Spring Boot + PostgreSQL. The project is being refactored
 into a graph learning platform with personal and shared boards.
 
-Current milestone: `security-contracts`, the first change from
-`math-trainer-review-and-refactoring-plan.md` (4 October 2026).
-Baseline: `c0f0edb8904f2f4690c1cb052e87d8257b432ed2`.
+Current milestone: `safe-startup`, following `security-contracts` from the
+4 October 2026 refactoring plan. Baseline:
+`c0f0edb8904f2f4690c1cb052e87d8257b432ed2`.
+
+## Launch
+
+Copy `.env.example` to `.env`, set a locally generated database password, then
+run `docker compose up --build --detach --wait` from the repository root.
+For local HTTP access, set `SESSION_COOKIE_SECURE=false`; keep it true behind HTTPS.
+The site opens at `http://localhost:8080`; API and frontend share one origin.
+Schema migrations preserve data on restart; a fresh installation contains no
+accounts or seeded content. Existing databases require explicit reviewed adoption.
+See [database runbook](docs/database-runbook.md) before using an existing volume.
 
 ## Development checks
 
@@ -52,14 +62,20 @@ values are removed rather than reused.
 
 ## Runtime state and next step
 
-This milestone is **not production-ready**. The legacy runtime configuration
-still uses `ddl-auto=create` / seed-on-start and embedded demo credentials.
-Do not start it against existing data. This change was tested without a database;
-no production database, deployment or backup was inspected or modified.
-CSRF integration, session rotation, supported dependency upgrades and
-server-verified exercise submissions are still pending.
-The current frontend API URL also needs alignment with the runtime before deployment.
+Flyway manages the schema; Hibernate validates it; SQL auto-init and Flyway clean /
+automatic baseline are disabled. Demo seed is opt-in, transactional and applied
+once to a dedicated database. Database credentials and optional TLS keys come from
+environment inputs / mounted files. PostgreSQL and backend ports remain internal.
 
-Next: `safe-startup` — environment configuration, explicit demo profile,
-Flyway migrations and restart/backup tests. See
-[continuation](docs/continuation.md) and [implementation log](docs/implementation-log.md).
+No live database or deployment was accessed. Full production readiness still needs
+CSRF integration, session rotation, supported dependency upgrades, server-verified
+exercise submissions, backup operations and the later product/security checks.
+
+Real PostgreSQL verification is opt-in with `-Ppostgres-it verify`; see the runbook
+for fixture requirements. CI also builds the Docker stack and checks same-origin
+login, restarts and dump/restore. Remote results are recorded in the implementation
+log when completed.
+
+Next: complete CSRF/session safety, then graph-contract and algorithm correctness.
+See [continuation](docs/continuation.md) and
+[implementation log](docs/implementation-log.md).
