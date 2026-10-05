@@ -1,27 +1,27 @@
 package com.stuba.mathtrainerapi.serviceImpl;
 
-import com.stuba.mathtrainerapi.api.dto.UserDTO;
+import com.stuba.mathtrainerapi.api.dto.RegisterRequest;
+import com.stuba.mathtrainerapi.api.dto.UserResponse;
+import com.stuba.mathtrainerapi.api.dto.UserUpdateRequest;
 import com.stuba.mathtrainerapi.api.service.UserService;
 import com.stuba.mathtrainerapi.entity.User;
+import com.stuba.mathtrainerapi.enums.Role;
 import com.stuba.mathtrainerapi.mapper.UserMapper;
 import com.stuba.mathtrainerapi.repository.UserRepository;
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
+import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
-
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
 
-    @Autowired
     public UserServiceImpl(UserRepository userRepository, UserMapper userMapper, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
@@ -29,79 +29,57 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserDTO> findAllUsers() {
-        return userRepository.findAll().stream()
-                .map(userMapper::toUserDTO)
-                .collect(Collectors.toList());
+    public List<UserResponse> findAllUsers() {
+        return userRepository.findAll().stream().map(userMapper::toUserResponse).toList();
     }
 
     @Override
-    public Optional<UserDTO> findUserById(Long id) {
-        return userRepository.findById(id)
-                .map(userMapper::toUserDTO);
+    public Optional<UserResponse> findUserById(Long id) {
+        return userRepository.findById(id).map(userMapper::toUserResponse);
     }
 
     @Override
-    public Optional<UserDTO> findByUsername(String username) {
-        return userRepository.findByUsername(username)
-                .map(userMapper::toUserDTO);
+    public Optional<UserResponse> findByUsername(String username) {
+        return userRepository.findByUsername(username).map(userMapper::toUserResponse);
     }
 
     @Override
-    public Optional<UserDTO> findByEmail(String email) {
-        return userRepository.findByEmail(email)
-                .map(userMapper::toUserDTO);
+    public Optional<UserResponse> findByEmail(String email) {
+        return userRepository.findByEmail(email).map(userMapper::toUserResponse);
     }
 
     @Override
     @Transactional
-    public UserDTO saveUser(UserDTO userDTO) {
-        if (userDTO.getId() != null) {
-            throw new IllegalArgumentException("New User must not have an ID, it will be generated automatically.");
-        }
-        User user = userMapper.toUser(userDTO);
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        return userMapper.toUserDTO(userRepository.save(user));
+    public UserResponse registerUser(RegisterRequest request) {
+        User user = new User();
+        user.setUsername(request.getUsername());
+        user.setEmail(request.getEmail());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setRole(Role.USER);
+        return userMapper.toUserResponse(userRepository.save(user));
     }
 
     @Override
     @Transactional
-    public UserDTO updateUser(UserDTO userDTO) {
-        if (userDTO.getId() == null) {
-            throw new IllegalArgumentException("Cannot update a user without an ID.");
-        }
-
-        User existingUser = userRepository.findById(userDTO.getId())
-                .orElseThrow(() -> new IllegalArgumentException("User with ID " + userDTO.getId() + " not found"));
-
-        User updatedUser = userMapper.toUser(userDTO);
-        updatedUser.setPassword(passwordEncoder.encode(userDTO.getPassword()));
-        return userMapper.toUserDTO(userRepository.save(updatedUser));
-    }
-
-    @Override
-    @Transactional
-    public UserDTO updateSaves(UserDTO userDTO) {
-//        var userData = userRepository.findByUsername(userDTO.getUsername());
-//        userRepository.updateUserSavesById(userData.get().getId(), userDTO.getSaves());
-        return null;
+    public UserResponse updateUser(Long id, UserUpdateRequest request) {
+        User existing = userRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+        // Mutate permitted fields of the stored object. Preserve credentials and privileges.
+        existing.setUsername(request.getUsername());
+        existing.setEmail(request.getEmail());
+        return userMapper.toUserResponse(userRepository.save(existing));
     }
 
     @Override
     @Transactional
     public boolean deleteUser(Long id) {
-        if (userRepository.existsById(id)) {
-            userRepository.deleteById(id);
-            return !userRepository.existsById(id);
-        } else {
-            return false;
-        }
+        if (!userRepository.existsById(id)) return false;
+        userRepository.deleteById(id);
+        return true;
     }
 
     @Override
     public boolean isUserUnique(String username, String email) {
-        var userByUsername = this.findByUsername(username);
-        var userByEmail = this.findByEmail(email);
-        return (userByUsername.isEmpty() && userByEmail.isEmpty());
+        return userRepository.findByUsername(username).isEmpty() && userRepository.findByEmail(email).isEmpty();
     }
 }

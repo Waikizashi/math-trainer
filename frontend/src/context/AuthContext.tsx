@@ -1,11 +1,11 @@
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
 import AuthService from '../service/AuthService';
-import UserService, { UserDTO } from '../service/UserService';
+import { UserResponse } from '../service/UserService';
 import { useNotification } from './NotificationContext';
 import { useNavigate } from 'react-router-dom';
 
 interface AuthContextType {
-    user: UserDTO | null;
+    user: UserResponse | null;
     login: (username: string, password: string) => Promise<void>;
     logout: () => void;
 }
@@ -13,7 +13,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-    const [user, setUser] = useState<UserDTO | null>(null);
+    const [user, setUser] = useState<UserResponse | null>(null);
     const { addNotification } = useNotification();
     const navigate = useNavigate();
 

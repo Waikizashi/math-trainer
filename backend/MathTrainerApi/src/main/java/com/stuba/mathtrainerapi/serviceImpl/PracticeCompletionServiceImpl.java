@@ -11,7 +11,8 @@ import com.stuba.mathtrainerapi.repository.PracticeRepository;
 import com.stuba.mathtrainerapi.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.rest.webmvc.ResourceNotFoundException;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.ResourceAccessException;
@@ -62,7 +63,7 @@ public class PracticeCompletionServiceImpl implements PracticeCompletionService 
         }
         PracticeCompletion practiceCompletion = practiceCompletionMapper.toEntity(dto);
         practiceCompletion.setUser(userRepository.findById(dto.getUserId()).orElseThrow(() -> new UsernameNotFoundException("User not found")));
-        practiceCompletion.setPractice(practiceRepository.findById(dto.getPracticeId()).orElseThrow(() -> new ResourceNotFoundException("Practice not found")));
+        practiceCompletion.setPractice(practiceRepository.findById(dto.getPracticeId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Practice not found")));
         PracticeCompletion saved = practiceCompletionRepository.save(practiceCompletion);
         return practiceCompletionMapper.toDTO(saved);
     }
@@ -83,7 +84,7 @@ public class PracticeCompletionServiceImpl implements PracticeCompletionService 
             entity.setUser(userRepository.findById(dto.getUserId())
                     .orElseThrow(() -> new UsernameNotFoundException("User not found")));
             entity.setPractice(practiceRepository.findById(dto.getPracticeId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Practice not found")));
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Practice not found")));
         }
         PracticeCompletion saved = practiceCompletionRepository.save(entity);
         return practiceCompletionMapper.toDTO(saved);

@@ -1,56 +1,40 @@
 import axios from 'axios';
 import { API_URL } from './service.config';
-import { UserDTO } from './UserService';
-
-
+import { RegisterRequest, UserResponse } from './UserService';
 
 class AuthService {
-    async register(user: UserDTO) {
-        try {
-            const response = await axios.post(`${API_URL}/register`, user);
-            return response.data;
-        } catch (error) {
-            console.error('Error registering user', error);
-            throw error;
-        }
+    // Purge the legacy response cache, which could contain password hashes.
+    private clearLegacyCache() {
+        localStorage.removeItem('user');
     }
 
-    async login(username: string, password: string) {
-        try {
-            const response = await axios.post(`${API_URL}/login`, { username, password });
-            if (response.data) {
-                localStorage.setItem('user', JSON.stringify(response.data));
-            }
-            return response.data;
-        } catch (error) {
-            console.error('Error logging in', error);
-            throw error;
-        }
+    async register(user: RegisterRequest): Promise<UserResponse> {
+        this.clearLegacyCache();
+        const response = await axios.post<UserResponse>(`${API_URL}/register`, user);
+        return response.data;
     }
 
-    async logout() {
-        try {
-            localStorage.removeItem('user');
-            await axios.post(`${API_URL}/logout`);
-        } catch (error) {
-            console.error('Error logging out', error);
-            throw error;
-        }
+    async login(username: string, password: string): Promise<UserResponse> {
+        this.clearLegacyCache();
+        const response = await axios.post<UserResponse>(`${API_URL}/login`, { username, password });
+        return response.data;
     }
-    async getCurrentUser(): Promise<UserDTO | null> {
+
+    async logout(): Promise<void> {
+        this.clearLegacyCache();
+        await axios.post(`${API_URL}/logout`);
+    }
+
+    async getCurrentUser(): Promise<UserResponse | null> {
+        this.clearLegacyCache();
         try {
-            const localUser = localStorage.getItem('user');
-            const activeUser = await axios.get(`${API_URL}/current/user`);
-            if (localUser && activeUser) {
-                return JSON.parse(localUser);
-            } else {
-                localStorage.removeItem('user');
-            }
+            const response = await axios.get<UserResponse>(`${API_URL}/current/user`);
+            return response.data;
         } catch (error: any) {
-            console.error('Current user fetching error:', error)
-            localStorage.removeItem('user');
+            if (error.response?.status === 401) return null;
+            // A network/server failure must not be presented as a successful guest session.
+            throw error;
         }
-        return null;
     }
 }
 

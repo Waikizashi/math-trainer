@@ -28,7 +28,7 @@ const RegisterPage = () => {
             return;
         }
         try {
-            await AuthService.register({ username, email, password, role: 'USER' });
+            await AuthService.register({ username, email, password });
             addNotification('Success', 'Registration successful', 'success')
             navigate('/login')
         } catch (error) {
@@ -81,7 +81,11 @@ const RegisterPage = () => {
                                         type="password"
                                         className="form-control my-2"
                                         id="pass"
-                                        placeholder="Password - min 6 symbols"
+                                        required
+                                        minLength={8}
+                                        maxLength={72}
+                                        autoComplete="new-password"
+                                        placeholder="Password - min 8 symbols"
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                     />

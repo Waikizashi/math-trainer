@@ -1,6 +1,8 @@
 package com.stuba.mathtrainerapi.configuration;
 
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.DispatcherType;
+import org.springframework.http.HttpMethod;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -8,14 +10,13 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -27,14 +28,33 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/api/login", "/api/register").permitAll()
-                        .anyRequest().authenticated()
+                        .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/login", "/api/register").permitAll()
+                        .requestMatchers("/api/users", "/api/users/**",
+                                "/api/theory-completions", "/api/theory-completions/**",
+                                "/api/practice-completions", "/api/practice-completions/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/theories", "/api/theories/**",
+                                "/api/practices", "/api/practices/**", "/api/current/user",
+                                "/api/user-profile/theory-completions",
+                                "/api/user-profile/practice-completions").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/user-profile/theory-completions",
+                                "/api/user-profile/practice-completions").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/user-profile/theory-completions",
+                                "/api/user-profile/practice-completions").authenticated()
+                        .requestMatchers("/api/theories", "/api/theories/**",
+                                "/api/practices", "/api/practices/**").hasRole("ADMIN")
+                        // New routes require an explicit policy before they become reachable.
+                        .anyRequest().denyAll()
                 )
+                .exceptionHandling(errors -> errors
+                        .authenticationEntryPoint((request, response, exception) -> response.setStatus(401))
+                        .accessDeniedHandler((request, response, exception) -> response.setStatus(403)))
                 .formLogin(AbstractHttpConfigurer::disable) // Отключаем форму логина
                 .logout(logout -> logout
-                        .logoutUrl("/api/logout")
+                        .logoutRequestMatcher(new AntPathRequestMatcher("/api/logout", "POST"))
                         .logoutSuccessHandler((request, response, authentication) -> {
                             response.setStatus(HttpServletResponse.SC_OK);
+                            response.setContentType("application/json");
                             response.getWriter().write("{ \"status\": \"logged out\" }");
                         })
                         .permitAll()
@@ -62,11 +82,6 @@ public class SecurityConfig {
     }
 
     @Bean
-    public CorsFilter corsFilter() {
-        return new CorsFilter(corsConfigurationSource());
-    }
-
-    @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
@@ -76,6 +91,5 @@ public class SecurityConfig {
         return new HttpSessionEventPublisher();
     }
 }
-
 
 

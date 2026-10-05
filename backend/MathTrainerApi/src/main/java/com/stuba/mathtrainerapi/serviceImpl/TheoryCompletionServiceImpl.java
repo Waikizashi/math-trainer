@@ -11,7 +11,8 @@ import com.stuba.mathtrainerapi.repository.TheoryRepository;
 import com.stuba.mathtrainerapi.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.rest.webmvc.ResourceNotFoundException;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.ResourceAccessException;
@@ -62,7 +63,7 @@ public class TheoryCompletionServiceImpl implements TheoryCompletionService {
         }
         TheoryCompletion theoryCompletion = theoryCompletionMapper.toEntity(dto);
         theoryCompletion.setUser(userRepository.findById(dto.getUserId()).orElseThrow(() -> new UsernameNotFoundException("User not found")));
-        theoryCompletion.setTheory(theoryRepository.findById(dto.getTheoryId()).orElseThrow(() -> new ResourceNotFoundException("Theory not found")));
+        theoryCompletion.setTheory(theoryRepository.findById(dto.getTheoryId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Theory not found")));
 
         TheoryCompletion saved = theoryCompletionRepository.save(theoryCompletion);
         return theoryCompletionMapper.toDTO(saved);
@@ -84,7 +85,7 @@ public class TheoryCompletionServiceImpl implements TheoryCompletionService {
             entity.setUser(userRepository.findById(dto.getUserId())
                     .orElseThrow(() -> new UsernameNotFoundException("User not found")));
             entity.setTheory(theoryRepository.findById(dto.getTheoryId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Theory not found")));
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Theory not found")));
         }
         TheoryCompletion saved = theoryCompletionRepository.save(entity);
 

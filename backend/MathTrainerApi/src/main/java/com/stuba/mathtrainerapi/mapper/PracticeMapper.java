@@ -5,12 +5,11 @@ import com.stuba.mathtrainerapi.entity.Practice;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper(componentModel = "spring", uses = {PracticeContentMapper.class, PracticeCompletionMapper.class})
+@Mapper(componentModel = "spring", uses = {PracticeContentMapper.class})
 public interface PracticeMapper {
     @Mapping(source = "practiceContents", target = "practiceContents")
-    @Mapping(source = "completions", target = "completions")
     PracticeDTO toPracticeDTO(Practice practice);
     @Mapping(source = "practiceContents", target = "practiceContents")
-    @Mapping(source = "completions", target = "completions")
+    @Mapping(target = "completions", ignore = true)
     Practice toPractice(PracticeDTO practiceDTO);
 }

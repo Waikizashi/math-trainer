@@ -2,6 +2,8 @@ package com.stuba.mathtrainerapi.entity;
 
 import com.stuba.mathtrainerapi.enums.Role;
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.ToString;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,6 +22,8 @@ public class User {
     private String username;
 
     @Column(nullable = false, length = 255)
+    @JsonIgnore
+    @ToString.Exclude
     private String password;
 
     @Column(nullable = false, unique = true, length = 100)
@@ -30,9 +34,13 @@ public class User {
 
     private String saves;
 
+    @JsonIgnore
+    @ToString.Exclude
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TheoryCompletion> completedTheories;
 
+    @JsonIgnore
+    @ToString.Exclude
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PracticeCompletion> practiceCompletions;
 

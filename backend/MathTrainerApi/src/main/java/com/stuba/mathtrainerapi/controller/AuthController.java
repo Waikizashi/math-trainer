@@ -1,7 +1,10 @@
 package com.stuba.mathtrainerapi.controller;
 
 import com.stuba.mathtrainerapi.api.dto.AuthDTO;
-import com.stuba.mathtrainerapi.api.dto.UserDTO;
+import com.stuba.mathtrainerapi.api.dto.UserResponse;
+import com.stuba.mathtrainerapi.api.dto.RegisterRequest;
+import jakarta.validation.Valid;
+import org.springframework.security.core.AuthenticationException;
 import com.stuba.mathtrainerapi.api.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -33,16 +36,16 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<UserDTO> registerUser(@RequestBody UserDTO userDTO) {
-        if (userService.isUserUnique(userDTO.getUsername(), userDTO.getEmail())) {
-            UserDTO savedUser = userService.saveUser(userDTO);
+    public ResponseEntity<UserResponse> registerUser(@Valid @RequestBody RegisterRequest registerRequest) {
+        if (userService.isUserUnique(registerRequest.getUsername(), registerRequest.getEmail())) {
+            UserResponse savedUser = userService.registerUser(registerRequest);
             return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
         }
         return new ResponseEntity<>(HttpStatus.CONFLICT);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> loginUser(@RequestBody AuthDTO loginRequest, HttpServletRequest request) {
+    public ResponseEntity<?> loginUser(@Valid @RequestBody AuthDTO loginRequest, HttpServletRequest request) {
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
@@ -51,29 +54,18 @@ public class AuthController {
             HttpSession session = request.getSession(true);
             session.setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
             String username = authentication.getName();
-            UserDTO user = userService.findByUsername(username).orElse(null);
+            UserResponse user = userService.findByUsername(username).orElse(null);
             return ResponseEntity.ok().body(user);
-        } catch (Exception e) {
+        } catch (AuthenticationException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Login failed");
         }
     }
 
-    @PostMapping("/logout")
-    public ResponseEntity<?> logout(HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
-        if (session != null) {
-            session.invalidate();
-            SecurityContextHolder.clearContext();
-            return ResponseEntity.ok().body("Logged out successfully");
-        }
-        return ResponseEntity.badRequest().body("No session found");
-    }
-
     @GetMapping("/current/user")
-    public ResponseEntity<UserDTO> getCurrentUser(Authentication authentication) {
+    public ResponseEntity<UserResponse> getCurrentUser(Authentication authentication) {
         if (authentication != null && authentication.isAuthenticated()) {
             String username = authentication.getName();
-            UserDTO user = userService.findByUsername(username).orElse(null);
+            UserResponse user = userService.findByUsername(username).orElse(null);
             if (user != null) {
                 return new ResponseEntity<>(user, HttpStatus.OK);
             }
