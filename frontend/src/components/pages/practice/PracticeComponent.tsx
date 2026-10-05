@@ -48,11 +48,8 @@ const PracticeComponent: React.FC<PracticeComponentProps> = ({ practice, graphDa
         if (user && practice) {
             try {
                 const response = await axios.post('http://localhost:8080/api/user-profile/practice-completions', {
-                    completionDate: "",
                     practiceId: practice.id,
-                    practiceTitle: practice.title,
                     practiceStatus: "IN_PROGRESS",
-                    userId: user.id
                 });
             } catch (error) {
                 console.error('Error creating practice completion:', error);
@@ -64,11 +61,8 @@ const PracticeComponent: React.FC<PracticeComponentProps> = ({ practice, graphDa
         if (user && practice) {
             try {
                 await axios.put('http://localhost:8080/api/user-profile/practice-completions', {
-                    completionDate: new Date().toISOString(),
                     practiceId: practice.id,
-                    practiceTitle: practice.title,
                     practiceStatus: status,
-                    userId: user.id
                 });
             } catch (error) {
                 console.error('Error updating practice completion:', error);

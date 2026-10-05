@@ -65,5 +65,10 @@
   },
   "devDependencies": {
     "@types/uuid": "^9.0.8"
+  },
+  "jest": {
+    "moduleNameMapper": {
+      "^axios$": "<rootDir>/node_modules/axios/dist/node/axios.cjs"
+    }
   }
 }

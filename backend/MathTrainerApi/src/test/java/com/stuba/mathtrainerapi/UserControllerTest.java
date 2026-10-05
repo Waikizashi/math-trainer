@@ -1,6 +1,8 @@
 package com.stuba.mathtrainerapi;
 
-import com.stuba.mathtrainerapi.api.dto.UserDTO;
+import com.stuba.mathtrainerapi.api.dto.UserResponse;
+import com.stuba.mathtrainerapi.api.dto.RegisterRequest;
+import com.stuba.mathtrainerapi.api.dto.UserUpdateRequest;
 import com.stuba.mathtrainerapi.api.service.UserService;
 import com.stuba.mathtrainerapi.controller.UserController;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,20 +34,20 @@ class UserControllerTest {
 
     @Test
     void getAllUsers() {
-        List<UserDTO> users = Arrays.asList(new UserDTO(), new UserDTO());
+        List<UserResponse> users = Arrays.asList(new UserResponse(), new UserResponse());
         when(userService.findAllUsers()).thenReturn(users);
 
-        ResponseEntity<List<UserDTO>> response = userController.getAllUsers();
+        ResponseEntity<List<UserResponse>> response = userController.getAllUsers();
 
         assertEquals(ResponseEntity.ok(users), response);
     }
 
     @Test
     void getUserById_Found() {
-        UserDTO dto = new UserDTO();
+        UserResponse dto = new UserResponse();
         when(userService.findUserById(1L)).thenReturn(Optional.of(dto));
 
-        ResponseEntity<UserDTO> response = userController.getUserById(1L);
+        ResponseEntity<UserResponse> response = userController.getUserById(1L);
 
         assertEquals(ResponseEntity.ok(dto), response);
     }
@@ -54,27 +56,31 @@ class UserControllerTest {
     void getUserById_NotFound() {
         when(userService.findUserById(1L)).thenReturn(Optional.empty());
 
-        ResponseEntity<UserDTO> response = userController.getUserById(1L);
+        ResponseEntity<UserResponse> response = userController.getUserById(1L);
 
         assertEquals(ResponseEntity.notFound().build(), response);
     }
 
     @Test
     void createUser() {
-        UserDTO dto = new UserDTO();
-        when(userService.saveUser(dto)).thenReturn(dto);
+        UserResponse dto = new UserResponse();
+        RegisterRequest request = new RegisterRequest();
+        when(userService.isUserUnique(null, null)).thenReturn(true);
+        when(userService.registerUser(request)).thenReturn(dto);
 
-        ResponseEntity<UserDTO> response = userController.createUser(dto);
+        ResponseEntity<UserResponse> response = userController.createUser(request);
 
-        assertEquals(ResponseEntity.ok(dto), response);
+        assertEquals(201, response.getStatusCode().value());
+        assertEquals(dto, response.getBody());
     }
 
     @Test
     void updateUser() {
-        UserDTO dto = new UserDTO();
-        when(userService.updateUser(dto)).thenReturn(dto);
+        UserResponse dto = new UserResponse();
+        UserUpdateRequest request = new UserUpdateRequest();
+        when(userService.updateUser(1L, request)).thenReturn(dto);
 
-        ResponseEntity<UserDTO> response = userController.updateUser(1L, dto);
+        ResponseEntity<UserResponse> response = userController.updateUser(1L, request);
 
         assertEquals(ResponseEntity.ok(dto), response);
     }
@@ -85,7 +91,7 @@ class UserControllerTest {
 
         ResponseEntity<Void> response = userController.deleteUser(1L);
 
-        assertEquals(ResponseEntity.ok().build(), response);
+        assertEquals(ResponseEntity.noContent().build(), response);
     }
 
     @Test

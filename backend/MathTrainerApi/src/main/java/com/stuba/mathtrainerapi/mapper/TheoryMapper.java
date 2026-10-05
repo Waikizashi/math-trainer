@@ -5,12 +5,11 @@ import com.stuba.mathtrainerapi.entity.Theory;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper(componentModel = "spring", uses = {TheoryContentMapper.class, TheoryCompletionMapper.class})
+@Mapper(componentModel = "spring", uses = {TheoryContentMapper.class})
 public interface TheoryMapper {
     @Mapping(source = "theoryContents", target = "theoryContents")
-    @Mapping(source = "completions", target = "completions")
     TheoryDTO toTheoryDTO(Theory theory);
     @Mapping(source = "theoryContents", target = "theoryContents")
-    @Mapping(source = "completions", target = "completions")
+    @Mapping(target = "completions", ignore = true)
     Theory toTheory(TheoryDTO theoryDTO);
 }

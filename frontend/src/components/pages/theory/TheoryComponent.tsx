@@ -22,11 +22,8 @@ const TheoryComponent: React.FC<TheoryComponentProps> = ({ theory, user, onConte
       if (user && theory) {
         try {
           await axios.post('http://localhost:8080/api/user-profile/theory-completions', {
-            completionDate: "",
             theoryId: theory.id,
-            theoryTitle: theory.title,
             theoryStatus: "IN_PROGRESS",
-            userId: user.id
           });
         } catch (error) {
           console.error('Error creating theory completion:', error);
@@ -48,11 +45,8 @@ const TheoryComponent: React.FC<TheoryComponentProps> = ({ theory, user, onConte
         if (user && theory) {
           try {
             await axios.put('http://localhost:8080/api/user-profile/theory-completions', {
-              completionDate: new Date().toISOString(),
               theoryId: theory.id,
-              theoryTitle: theory.title,
               theoryStatus: "COMPLETED",
-              userId: user.id
             });
           } catch (error) {
             console.error('Error updating theory completion:', error);
